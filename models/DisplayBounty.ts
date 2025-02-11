@@ -17,15 +17,25 @@ const displayBountySchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  totalPaid: {
+    type: Number,
+    default: 0,
+  },
   startDate: {
     type: Date,
+    default: null,
   },
   endDate: {
     type: Date,
+    default: null,
   },
   lastUpdated: {
     type: Date,
     default: Date.now,
+  },
+  tags: {
+    type: [String],
+    default: [],
   }
 }, {
   timestamps: true,

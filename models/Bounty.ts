@@ -21,10 +21,6 @@ const bountySchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-//   logoUrl: {
-//     type: String,
-//     required: true,
-//   },
   status: {
     type: String,
     enum: ['active', 'inactive'],

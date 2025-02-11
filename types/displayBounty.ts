@@ -6,10 +6,12 @@ export interface DisplayBounty {
   logoUrl: string;
   description: string;
   maxRewards: number;
-  startDate?: Date;
-  endDate?: Date;
+  totalPaid: number;
+  startDate: Date | null;
+  endDate: Date | null;
   lastUpdated: Date;
   status: DisplayBountyStatus;
   createdAt: Date;
   updatedAt: Date;
+  tags: string[];
 } 

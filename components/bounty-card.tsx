@@ -19,7 +19,7 @@ const NETWORK_CURRENCIES: { [key: string]: string } = {
 };
 
 export function BountyCard({ bounty }: BountyCardProps) {
-  const formatDate = (date: Date | undefined) => {
+  const formatDate = (date: Date | null) => {
     if (!date) return 'TBA';
     return new Date(date).toLocaleString('en-US', {
       month: 'short',
