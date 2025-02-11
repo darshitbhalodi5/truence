@@ -17,6 +17,9 @@ interface Bounty {
     rules: string;
     rewards: string;
   };
+  logoUrl: string;
+  startDate: string | null;
+  endDate: string | null;
 }
 
 export default function BountyDetails() {
@@ -29,7 +32,7 @@ export default function BountyDetails() {
   useEffect(() => {
     const fetchBounty = async () => {
       try {
-        const response = await fetch(`/api/bounties/${params.id}`);
+        const response = await fetch(`/api/bounties/explore/${params.network}`);
         if (!response.ok) {
           throw new Error('Bounty not found');
         }
@@ -42,10 +45,10 @@ export default function BountyDetails() {
       }
     };
 
-    if (params.id) {
+    if (params.network) {
       fetchBounty();
     }
-  }, [params.id]);
+  }, [params.network]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -79,7 +82,7 @@ export default function BountyDetails() {
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-300">Bounty not found</h2>
           <button
-            onClick={() => router.push('/bounties')}
+            onClick={() => router.push('/bounties/explore')}
             className="mt-4 text-blue-500 hover:text-blue-400"
           >
             Return to bounties

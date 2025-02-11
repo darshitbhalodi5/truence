@@ -72,12 +72,16 @@ export function BountyCard({ bounty }: BountyCardProps) {
     return NETWORK_CURRENCIES[networkName] || NETWORK_CURRENCIES.Default;
   };
 
+  const formatNetworkForUrl = (networkName: string) => {
+    return networkName.toLowerCase().replace(/\s+/g, '-');
+  };
+
   const status = calculateStatus();
   const displayStatus = status.replace('_', ' ');
   const isClosed = status === 'CLOSED';
 
   return (
-    <Link href={`/bounties/${bounty._id}`} className={`block transition-all duration-300 ${isClosed ? 'opacity-60 hover:opacity-80' : 'opacity-100'}`}>
+    <Link href={`/bounties/explore/${formatNetworkForUrl(bounty.networkName)}`} className={`block transition-all duration-300 ${isClosed ? 'opacity-60 hover:opacity-80' : 'opacity-100'}`}>
       <div className={`bg-gray-800/50 backdrop-blur rounded-lg p-4 hover:bg-gray-800/70 transition-all duration-200 ${isClosed ? 'grayscale' : ''}`}>
         <div className="flex items-center gap-3 mb-3">
           <div className="relative w-8 h-8 flex-shrink-0">
