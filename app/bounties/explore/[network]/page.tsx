@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { BountyHeader } from '@/components/bounty-header';
 import { DisplayBounty } from '@/types/displayBounty';
-import { formatRewardNumber, getCurrency } from '@/utils/networkCurrency';
+import { BountyRewards } from '@/components/bounty-rewards';
 
 interface BountyDetails {
   networkName: string;
@@ -105,20 +105,44 @@ export default function BountyDetails() {
         {/* Only show tabs and content sections if additional details are available */}
         {bountyDetails && (
           <>
-            {/* Navigation Tabs */}
-            <div className="flex space-x-1 mb-6 bg-gray-800 p-1 rounded-lg">
-              {['information', 'scope', 'rewards', 'rules'].map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`flex-1 py-3 px-6 rounded-md text-sm font-medium capitalize transition-colors
-                    ${activeTab === tab 
-                      ? 'bg-blue-500 text-white' 
-                      : 'text-gray-400 hover:text-white hover:bg-gray-700'}`}
+            {/* Navigation Tabs and Submit Button */}
+            <div className="relative mb-8">
+              <div className="flex items-center justify-between mb-6 border-b border-gray-700/50">
+                <div className="flex space-x-6">
+                  {['information', 'scope', 'rewards', 'rules'].map((tab) => (
+                    <button
+                      key={tab}
+                      onClick={() => setActiveTab(tab)}
+                      className="relative py-4 px-2 text-sm font-medium capitalize transition-all duration-200 group"
+                    >
+                      <span className={`${
+                        activeTab === tab 
+                          ? 'text-blue-500' 
+                          : 'text-gray-400 hover:text-gray-200'
+                      }`}>
+                        {tab}
+                      </span>
+                      {/* Bottom line indicator */}
+                      <span className={`absolute bottom-0 left-0 w-full h-0.5 transform transition-all duration-200
+                        ${activeTab === tab 
+                          ? 'bg-gradient-to-r from-blue-500 to-blue-600 scale-x-100' 
+                          : 'bg-blue-500/0 scale-x-0 group-hover:bg-blue-500/50 group-hover:scale-x-75'
+                        }`}
+                      />
+                    </button>
+                  ))}
+                </div>
+
+                {/* Submit Button */}
+                <button 
+                  className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 
+                    text-white px-6 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 
+                    shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40"
+                  onClick={() => {}}
                 >
-                  {tab}
+                  Submit a Bug
                 </button>
-              ))}
+              </div>
             </div>
 
             {/* Content Sections */}
@@ -150,36 +174,14 @@ export default function BountyDetails() {
 
               {activeTab === 'rewards' && (
                 <div className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {/* Critical */}
-                    <div className="bg-pink-500/10 border border-pink-500/20 rounded-lg p-6">
-                      <div className="text-pink-500 font-semibold mb-2">Critical</div>
-                      <div className="text-2xl font-bold">{formatRewardNumber(bountyDetails.criticalReward)} {getCurrency(bountyDetails.networkName)}</div>
-                    </div>
-                    
-                    {/* High */}
-                    <div className="bg-orange-500/10 border border-orange-500/20 rounded-lg p-6">
-                      <div className="text-orange-500 font-semibold mb-2">High</div>
-                      <div className="text-2xl font-bold">{formatRewardNumber(bountyDetails.highReward)} {getCurrency(bountyDetails.networkName)}</div>
-                    </div>
-                    
-                    {/* Medium */}
-                    <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-6">
-                      <div className="text-blue-500 font-semibold mb-2">Medium</div>
-                      <div className="text-2xl font-bold">{formatRewardNumber(bountyDetails.mediumReward)} {getCurrency(bountyDetails.networkName)}</div>
-                    </div>
-                    
-                    {/* Low */}
-                    <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-6">
-                      <div className="text-green-500 font-semibold mb-2">Low</div>
-                      <div className="text-2xl font-bold">{formatRewardNumber(bountyDetails.lowReward)} {getCurrency(bountyDetails.networkName)}</div>
-                    </div>
-                  </div>
-
-                  <section>
-                    <h3 className="text-xl font-semibold mb-4">Reward Details</h3>
-                    <p className="text-gray-300">{bountyDetails.additionalDetails.rewards}</p>
-                  </section>
+                  <BountyRewards 
+                    networkName={bountyDetails.networkName}
+                    criticalReward={bountyDetails.criticalReward}
+                    highReward={bountyDetails.highReward}
+                    mediumReward={bountyDetails.mediumReward}
+                    lowReward={bountyDetails.lowReward}
+                    rewardDetails={bountyDetails.additionalDetails.rewards}
+                  />
                 </div>
               )}
 
@@ -193,16 +195,6 @@ export default function BountyDetails() {
                   </section>
                 </div>
               )}
-            </div>
-
-            {/* Submit Button */}
-            <div className="mt-8 flex justify-center">
-              <button 
-                className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-colors"
-                onClick={() => {/* Add submission logic */}}
-              >
-                Submit a Bug
-              </button>
             </div>
           </>
         )}
