@@ -48,7 +48,7 @@ export function WalletConnect() {
           Connecting...
         </span>
       ) : isConnected ? (
-        `Disconnect ${user?.wallet?.address?.slice(0, 6)}...${user?.wallet?.address?.slice(-4)}`
+        `${user?.wallet?.address?.slice(0, 6)}...${user?.wallet?.address?.slice(-4)}`
       ) : (
         'Connect Wallet'
       )}

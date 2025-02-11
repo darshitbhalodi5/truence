@@ -1,83 +1,80 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { ChevronRightIcon } from '@heroicons/react/24/outline';
-
-interface Bounty {
-  _id: string;
-  networkName: string;
-  maxRewards: number;
-  totalPaid: number;
-  lastUpdated: string;
-}
+import { useEffect, useState } from 'react';
+import { DisplayBounty } from '@/types/displayBounty';
+import { BountyCard } from '@/components/bounty-card';
 
 export default function ExploreBounties() {
-  const router = useRouter();
-  const [bounties, setBounties] = useState<Bounty[]>([]);
+  const [bounties, setBounties] = useState<DisplayBounty[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchBounties = async () => {
       try {
-        const response = await fetch('/api/bounties');
+        const response = await fetch('/api/display-bounties');
+        if (!response.ok) {
+          throw new Error('Failed to fetch bounties');
+        }
         const data = await response.json();
         setBounties(data);
-      } catch (error) {
-        console.error('Error fetching bounties:', error);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load bounties');
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchBounties();
   }, []);
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-900 text-white p-8">
+        <div className="container mx-auto">
+          <div className="animate-pulse space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-40 bg-gray-800 rounded-xl" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-900 text-white p-8">
+        <div className="container mx-auto">
+          <div className="bg-red-500/10 text-red-500 p-4 rounded-xl">
+            {error}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Explore Bounties</h1>
-      <div className="space-y-4">
-        {bounties.map((bounty) => (
-          <div 
-            key={bounty._id} 
-            className="bg-gray-800 rounded-lg overflow-hidden hover:bg-gray-700 transition-colors cursor-pointer"
-            onClick={() => router.push(`/bounties/${bounty._id}`)}
-          >
-            <div className="p-4 flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <span className="font-semibold">{bounty.networkName}</span>
-              </div>
-              <div className="flex items-center space-x-8">
-                <div className="text-right">
-                  <div className="text-sm text-gray-400">Max Rewards</div>
-                  <div>{formatCurrency(bounty.maxRewards)}</div>
-                </div>
-                <div className="text-right">
-                  <div className="text-sm text-gray-400">Total Paid</div>
-                  <div>{formatCurrency(bounty.totalPaid)}</div>
-                </div>
-                <div className="text-right">
-                  <div className="text-sm text-gray-400">Last Updated</div>
-                  <div>{formatDate(bounty.lastUpdated)}</div>
-                </div>
-                <ChevronRightIcon className="w-6 h-6 text-gray-400" />
-              </div>
+    <div className="min-h-screen bg-gray-900 text-white p-8">
+      <div className="container mx-auto">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">Explore Bounties</h1>
+          <p className="text-gray-400">
+            Discover and participate in bounties from various blockchain networks
+          </p>
+        </div>
+
+        <div className="space-y-4">
+          {bounties.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-400">No bounties available at the moment</p>
             </div>
-          </div>
-        ))}
+          ) : (
+            bounties.map((bounty) => (
+              <BountyCard key={bounty._id} bounty={bounty} />
+            ))
+          )}
+        </div>
       </div>
     </div>
   );
