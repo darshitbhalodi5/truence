@@ -5,26 +5,21 @@ const bountySchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  maxRewards: {
+  criticalReward:{
     type: Number,
-    required: true,
+    default: 0,
   },
-  totalPaid: {
+  highReward:{
     type: Number,
-    required: true,
+    default: 0,
   },
-  lastUpdated: {
-    type: Date,
-    default: Date.now,
+  mediumReward:{
+    type: Number,
+    default: 0,
   },
-  description: {
-    type: String,
-    required: true,
-  },
-  status: {
-    type: String,
-    enum: ['active', 'inactive'],
-    default: 'active',
+  lowReward:{
+    type: Number,
+    default: 0,
   },
   additionalDetails: {
     scope: String,

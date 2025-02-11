@@ -5,9 +5,14 @@ import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { BountyHeader } from '@/components/bounty-header';
 import { DisplayBounty } from '@/types/displayBounty';
+import { formatRewardNumber, getCurrency } from '@/utils/networkCurrency';
 
 interface BountyDetails {
   networkName: string;
+  criticalReward: number;
+  highReward: number;
+  mediumReward: number;
+  lowReward: number;
   additionalDetails: {
     scope: string;
     eligibility: string;
@@ -149,25 +154,25 @@ export default function BountyDetails() {
                     {/* Critical */}
                     <div className="bg-pink-500/10 border border-pink-500/20 rounded-lg p-6">
                       <div className="text-pink-500 font-semibold mb-2">Critical</div>
-                      <div className="text-2xl font-bold">$50k - $1M</div>
+                      <div className="text-2xl font-bold">{formatRewardNumber(bountyDetails.criticalReward)} {getCurrency(bountyDetails.networkName)}</div>
                     </div>
                     
                     {/* High */}
                     <div className="bg-orange-500/10 border border-orange-500/20 rounded-lg p-6">
                       <div className="text-orange-500 font-semibold mb-2">High</div>
-                      <div className="text-2xl font-bold">$30k</div>
+                      <div className="text-2xl font-bold">{formatRewardNumber(bountyDetails.highReward)} {getCurrency(bountyDetails.networkName)}</div>
                     </div>
                     
                     {/* Medium */}
                     <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-6">
                       <div className="text-blue-500 font-semibold mb-2">Medium</div>
-                      <div className="text-2xl font-bold">$10k</div>
+                      <div className="text-2xl font-bold">{formatRewardNumber(bountyDetails.mediumReward)} {getCurrency(bountyDetails.networkName)}</div>
                     </div>
                     
                     {/* Low */}
                     <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-6">
                       <div className="text-green-500 font-semibold mb-2">Low</div>
-                      <div className="text-2xl font-bold">$1.5k</div>
+                      <div className="text-2xl font-bold">{formatRewardNumber(bountyDetails.lowReward)} {getCurrency(bountyDetails.networkName)}</div>
                     </div>
                   </div>
 

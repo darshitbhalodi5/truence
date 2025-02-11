@@ -33,16 +33,11 @@ export async function GET(
     const combinedData = {
       _id: bounty._id,
       networkName: bounty.networkName,
-      maxRewards: bounty.maxRewards,
-      totalPaid: bounty.totalPaid,
-      lastUpdated: bounty.lastUpdated,
-      description: bounty.description,
+      criticalReward:bounty.criticalReward,
+      highReward:bounty.highReward,
+      mediumReward:bounty.mediumReward,
+      lowReward:bounty.lowReward,
       additionalDetails: bounty.additionalDetails,
-      status: bounty.status,
-      // Add display bounty specific fields
-      logoUrl: displayBounty.logoUrl,
-      startDate: displayBounty.startDate,
-      endDate: displayBounty.endDate
     };
 
     return NextResponse.json(combinedData);
