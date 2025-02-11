@@ -10,6 +10,7 @@ interface BountyCardProps {
 
 const NETWORK_CURRENCIES: { [key: string]: string } = {
   'Arbitrum': 'ARB',
+  'Arbitrum Watchdog': 'ARB',
   'Optimism': 'OP',
   'Ethereum': 'ETH',
   'Polygon': 'MATIC',
@@ -45,11 +46,9 @@ export function BountyCard({ bounty }: BountyCardProps) {
     }
   };
 
-  // Calculate status if it's not provided
   const calculateStatus = (): DisplayBountyStatus => {
     const now = new Date();
     
-    // If no start date, it's LIVE_SOON
     if (!bounty.startDate) {
       return 'LIVE_SOON';
     }
@@ -58,67 +57,62 @@ export function BountyCard({ bounty }: BountyCardProps) {
     const startTime = new Date(bounty.startDate).getTime();
     const endTime = bounty.endDate ? new Date(bounty.endDate).getTime() : null;
 
-    // If end date exists and current time is past end date, it's CLOSED
     if (endTime && currentTime >= endTime) {
       return 'CLOSED';
     }
 
-    // If current time is before start date, it's UPCOMING
     if (currentTime < startTime) {
       return 'UPCOMING';
     }
 
-    // If we're between start and end date (or no end date), it's IN_PROCESS
     return 'IN_PROCESS';
   };
 
-  const status = calculateStatus();
-  const displayStatus = status.replace('_', ' ');
-
-  // Get the native currency for the network
   const getCurrency = (networkName: string) => {
     return NETWORK_CURRENCIES[networkName] || NETWORK_CURRENCIES.Default;
   };
 
+  const status = calculateStatus();
+  const displayStatus = status.replace('_', ' ');
   const isClosed = status === 'CLOSED';
 
   return (
     <Link href={`/bounties/${bounty._id}`} className={`block transition-all duration-300 ${isClosed ? 'opacity-60 hover:opacity-80' : 'opacity-100'}`}>
-      <div className={`bg-gray-800/50 backdrop-blur rounded-xl p-6 hover:bg-gray-800/70 transition-all duration-200 ${isClosed ? 'grayscale' : ''}`}>
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-4">
-            <div className="relative w-10 h-10">
-              <Image
-                src={bounty.logoUrl}
-                alt={bounty.networkName}
-                fill
-                className={`object-contain ${isClosed ? 'filter grayscale' : ''}`}
-              />
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-white">{bounty.networkName}</h3>
-              <p className="text-sm text-gray-400 line-clamp-1">{bounty.description}</p>
-            </div>
+      <div className={`bg-gray-800/50 backdrop-blur rounded-lg p-4 hover:bg-gray-800/70 transition-all duration-200 ${isClosed ? 'grayscale' : ''}`}>
+        <div className="flex items-center gap-3 mb-3">
+          <div className="relative w-8 h-8 flex-shrink-0">
+            <Image
+              src={bounty.logoUrl}
+              alt={bounty.networkName}
+              fill
+              className={`object-contain ${isClosed ? 'filter grayscale' : ''}`}
+            />
           </div>
-          <div className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(status)}`}>
-            {displayStatus}
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="text-base font-semibold text-white truncate">{bounty.networkName}</h3>
+              <div className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(status)}`}>
+                {displayStatus}
+              </div>
+            </div>
+            <p className="text-xs text-gray-400 line-clamp-1 mt-0.5">{bounty.description}</p>
           </div>
         </div>
         
-        <div className="grid grid-cols-3 gap-4 text-sm">
+        <div className="grid grid-cols-3 gap-3 text-xs">
           <div>
-            <p className="text-gray-400">Max Rewards</p>
-            <p className="text-white font-semibold">
+            <p className="text-gray-400 mb-0.5">Max Rewards</p>
+            <p className="text-white font-medium">
               {bounty.maxRewards.toLocaleString()} {getCurrency(bounty.networkName)}
             </p>
           </div>
           <div>
-            <p className="text-gray-400">Start Date</p>
-            <p className="text-white font-semibold">{formatDate(bounty.startDate)}</p>
+            <p className="text-gray-400 mb-0.5">Start Date</p>
+            <p className="text-white font-medium">{formatDate(bounty.startDate)}</p>
           </div>
           <div>
-            <p className="text-gray-400">End Date</p>
-            <p className="text-white font-semibold">{formatDate(bounty.endDate)}</p>
+            <p className="text-gray-400 mb-0.5">End Date</p>
+            <p className="text-white font-medium">{formatDate(bounty.endDate)}</p>
           </div>
         </div>
       </div>

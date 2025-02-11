@@ -30,11 +30,12 @@ export default function ExploreBounties() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-900 text-white p-8">
-        <div className="container mx-auto">
-          <div className="animate-pulse space-y-4">
+      <div className="min-h-screen bg-gray-900 p-4 md:p-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="h-32 mb-6" /> {/* Space for future content */}
+          <div className="animate-pulse space-y-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-40 bg-gray-800 rounded-xl" />
+              <div key={i} className="h-28 bg-gray-800 rounded-lg" />
             ))}
           </div>
         </div>
@@ -44,9 +45,10 @@ export default function ExploreBounties() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-900 text-white p-8">
-        <div className="container mx-auto">
-          <div className="bg-red-500/10 text-red-500 p-4 rounded-xl">
+      <div className="min-h-screen bg-gray-900 p-4 md:p-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="h-32 mb-6" /> {/* Space for future content */}
+          <div className="bg-red-500/10 text-red-500 p-4 rounded-lg">
             {error}
           </div>
         </div>
@@ -55,18 +57,18 @@ export default function ExploreBounties() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-8">
-      <div className="container mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Explore Bounties</h1>
-          <p className="text-gray-400">
+    <div className="min-h-screen bg-gray-900 p-4 md:p-6">
+      <div className="max-w-6xl mx-auto">
+        <div className="h-32 mb-6"> {/* Space for future content */}
+          <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">Explore Bounties</h1>
+          <p className="text-gray-400 text-sm md:text-base">
             Discover and participate in bounties from various blockchain networks
           </p>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           {bounties.length === 0 ? (
-            <div className="text-center py-12">
+            <div className="text-center py-8">
               <p className="text-gray-400">No bounties available at the moment</p>
             </div>
           ) : (
