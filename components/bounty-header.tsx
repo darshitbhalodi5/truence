@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { DisplayBounty } from '@/types/displayBounty';
+import { formatRewardNumber, getCurrency } from '@/utils/networkCurrency';
 
 interface BountyHeaderProps {
   bounty: DisplayBounty;
@@ -15,26 +16,6 @@ export function BountyHeader({ bounty }: BountyHeaderProps) {
       month: 'short',
       day: 'numeric'
     });
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
-
-  const getTagColor = (tag: string) => {
-    const colors = {
-      'security': 'bg-red-500/10 text-red-500 border-red-500/20',
-      'smart-contracts': 'bg-blue-500/10 text-blue-500 border-blue-500/20',
-      'bug-bounty': 'bg-green-500/10 text-green-500 border-green-500/20',
-      'defi': 'bg-purple-500/10 text-purple-500 border-purple-500/20',
-      'staking': 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
-      'default': 'bg-gray-500/10 text-gray-500 border-gray-500/20'
-    };
-    return colors[tag.toLowerCase() as keyof typeof colors] || colors.default;
   };
 
   return (
@@ -63,7 +44,7 @@ export function BountyHeader({ bounty }: BountyHeaderProps) {
           <div className="bg-gray-800/50 rounded-lg p-4">
             <div className="text-sm text-gray-400 mb-1">Maximum Bounty</div>
             <div className="text-lg font-semibold text-green-400">
-              {formatCurrency(bounty.maxRewards)}
+            {formatRewardNumber(bounty.maxRewards)} {getCurrency(bounty.networkName)}
             </div>
           </div>
         )}
@@ -72,7 +53,7 @@ export function BountyHeader({ bounty }: BountyHeaderProps) {
           <div className="bg-gray-800/50 rounded-lg p-4">
             <div className="text-sm text-gray-400 mb-1">Total Paid</div>
             <div className="text-lg font-semibold text-blue-400">
-              {formatCurrency(bounty.totalPaid)}
+            {formatRewardNumber(bounty.totalPaid)} {getCurrency(bounty.networkName)}
             </div>
           </div>
         )}
@@ -102,20 +83,6 @@ export function BountyHeader({ bounty }: BountyHeaderProps) {
           </div>
         </div>
       </div>
-
-      {/* Tags */}
-      {bounty.tags && bounty.tags.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {bounty.tags.slice(0, 5).map((tag, index) => (
-            <div
-              key={index}
-              className={`px-3 py-1 rounded-full text-sm font-medium border ${getTagColor(tag)}`}
-            >
-              {tag}
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 } 

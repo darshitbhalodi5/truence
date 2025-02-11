@@ -32,10 +32,6 @@ const displayBountySchema = new mongoose.Schema({
   lastUpdated: {
     type: Date,
     default: Date.now,
-  },
-  tags: {
-    type: [String],
-    default: [],
   }
 }, {
   timestamps: true,

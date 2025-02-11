@@ -3,20 +3,11 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { DisplayBounty, DisplayBountyStatus } from '@/types/displayBounty';
+import { getCurrency, formatRewardNumber } from '@/utils/networkCurrency';
 
 interface BountyCardProps {
   bounty: DisplayBounty;
 }
-
-const NETWORK_CURRENCIES: { [key: string]: string } = {
-  'Arbitrum': 'ARB',
-  'Arbitrum Watchdog': 'ARB',
-  'Optimism': 'OP',
-  'Ethereum': 'ETH',
-  'Polygon': 'MATIC',
-  'Base': 'ETH',
-  'Default': 'USDC'
-};
 
 export function BountyCard({ bounty }: BountyCardProps) {
   const formatDate = (date: Date | null) => {
@@ -68,10 +59,6 @@ export function BountyCard({ bounty }: BountyCardProps) {
     return 'IN_PROCESS';
   };
 
-  const getCurrency = (networkName: string) => {
-    return NETWORK_CURRENCIES[networkName] || NETWORK_CURRENCIES.Default;
-  };
-
   const formatNetworkForUrl = (networkName: string) => {
     return networkName.toLowerCase().replace(/\s+/g, '-');
   };
@@ -107,7 +94,7 @@ export function BountyCard({ bounty }: BountyCardProps) {
           <div>
             <p className="text-gray-400 mb-0.5">Max Rewards</p>
             <p className="text-white font-medium">
-              {bounty.maxRewards.toLocaleString()} {getCurrency(bounty.networkName)}
+            {formatRewardNumber(bounty.maxRewards)} {getCurrency(bounty.networkName)}
             </p>
           </div>
           <div>
