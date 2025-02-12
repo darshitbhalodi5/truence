@@ -54,22 +54,34 @@ export function BountyRewards({
     {
       severity: 'Critical',
       reward: criticalReward,
-      color: 'pink'
+      color: 'bg-pink-500',
+      border:'border-pink-700/50',
+      hover:'hover:border-pink-700',
+      text: 'text-pink-500',
     },
     {
       severity: 'High',
       reward: highReward,
-      color: 'orange'
+      color: 'bg-orange-500',
+      border:'border-orange-700/50',
+      hover:'hover:border-orange-700',
+      text: 'text-orange-500',
     },
     {
       severity: 'Medium',
       reward: mediumReward,
-      color: 'blue'
+      color: 'bg-blue-500',
+      border:'border-blue-700/50',
+      hover:'hover:border-blue-700',
+      text: 'text-blue-500',
     },
     {
       severity: 'Low',
       reward: lowReward,
-      color: 'green'
+      color: 'bg-green-500',
+      border:'border-green-700/50',
+      hover:'hover:border-green-700',
+      text: 'text-green-500',
     }
   ].filter(card => card.reward > 0);
 
@@ -88,12 +100,12 @@ export function BountyRewards({
         {rewardCards.map((card) => (
           <div 
             key={card.severity}
-            className={`bg-gray-800/40 border border-${card.color}-500/20 rounded-lg p-4 hover:border-${card.color}-500/30 transition-all duration-200`}
+            className={`bg-gray-800/40 border ${card.border} rounded-lg p-4 ${card.hover} transition-all duration-200`}
           >
             <div className="flex justify-between items-center mb-2">
               <div className="flex items-center space-x-2">
-                <div className={`w-2 h-2 rounded-full bg-${card.color}-500`}></div>
-                <span className={`text-${card.color}-400 text-sm`}>{card.severity}</span>
+                <div className={`w-2 h-2 rounded-full ${card.color}`}></div>
+                <span className={`${card.text}`}>{card.severity}</span>
               </div>
               <span className="ml-auto text-xs text-gray-500">{getCurrency(networkName)}</span>
             </div>
