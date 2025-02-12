@@ -38,6 +38,7 @@ export async function GET(
       mediumReward:bounty.mediumReward,
       lowReward:bounty.lowReward,
       additionalDetails: bounty.additionalDetails,
+      severityDescriptions:bounty.severityDescriptions
     };
 
     return NextResponse.json(combinedData);

@@ -7,6 +7,12 @@ import { BountyHeader } from '@/components/bounty-header';
 import { DisplayBounty } from '@/types/displayBounty';
 import { BountyRewards } from '@/components/bounty-rewards';
 
+export interface SeverityDescription {
+  severity: 'Critical' | 'High' | 'Medium' | 'Low';
+  description: string;
+}
+
+
 interface BountyDetails {
   networkName: string;
   criticalReward: number;
@@ -19,6 +25,7 @@ interface BountyDetails {
     rules: string;
     rewards: string;
   };
+  severityDescriptions: SeverityDescription[]
 }
 
 export default function BountyDetails() {
@@ -135,9 +142,9 @@ export default function BountyDetails() {
 
                 {/* Submit Button */}
                 <button 
-                  className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 
+                  className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 
                     text-white px-6 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 
-                    shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40"
+                    shadow-lg shadow-yellow-500/25 hover:shadow-yellow-500/40"
                   onClick={() => {}}
                 >
                   Submit a Bug
@@ -180,7 +187,7 @@ export default function BountyDetails() {
                     highReward={bountyDetails.highReward}
                     mediumReward={bountyDetails.mediumReward}
                     lowReward={bountyDetails.lowReward}
-                    rewardDetails={bountyDetails.additionalDetails.rewards}
+                    severityDescriptions={bountyDetails.severityDescriptions}
                   />
                 </div>
               )}

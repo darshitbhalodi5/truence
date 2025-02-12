@@ -7,7 +7,17 @@ export async function POST(req: Request) {
     await dbConnect();
     const body = await req.json();
 
-    const bounty = await Bounty.create(body);
+    const bountyData = {
+      networkName: body.networkName,
+      criticalReward: body.criticalReward,
+      highReward: body.highReward,
+      mediumReward: body.mediumReward,
+      lowReward: body.lowReward,
+      additionalDetails: body.additionalDetails,
+      severityDescriptions: body.severityDescriptions // Explicitly include severityDescriptions
+    };
+
+    const bounty = await Bounty.create(bountyData);
     return NextResponse.json(bounty, { status: 201 });
   } catch (error) {
     console.error('Error creating bounty:', error);

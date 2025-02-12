@@ -1,12 +1,17 @@
 import { formatRewardNumber, getCurrency } from '@/utils/networkCurrency';
 
+interface SeverityDescription {
+  severity: 'Critical' | 'High' | 'Medium' | 'Low';
+  description: string;
+}
+
 interface BountyRewardsProps {
   networkName: string;
   criticalReward: number;
   highReward: number;
   mediumReward: number;
   lowReward: number;
-  rewardDetails?: string;
+  severityDescriptions?: SeverityDescription[];
 }
 
 export function BountyRewards({
@@ -15,88 +20,110 @@ export function BountyRewards({
   highReward,
   mediumReward,
   lowReward,
-  rewardDetails
+  severityDescriptions
 }: BountyRewardsProps) {
+
+  const getSeverityStyle = (severity: string) => {
+    const styles = {
+      Critical: {
+        border: 'border-pink-500/30',
+        bg: 'bg-pink-500/10',
+        text: 'text-pink-500',
+      },
+      High: {
+        border: 'border-orange-500/30',
+        bg: 'bg-orange-500/10',
+        text: 'text-orange-500',
+      },
+      Medium: {
+        border: 'border-blue-500/30',
+        bg: 'bg-blue-500/10',
+        text: 'text-blue-500',
+      },
+      Low: {
+        border: 'border-green-500/30',
+        bg: 'bg-green-500/10',
+        text: 'text-green-500',
+      }
+    };
+    return styles[severity as keyof typeof styles];
+  };
+
+  // Create reward cards array to ensure consistent order
+  const rewardCards = [
+    {
+      severity: 'Critical',
+      reward: criticalReward,
+      color: 'pink'
+    },
+    {
+      severity: 'High',
+      reward: highReward,
+      color: 'orange'
+    },
+    {
+      severity: 'Medium',
+      reward: mediumReward,
+      color: 'blue'
+    },
+    {
+      severity: 'Low',
+      reward: lowReward,
+      color: 'green'
+    }
+  ].filter(card => card.reward > 0);
+
   return (
     <div className="space-y-6">
       {/* Title Section - Centered with line */}
       <div className="text-center space-y-3">
-        <h2 className="text-xl font-semibold bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 bg-clip-text text-transparent">
+        <h2 className="text-xl font-semibold bg-gradient-to-r from-yellow-100 via-yellow-200 to-yellow-300 bg-clip-text text-transparent">
           Impact Based Reward Distribution
         </h2>
-        <div className="w-full h-px bg-gradient-to-r from-transparent via-blue-500/50 to-transparent"></div>
+        <div className="w-full h-px bg-gradient-to-r from-transparent via-[#f2f1ed] to-transparent"></div>
       </div>
 
       {/* Rewards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {highReward > 0 && (
-          <div className="bg-gray-800/40 border border-orange-500/20 rounded-lg p-4 hover:border-orange-500/30 transition-all duration-200">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-start">
+        {rewardCards.map((card) => (
+          <div 
+            key={card.severity}
+            className={`bg-gray-800/40 border border-${card.color}-500/20 rounded-lg p-4 hover:border-${card.color}-500/30 transition-all duration-200`}
+          >
             <div className="flex justify-between items-center mb-2">
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 rounded-full bg-orange-500"></div>
-              <span className="text-orange-400 text-sm">High</span>
+              <div className="flex items-center space-x-2">
+                <div className={`w-2 h-2 rounded-full bg-${card.color}-500`}></div>
+                <span className={`text-${card.color}-400 text-sm`}>{card.severity}</span>
               </div>
               <span className="ml-auto text-xs text-gray-500">{getCurrency(networkName)}</span>
             </div>
             <div className="text-2xl font-bold text-white">
-              {formatRewardNumber(highReward)}
+              {formatRewardNumber(card.reward)}
             </div>
           </div>
-        )}
-        
-        {mediumReward > 0 && (
-          <div className="bg-gray-800/40 border border-blue-500/20 rounded-lg p-4 hover:border-blue-500/30 transition-all duration-200">
-            <div className="flex justify-between items-center mb-2">
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-              <span className="text-blue-400 text-sm">Medium</span>
-              </div>
-              <span className="ml-auto text-xs text-gray-500">{getCurrency(networkName)}</span>
-            </div>
-            <div className="text-2xl font-bold text-white">
-              {formatRewardNumber(mediumReward)}
-            </div>
-          </div>
-        )}
-        
-        {lowReward > 0 && (
-          <div className="bg-gray-800/40 border border-green-500/20 rounded-lg p-4 hover:border-green-500/30 transition-all duration-200">
-            <div className="flex justify-between items-center mb-2">
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 rounded-full bg-green-500"></div>
-              <span className="text-green-400 text-sm">Low</span>
-              </div>
-              <span className="ml-auto text-xs text-gray-500">{getCurrency(networkName)}</span>
-            </div>
-            <div className="text-2xl font-bold text-white">
-              {formatRewardNumber(lowReward)}
-            </div>
-          </div>
-        )}
-
-        {criticalReward > 0 && (
-          <div className="bg-gray-800/40 border border-pink-500/20 rounded-lg p-4 hover:border-pink-500/30 transition-all duration-200">
-            <div className="flex justify-between items-center mb-2">
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 rounded-full bg-pink-500"></div>
-              <span className="text-pink-400 text-sm">Critical</span>
-              </div>
-              <span className="ml-auto text-xs text-gray-500">{getCurrency(networkName)}</span>
-            </div>
-            <div className="text-2xl font-bold text-white">
-              {formatRewardNumber(criticalReward)}
-            </div>
-          </div>
-        )}
+        ))}
       </div>
-
-      {rewardDetails && (
-        <section className="bg-gray-800/40 border border-gray-700/50 rounded-lg p-6">
-          <h3 className="text-lg font-semibold mb-3 text-gray-200">
-            Reward Details
-          </h3>
-          <p className="text-gray-300 leading-relaxed text-sm">{rewardDetails}</p>
-        </section>
+      <div>
+      <div className="w-full h-px bg-gradient-to-r from-transparent via-[#f2f1ed] to-transparent"></div>
+      </div>
+       {/* Severity Descriptions */}
+       {severityDescriptions && severityDescriptions.length > 0 && (
+        <div className="grid grid-cols-1 gap-4 mt-8">
+          {severityDescriptions.map((item, index) => {
+            const style = getSeverityStyle(item.severity);
+            return (
+              <div
+                key={index}
+                className={`${style.bg} border ${style.border} rounded-lg p-4  transition-all duration-200`}
+              >
+                <div className="flex items-center space-x-2 mb-2">
+                  <span className={`${style.text} font-medium`}>{item.severity} Severity Scope</span>
+                </div>
+                <p className="text-gray-300 ml-4">{item.description}</p>
+              </div>
+            );
+          })}
+        </div>
       )}
     </div>
   );
