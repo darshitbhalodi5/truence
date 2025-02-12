@@ -4,12 +4,7 @@ import Link from 'next/link';
 export default function Home() {
   return (
     <div className="min-h-screen bg-gray-900 text-white">
-      <nav className="p-4 border-b border-gray-800">
-        <div className="container mx-auto flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Truence</h1>
-          <WalletConnect />
-        </div>
-      </nav>
+      <WalletConnect />
       
       <main className="container mx-auto px-4 py-12">
         {/* Hero Section */}
