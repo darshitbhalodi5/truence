@@ -9,7 +9,7 @@ import { BountyRewards } from "@/components/bounty-rewards";
 import { usePathname } from "next/navigation";
 import React from "react";
 import { componentsMap } from "@/utils/mapBounties";
-import { WalletConnect } from "@/components/wallet-connect";
+import { Navbar } from "@/components/navbar/Navbar";
 export interface SeverityDescription {
   severity: "Critical" | "High" | "Medium" | "Low";
   description: string;
@@ -118,7 +118,7 @@ export default function BountyDetails() {
 
   return (
     <div className="min-h-screen bg-gray-900">
-      <WalletConnect />
+      <Navbar />
       <div className="container mx-auto px-4 py-8">
         {/* Back Button - Only show when not scrolled */}
         {!isScrolled && (

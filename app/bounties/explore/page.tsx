@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { DisplayBounty } from '@/types/displayBounty';
 import { BountyCard } from '@/components/bounty-card';
-import { WalletConnect } from '@/components/wallet-connect';
+import { Navbar } from '@/components/navbar/Navbar';
 
 export default function ExploreBounties() {
   const [bounties, setBounties] = useState<DisplayBounty[]>([]);
@@ -59,7 +59,7 @@ export default function ExploreBounties() {
 
   return (
     <div className="min-h-screen bg-gray-900">
-      <WalletConnect />
+      <Navbar />
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
         {/* <div className="h-32 mb-6"> Space for future content */}

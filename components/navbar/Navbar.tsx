@@ -10,7 +10,7 @@ import {
 import Symbol from "@/public/assets/symbol.png";
 import Image from "next/image";
 
-export function WalletConnect() {
+export function Navbar() {
   const { connect, disconnect, isConnected, user } = useWallet();
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);

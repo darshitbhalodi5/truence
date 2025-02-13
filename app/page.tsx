@@ -1,10 +1,10 @@
-import { WalletConnect } from '@/components/wallet-connect';
+import { Navbar } from '@/components/navbar/Navbar';
 import Link from 'next/link';
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-gray-900 text-white">
-      <WalletConnect />
+      <Navbar />
       
       <main className="container mx-auto px-4 py-12">
         {/* Hero Section */}
