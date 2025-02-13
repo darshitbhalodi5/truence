@@ -4,6 +4,7 @@ const displayBountySchema = new mongoose.Schema({
   networkName: {
     type: String,
     required: true,
+    index: true
   },
   logoUrl: {
     type: String,
@@ -16,10 +17,12 @@ const displayBountySchema = new mongoose.Schema({
   maxRewards: {
     type: Number,
     required: true,
+    index: true
   },
   totalPaid: {
     type: Number,
     default: 0,
+    index: true
   },
   startDate: {
     type: Date,
