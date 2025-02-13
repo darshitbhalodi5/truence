@@ -3,20 +3,45 @@
 
 import { Navbar } from "@/components/navbar/Navbar";
 import { DisplayBounty } from "@/types/displayBounty";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
-import { Loader2 } from "lucide-react";
+import { Loader2, X, Upload, AlertCircle, CheckCircle2 } from "lucide-react";
+import toast from 'react-hot-toast';
 
 type SeverityLevel = 'critical' | 'high' | 'medium' | 'low';
 
 interface UploadedFile {
   url: string;
   filename: string;
+  originalName: string;
   size: number;
   type: string;
+  uploadedAt: string;
+}
+
+interface FileUploadProgress {
+  fileName: string;
+  progress: number;
+  status: 'uploading' | 'success' | 'error';
+  error?: string;
 }
 
 const steps = ["Select Program", "Report Details", "Wallet Info"];
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_FILES = 5;
+const ALLOWED_FILE_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'text/plain',
+  'application/json',
+  'application/zip',
+  'application/x-zip-compressed'
+];
 
 export default function SubmissionPage() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -26,9 +51,9 @@ export default function SubmissionPage() {
   const [description, setDescription] = useState("");
   const [severityLevel, setSeverityLevel] = useState<SeverityLevel>("medium");
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+  const [uploadProgress, setUploadProgress] = useState<FileUploadProgress[]>([]);
   const [walletAddress, setWalletAddress] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -40,7 +65,7 @@ export default function SubmissionPage() {
         setBounties(data);
       } catch (err) {
         console.error("Error fetching bounties:", err);
-        setError("Failed to load bounties");
+        toast.error("Failed to load bounties");
       }
     };
 
@@ -48,20 +73,58 @@ export default function SubmissionPage() {
     setWalletAddress("0x123...789"); // Replace with actual wallet connection
   }, []);
 
+  const validateFile = useCallback((file: File): string | null => {
+    if (file.size > MAX_FILE_SIZE) {
+      return `File ${file.name} is too large. Maximum size is ${MAX_FILE_SIZE / (1024 * 1024)}MB`;
+    }
+
+    if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+      return `File type ${file.type} not allowed`;
+    }
+
+    return null;
+  }, []);
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
 
-    if (uploadedFiles.length + files.length > 5) {
-      setError("Maximum 5 files allowed");
+    if (uploadedFiles.length + files.length > MAX_FILES) {
+      toast.error(`Maximum ${MAX_FILES} files allowed`);
       return;
     }
 
-    setIsUploading(true);
     setError("");
 
-    try {
-      const uploadPromises = Array.from(files).map(async (file) => {
+    // Convert FileList to array and filter out invalid files
+    const fileArray = Array.from(files);
+    const validFiles: File[] = [];
+    const invalidFiles: string[] = [];
+
+    fileArray.forEach(file => {
+      const error = validateFile(file);
+      if (error) {
+        invalidFiles.push(`${file.name}: ${error}`);
+      } else {
+        validFiles.push(file);
+      }
+    });
+
+    // Show errors for invalid files
+    if (invalidFiles.length > 0) {
+      invalidFiles.forEach(error => toast.error(error));
+    }
+
+    // Upload valid files
+    validFiles.forEach(async (file) => {
+      // Add file to progress tracking
+      setUploadProgress(prev => [...prev, {
+        fileName: file.name,
+        progress: 0,
+        status: 'uploading'
+      }]);
+
+      try {
         const formData = new FormData();
         formData.append("file", file);
 
@@ -74,37 +137,54 @@ export default function SubmissionPage() {
           throw new Error(`Failed to upload ${file.name}`);
         }
 
-        return await response.json();
-      });
+        const data = await response.json();
 
-      const newFiles = await Promise.all(uploadPromises);
-      setUploadedFiles([...uploadedFiles, ...newFiles]);
-    } catch (err) {
-      setError("Failed to upload files");
-      console.error("Upload error:", err);
-    } finally {
-      setIsUploading(false);
-    }
+        if (data.success) {
+          setUploadedFiles(prev => [...prev, data.file]);
+          setUploadProgress(prev => 
+            prev.map(p => 
+              p.fileName === file.name 
+                ? { ...p, progress: 100, status: 'success' }
+                : p
+            )
+          );
+          toast.success(`Successfully uploaded ${file.name}`);
+        } else {
+          throw new Error(data.error || 'Upload failed');
+        }
+      } catch (err) {
+        console.error("Upload error:", err);
+        setUploadProgress(prev => 
+          prev.map(p => 
+            p.fileName === file.name 
+              ? { ...p, status: 'error', error: err instanceof Error ? err.message : 'Upload failed' }
+              : p
+          )
+        );
+        toast.error(`Failed to upload ${file.name}`);
+      }
+    });
   };
 
   const removeFile = (fileUrl: string) => {
-    setUploadedFiles(uploadedFiles.filter(file => file.url !== fileUrl));
+    setUploadedFiles(prev => prev.filter(file => file.url !== fileUrl));
+    toast.success('File removed');
   };
 
   const handleSubmit = async () => {
     if (currentStep !== 2) {
       // Validate current step before proceeding
       if (currentStep === 0 && !selectedBounty) {
-        setError("Please select a bounty program");
+        toast.error("Please select a bounty program");
         return;
       }
       if (currentStep === 1) {
         if (!title.trim()) {
-          setError("Please enter a title");
+          toast.error("Please enter a title");
           return;
         }
         if (!description.trim()) {
-          setError("Please enter a description");
+          toast.error("Please enter a description");
           return;
         }
       }
@@ -142,14 +222,115 @@ export default function SubmissionPage() {
       setSeverityLevel("medium");
       setUploadedFiles([]);
       setCurrentStep(0);
-      alert("Report submitted successfully!");
+      toast.success("Report submitted successfully!");
     } catch (err) {
-      setError("Failed to submit report");
       console.error("Submission error:", err);
+      toast.error("Failed to submit report");
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const renderFileUploadSection = () => (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <label className="block text-lg font-medium text-white">
+          Upload Files ({uploadedFiles.length}/{MAX_FILES})
+        </label>
+        <span className="text-sm text-gray-400">
+          Max {MAX_FILES} files, {MAX_FILE_SIZE / (1024 * 1024)}MB each
+        </span>
+      </div>
+
+      {/* File Input */}
+      <div className="relative">
+        <input
+          type="file"
+          onChange={handleFileUpload}
+          multiple
+          accept={ALLOWED_FILE_TYPES.join(',')}
+          className="hidden"
+          id="file-upload"
+          disabled={uploadedFiles.length >= MAX_FILES}
+        />
+        <label
+          htmlFor="file-upload"
+          className={`flex items-center justify-center w-full h-32 px-4 transition bg-gray-800 border-2 border-gray-600 border-dashed rounded-lg appearance-none cursor-pointer hover:border-gray-500 focus:outline-none ${
+            uploadedFiles.length >= MAX_FILES ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
+        >
+          <div className="flex flex-col items-center space-y-2">
+            <Upload className="w-8 h-8 text-gray-400" />
+            <span className="text-sm text-gray-400">
+              {uploadedFiles.length >= MAX_FILES
+                ? 'Maximum files reached'
+                : 'Drop files here or click to upload'}
+            </span>
+          </div>
+        </label>
+      </div>
+
+      {/* Upload Progress */}
+      {uploadProgress.length > 0 && (
+        <div className="space-y-2">
+          {uploadProgress.map((progress, index) => (
+            <div key={index} className="bg-gray-800 rounded-lg p-3">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-sm text-white truncate">{progress.fileName}</span>
+                <div className="flex items-center space-x-2">
+                  {progress.status === 'uploading' && <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />}
+                  {progress.status === 'success' && <CheckCircle2 className="w-4 h-4 text-green-500" />}
+                  {progress.status === 'error' && <AlertCircle className="w-4 h-4 text-red-500" />}
+                </div>
+              </div>
+              <div className="w-full bg-gray-700 rounded-full h-1.5">
+                <div
+                  className={`h-1.5 rounded-full ${
+                    progress.status === 'error' ? 'bg-red-500' : 'bg-blue-500'
+                  }`}
+                  style={{ width: `${progress.progress}%` }}
+                />
+              </div>
+              {progress.error && (
+                <p className="text-xs text-red-500 mt-1">{progress.error}</p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Uploaded Files List */}
+      {uploadedFiles.length > 0 && (
+        <div className="space-y-2">
+          {uploadedFiles.map((file, index) => (
+            <div key={index} className="flex items-center justify-between bg-gray-800 rounded-lg p-3">
+              <div className="flex items-center space-x-3">
+                <Image
+                  src="/file.svg"
+                  alt="File icon"
+                  width={24}
+                  height={24}
+                  className="text-gray-400"
+                />
+                <div>
+                  <p className="text-sm text-white truncate">{file.originalName}</p>
+                  <p className="text-xs text-gray-400">
+                    {(file.size / 1024).toFixed(1)} KB
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => removeFile(file.url)}
+                className="p-1 hover:bg-gray-700 rounded-full transition-colors"
+              >
+                <X className="w-4 h-4 text-gray-400" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 
   const renderStep = () => {
     switch (currentStep) {
@@ -245,40 +426,7 @@ export default function SubmissionPage() {
               </select>
             </div>
 
-            <div>
-              <label className="block text-lg font-medium text-white mb-2">
-                Upload Files
-              </label>
-              <input
-                type="file"
-                onChange={handleFileUpload}
-                multiple
-                disabled={isUploading}
-                className="w-full p-3 bg-gray-800 text-white border border-gray-600 rounded-lg"
-              />
-              <p className="mt-1 text-sm text-gray-400">
-                {uploadedFiles.length}/5 files uploaded
-              </p>
-
-              {uploadedFiles.length > 0 && (
-                <div className="mt-4 space-y-2">
-                  {uploadedFiles.map((file) => (
-                    <div
-                      key={file.url}
-                      className="flex items-center justify-between p-2 bg-gray-700 rounded"
-                    >
-                      <span className="text-sm text-white">{file.filename}</span>
-                      <button
-                        onClick={() => removeFile(file.url)}
-                        className="text-red-400 hover:text-red-300"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            {renderFileUploadSection()}
           </div>
         );
 
@@ -287,24 +435,41 @@ export default function SubmissionPage() {
           <div className="space-y-6">
             <div>
               <label className="block text-lg font-medium text-white mb-2">
-                Connected Wallet
+                Wallet Address
               </label>
               <input
                 type="text"
                 value={walletAddress}
-                disabled
+                onChange={(e) => setWalletAddress(e.target.value)}
                 className="w-full p-3 bg-gray-800 text-white border border-gray-600 rounded-lg"
+                placeholder="Enter your wallet address"
+                readOnly
               />
+              <p className="mt-1 text-sm text-gray-400">
+                This is the address that will receive the bounty reward
+              </p>
             </div>
 
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium text-white">Review Your Submission</h3>
-              <div className="p-4 bg-gray-800 rounded-lg space-y-3">
-                <p><span className="text-gray-400">Program:</span> {selectedBounty}</p>
-                <p><span className="text-gray-400">Title:</span> {title}</p>
-                <p><span className="text-gray-400">Severity:</span> {severityLevel}</p>
-                <p><span className="text-gray-400">Files:</span> {uploadedFiles.length} attached</p>
-              </div>
+            <div className="bg-gray-800 rounded-lg p-4">
+              <h3 className="text-lg font-medium text-white mb-4">Submission Summary</h3>
+              <dl className="space-y-3">
+                <div>
+                  <dt className="text-sm text-gray-400">Program</dt>
+                  <dd className="text-white">{selectedBounty}</dd>
+                </div>
+                <div>
+                  <dt className="text-sm text-gray-400">Title</dt>
+                  <dd className="text-white">{title}</dd>
+                </div>
+                <div>
+                  <dt className="text-sm text-gray-400">Severity</dt>
+                  <dd className="text-white capitalize">{severityLevel}</dd>
+                </div>
+                <div>
+                  <dt className="text-sm text-gray-400">Files</dt>
+                  <dd className="text-white">{uploadedFiles.length} attached</dd>
+                </div>
+              </dl>
             </div>
           </div>
         );
@@ -318,67 +483,80 @@ export default function SubmissionPage() {
     <div className="min-h-screen bg-gray-900">
       <Navbar />
       <div className="container mx-auto px-4 py-8">
-        {/* Progress bar */}
-        <div className="max-w-2xl mx-auto mb-8">
-          <div className="flex justify-between mb-2">
-            {steps.map((step, index) => (
-              <span
-                key={step}
-                className={`text-sm ${
-                  index <= currentStep ? "text-blue-500" : "text-gray-500"
-                }`}
-              >
-                {step}
-              </span>
-            ))}
+        <div className="max-w-3xl mx-auto">
+          {/* Progress Steps */}
+          <div className="mb-8">
+            <div className="flex items-center justify-between">
+              {steps.map((step, index) => (
+                <div key={index} className="flex items-center">
+                  <div
+                    className={`flex items-center justify-center w-8 h-8 rounded-full border-2 ${
+                      index <= currentStep
+                        ? 'border-blue-500 text-blue-500'
+                        : 'border-gray-600 text-gray-600'
+                    }`}
+                  >
+                    {index + 1}
+                  </div>
+                  <span
+                    className={`ml-2 text-sm ${
+                      index <= currentStep ? 'text-white' : 'text-gray-600'
+                    }`}
+                  >
+                    {step}
+                  </span>
+                  {index < steps.length - 1 && (
+                    <div
+                      className={`w-16 h-px mx-4 ${
+                        index < currentStep ? 'bg-blue-500' : 'bg-gray-600'
+                      }`}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="h-2 bg-gray-700 rounded-full">
-            <div
-              className="h-full bg-blue-500 rounded-full transition-all duration-300"
-              style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
-            />
-          </div>
-        </div>
 
-        {/* Form */}
-        <div className="max-w-2xl mx-auto">
-          <div className="bg-gray-800 rounded-lg p-6">
-            {renderStep()}
+          {/* Form */}
+          <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
+            <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
+              {renderStep()}
 
-            {/* Navigation buttons */}
-            <div className="mt-8 flex justify-between">
-              <button
-                onClick={() => setCurrentStep((prev) => Math.max(0, prev - 1))}
-                disabled={currentStep === 0 || isSubmitting}
-                className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 disabled:opacity-50"
-              >
-                Previous
-              </button>
+              {error && (
+                <div className="mt-4 p-3 bg-red-900/50 border border-red-500/50 rounded-lg text-red-500">
+                  {error}
+                </div>
+              )}
 
-              <button
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Submitting...
-                  </>
-                ) : currentStep === 2 ? (
-                  "Submit Report"
-                ) : (
-                  "Next"
+              <div className="mt-8 flex justify-between">
+                {currentStep > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setCurrentStep(prev => prev - 1)}
+                    className="px-6 py-2 text-white bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors"
+                  >
+                    Back
+                  </button>
                 )}
-              </button>
-            </div>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="ml-auto px-6 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? (
+                    <div className="flex items-center space-x-2">
+                      <Loader2 className="animate-spin" />
+                      <span>Submitting...</span>
+                    </div>
+                  ) : currentStep === steps.length - 1 ? (
+                    'Submit Report'
+                  ) : (
+                    'Next'
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
-
-          {error && (
-            <div className="mt-4 p-4 bg-red-500 bg-opacity-10 border border-red-500 rounded-lg text-red-500">
-              {error}
-            </div>
-          )}
         </div>
       </div>
     </div>

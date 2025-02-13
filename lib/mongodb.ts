@@ -1,4 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import mongoose from 'mongoose';
+import { MongoClient } from 'mongodb';
 
 if (!process.env.MONGODB_URI) {
   throw new Error('Please add your MONGODB_URI to .env.local');
@@ -11,42 +13,78 @@ interface MongooseCache {
   promise: Promise<typeof mongoose> | null;
 }
 
+interface MongoClientCache {
+  conn: MongoClient | null;
+  promise: Promise<MongoClient> | null;
+}
+
+// Declare types for global variables
 declare global {
-  let mongoose: MongooseCache | undefined;
+  // eslint-disable-next-line no-var
+  var mongoose: MongooseCache | undefined;
+  // eslint-disable-next-line no-var
+  var mongoClient: MongoClientCache | undefined;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const cached: MongooseCache = (global as any).mongoose || { conn: null, promise: null };
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// Mongoose connection cache
+const mongooseCache: MongooseCache = (global as any).mongoose || { conn: null, promise: null };
 if (!(global as any).mongoose) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (global as any).mongoose = cached;
+  (global as any).mongoose = mongooseCache;
 }
 
-async function dbConnect() {
-  if (cached.conn) {
-    return cached.conn;
+// MongoDB native client cache
+const mongoClientCache: MongoClientCache = (global as any).mongoClient || { conn: null, promise: null };
+if (!(global as any).mongoClient) {
+  (global as any).mongoClient = mongoClientCache;
+}
+
+// Connect using Mongoose
+export async function connectMongoose() {
+  if (mongooseCache.conn) {
+    return mongooseCache.conn;
   }
 
-  if (!cached.promise) {
+  if (!mongooseCache.promise) {
     const opts = {
       bufferCommands: false,
     };
 
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
+    mongooseCache.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
       return mongoose;
     });
   }
 
   try {
-    cached.conn = await cached.promise;
+    mongooseCache.conn = await mongooseCache.promise;
   } catch (e) {
-    cached.promise = null;
+    mongooseCache.promise = null;
     throw e;
   }
 
-  return cached.conn;
+  return mongooseCache.conn;
 }
 
-export default dbConnect; 
+// Connect using MongoDB native client
+export async function connectMongo() {
+  if (mongoClientCache.conn) {
+    return mongoClientCache.conn;
+  }
+
+  if (!mongoClientCache.promise) {
+    mongoClientCache.promise = MongoClient.connect(MONGODB_URI).then((client) => {
+      return client;
+    });
+  }
+
+  try {
+    mongoClientCache.conn = await mongoClientCache.promise;
+  } catch (e) {
+    mongoClientCache.promise = null;
+    throw e;
+  }
+
+  return mongoClientCache.conn;
+}
+
+// Default export for backward compatibility
+export default connectMongoose; 
