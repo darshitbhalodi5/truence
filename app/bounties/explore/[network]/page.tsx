@@ -10,6 +10,7 @@ import { usePathname } from "next/navigation";
 import React from "react";
 import { componentsMap } from "@/utils/mapBounties";
 import { Navbar } from "@/components/navbar/Navbar";
+import useScroll from "@/hooks/useScroll";
 export interface SeverityDescription {
   severity: "Critical" | "High" | "Medium" | "Low";
   description: string;
@@ -34,6 +35,7 @@ export default function BountyDetails() {
   const pathname = usePathname();
   const router = useRouter();
   const params = useParams();
+  const isScrolled = useScroll();
   const [displayBounty, setDisplayBounty] = useState<DisplayBounty | null>(
     null
   );
@@ -45,16 +47,6 @@ export default function BountyDetails() {
 
   const lastSegment = pathname.split("/").filter(Boolean).pop();
   const components = componentsMap[lastSegment as string] || [];
-  const [isScrolled, setIsScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 100);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
