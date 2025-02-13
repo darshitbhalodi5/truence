@@ -58,11 +58,11 @@ export default function ExploreBounties() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 p-4 md:p-6">
+    <div className="min-h-screen bg-gray-900">
       <WalletConnect />
-      <div className="max-w-6xl mx-auto">
-        <div className="h-32 mb-6"> {/* Space for future content */}
-          <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">Explore Bounties</h1>
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+        {/* <div className="h-32 mb-6"> Space for future content */}
           <p className="text-gray-400 text-sm md:text-base">
             Discover and participate in bounties from various blockchain networks
           </p>
