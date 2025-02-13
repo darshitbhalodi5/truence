@@ -10,7 +10,7 @@ import { ArrowLeftIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import useScroll from "@/hooks/useScroll";
 
-export default function ThankYou() {
+export default function Dashboard() {
   const { user } = usePrivy();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("Your Submission");

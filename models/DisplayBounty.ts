@@ -25,6 +25,12 @@ const displayBountySchema = new mongoose.Schema({
     type: Date,
     default: null,
   },
+  reviewerAddresses : [{
+    type: String,
+  }],
+  managerAddress : {
+    type: String,
+  },
   endDate: {
     type: Date,
     default: null,
