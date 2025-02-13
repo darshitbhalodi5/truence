@@ -176,7 +176,7 @@ export default function BountyDetails() {
                   className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 
                     text-white px-6 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 
                     shadow-lg shadow-yellow-500/25 hover:shadow-yellow-500/40"
-                  onClick={() => {}}
+                  onClick={() => router.push("/submission")}
                 >
                   Submit a Bug
                 </button>
