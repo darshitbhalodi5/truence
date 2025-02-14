@@ -2,19 +2,59 @@
 
 import { Navbar } from "@/components/navbar/Navbar";
 import { usePrivy } from "@privy-io/react-auth";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Submission } from "@/components/dashboard/Submission";
 import { Review } from "@/components/dashboard/Review";
 import { Management } from "@/components/dashboard/Management";
 import { ArrowLeftIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import useScroll from "@/hooks/useScroll";
+import { toast } from "react-hot-toast";
 
 export default function Dashboard() {
-  const { user } = usePrivy();
+  const { user, ready } = usePrivy();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("Your Submission");
   const isScrolled = useScroll();
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (ready && !user) {
+      toast.error("Please connect your wallet first");
+      router.push("/");
+      return;
+    }
+    
+    // Simulate loading time for dashboard preparation
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [ready, user, router]);
+
+  if (isLoading || !ready) {
+    return (
+      <div className="min-h-screen bg-gray-900">
+        <Navbar />
+        <div className="flex flex-col items-center justify-center min-h-[60vh]">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+          <p className="text-gray-400">Preparing your dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user?.wallet?.address) {
+    return (
+      <div className="min-h-screen bg-gray-900">
+        <Navbar />
+        <div className="flex flex-col items-center justify-center min-h-[60vh]">
+          <p className="text-red-400 text-lg">Please connect your wallet to view the dashboard</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-900">
@@ -45,7 +85,6 @@ export default function Dashboard() {
                 >
                   {tab}
                 </span>
-                {/* Bottom line indicator */}
                 <span
                   className={`absolute bottom-0 left-0 w-full h-0.5 transform transition-all duration-200
                         ${
@@ -59,11 +98,10 @@ export default function Dashboard() {
           )}
         </div>
       </div>
-      {/* Content Sections */}
       <div className="bg-gray-800 rounded-lg p-6">
-        {activeTab === "Your Submission" && <Submission walletAddress = {user?.wallet?.address}/>}
-        {activeTab === "Review Submission" && <Review walletAddress = {user?.wallet?.address}/>}
-        {activeTab === "Manage Bounties" && <Management walletAddress = {user?.wallet?.address}/>}
+        {activeTab === "Your Submission" && <Submission walletAddress={user.wallet.address} />}
+        {activeTab === "Review Submission" && <Review walletAddress={user.wallet.address} />}
+        {activeTab === "Manage Bounties" && <Management walletAddress={user.wallet.address} />}
       </div>
     </div>
   );
