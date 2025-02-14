@@ -13,22 +13,27 @@ export async function GET(
     const rawAddress = (await params).address;
     const address = rawAddress.toLowerCase();
 
-    // Find user
+    // Find user and their roles
     const user = await User.findOne({ walletAddress: address });
     
-    // Find all submissions by this user
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    // Get user submissions
     const userSubmissions = await Submission.find({ 
       walletAddress: address 
     })
     .sort({ createdAt: -1 })
     .lean();
 
-    // Find bounties where user is a reviewer
+    // Get bounties where user is a reviewer (using reviewerTeam from user data)
+    const reviewerBountyIds = user.reviewerTeam.map((team:any) => team.bountyId);
     const reviewerBounties = await DisplayBounty.find({
-      reviewerAddresses: address
+      _id: { $in: reviewerBountyIds }
     }).lean();
 
-    // If user is a reviewer, get all submissions for those bounties
+    // Get submissions for bounties where user is a reviewer
     const reviewerSubmissions = reviewerBounties.length > 0
       ? await Submission.find({
           programName: {
@@ -39,9 +44,10 @@ export async function GET(
         .lean()
       : [];
 
-    // Find bounties where user is a manager
+    // Get bounties where user is a manager (using managerTeam from user data)
+    const managerBountyIds = user.managerTeam.map((team:any) => team.bountyId);
     const managerBounties = await DisplayBounty.find({
-      managerAddress: address
+      _id: { $in: managerBountyIds }
     }).lean();
 
     return NextResponse.json({
@@ -50,11 +56,13 @@ export async function GET(
         submissions: userSubmissions
       },
       reviewer: {
-        isReviewer: reviewerBounties.length > 0,
-        submissions: reviewerSubmissions
+        isReviewer: user.reviewerTeam.length > 0,
+        submissions: reviewerSubmissions,
+        bounties: reviewerBounties
       },
       manager: {
-        isManager: managerBounties.length > 0
+        isManager: user.managerTeam.length > 0,
+        bounties: managerBounties
       }
     });
   } catch (error) {
@@ -67,4 +75,4 @@ export async function GET(
       { status: 500 }
     );
   }
-} 
+}
