@@ -7,6 +7,7 @@ import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { Loader2, X, Upload, AlertCircle, CheckCircle2 } from "lucide-react";
 import toast from 'react-hot-toast';
+import { usePrivy } from "@privy-io/react-auth";
 
 type SeverityLevel = 'critical' | 'high' | 'medium' | 'low';
 
@@ -44,6 +45,7 @@ const ALLOWED_FILE_TYPES = [
 ];
 
 export default function SubmissionPage() {
+  const { user } = usePrivy();
   const [currentStep, setCurrentStep] = useState(0);
   const [bounties, setBounties] = useState<DisplayBounty[]>([]);
   const [selectedBounty, setSelectedBounty] = useState<string>("");
@@ -57,6 +59,7 @@ export default function SubmissionPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    const address : string | undefined = user?.wallet?.address;
     const fetchBounties = async () => {
       try {
         const response = await fetch("/api/submitter-form-selection");
@@ -70,8 +73,10 @@ export default function SubmissionPage() {
     };
 
     fetchBounties();
-    setWalletAddress("0x123...789"); // Replace with actual wallet connection
-  }, []);
+    if (address) {
+      setWalletAddress(address);
+    }
+  }, [user?.wallet?.address]);
 
   const validateFile = useCallback((file: File): string | null => {
     if (file.size > MAX_FILE_SIZE) {
