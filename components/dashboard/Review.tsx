@@ -56,6 +56,15 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
           throw new Error(data.error || 'Failed to fetch review data');
         }
 
+        // Debug log for bounty data
+        console.log('Fetched review data:', {
+          bounties: data.reviewer.bounties.map((b: any) => ({
+            networkName: b.networkName,
+            finalSeverity: b.details?.finalSeverity,
+            initialSeverities: b.details?.initialSeverities,
+          }))
+        });
+
         // Create a map of program names to logo URLs
         const logoMap = data.reviewer.bounties.reduce((map: Record<string, string>, bounty: any) => {
           map[bounty.networkName] = bounty.logoUrl;
@@ -97,7 +106,16 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
 
   const handleUpdateStatus = async (submissionId: string, newStatus: string, reviewerSeverity?: string) => {
     try {
-      console.log('Updating status for submission:', submissionId, 'to:', newStatus);
+      // Debug log for status update
+      console.log('Updating submission status:', {
+        submissionId,
+        newStatus,
+        reviewerSeverity,
+        submission: reviewData?.submissions.find(s => s._id === submissionId),
+        bounty: reviewData?.bounties.find(b => 
+          b.networkName === reviewData?.submissions.find(s => s._id === submissionId)?.programName
+        )
+      });
       
       const response = await fetch(`/api/submissions/${submissionId}/status`, {
         method: 'PUT',
@@ -119,6 +137,12 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
           sub._id === submissionId ? { ...sub, status: newStatus, reviewerSeverity } : sub
         );
         setReviewData({ ...reviewData, submissions: updatedSubmissions });
+
+        // Debug log for updated submission
+        console.log('Updated submission:', {
+          before: reviewData.submissions.find(s => s._id === submissionId),
+          after: updatedSubmissions.find(s => s._id === submissionId)
+        });
       }
 
       toast.success(`Status updated to ${newStatus}`);
@@ -398,13 +422,29 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
                 </div>
                 <div>
                   <h4 className="text-sm font-medium text-gray-400 mb-1">Severity</h4>
-                  <span className={`px-2 py-1 rounded text-xs font-medium
-                    ${selectedSubmission.severityLevel === 'critical' ? 'bg-red-500/20 text-red-500' :
-                      selectedSubmission.severityLevel === 'high' ? 'bg-orange-500/20 text-orange-500' :
-                      selectedSubmission.severityLevel === 'medium' ? 'bg-yellow-500/20 text-yellow-500' :
-                      'bg-blue-500/20 text-blue-500'}`}>
-                    {selectedSubmission.severityLevel.toUpperCase()}
-                  </span>
+                  <div className="flex items-center space-x-2">
+                    <span className={`px-2 py-1 rounded text-xs font-medium
+                      ${selectedSubmission.severityLevel === 'critical' ? 'bg-red-500/20 text-red-500' :
+                        selectedSubmission.severityLevel === 'high' ? 'bg-orange-500/20 text-orange-500' :
+                        selectedSubmission.severityLevel === 'medium' ? 'bg-yellow-500/20 text-yellow-500' :
+                        'bg-blue-500/20 text-blue-500'}`}>
+                      {selectedSubmission.severityLevel.toUpperCase()}
+                    </span>
+                    {selectedSubmission.reviewerSeverity && selectedSubmission.reviewerSeverity !== selectedSubmission.severityLevel && (
+                      <div className="flex items-center space-x-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                        </svg>
+                        <span className={`px-2 py-1 rounded text-xs font-medium
+                          ${selectedSubmission.reviewerSeverity.toLowerCase() === 'critical' ? 'bg-red-500/20 text-red-500' :
+                            selectedSubmission.reviewerSeverity.toLowerCase() === 'high' ? 'bg-orange-500/20 text-orange-500' :
+                            selectedSubmission.reviewerSeverity.toLowerCase() === 'medium' ? 'bg-yellow-500/20 text-yellow-500' :
+                            'bg-blue-500/20 text-blue-500'}`}>
+                          {selectedSubmission.reviewerSeverity.toUpperCase()}
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -442,15 +482,41 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
                   >
                     Reject
                   </button>
-                  <button
-                    onClick={() => {
-                      handleUpdateStatus(selectedSubmission._id, 'accepted');
-                      setSelectedSubmission(null);
-                    }}
-                    className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
-                  >
-                    Accept
-                  </button>
+                  {(() => {
+                    const bounty = reviewData?.bounties.find(b => b.networkName === selectedSubmission.programName);
+                    if (bounty?.details?.finalSeverity) {
+                      return (
+                        <div className="flex items-center space-x-2">
+                          <select
+                            className="px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            onChange={(e) => {
+                              if (e.target.value) {
+                                handleUpdateStatus(selectedSubmission._id, 'accepted', e.target.value);
+                                setSelectedSubmission(null);
+                              }
+                            }}
+                            defaultValue=""
+                          >
+                            <option value="" disabled>Select Severity</option>
+                            {bounty.details.initialSeverities?.map((severity) => (
+                              <option key={severity} value={severity}>{severity}</option>
+                            ))}
+                          </select>
+                        </div>
+                      );
+                    }
+                    return (
+                      <button
+                        onClick={() => {
+                          handleUpdateStatus(selectedSubmission._id, 'accepted');
+                          setSelectedSubmission(null);
+                        }}
+                        className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                      >
+                        Accept
+                      </button>
+                    );
+                  })()}
                 </div>
               )}
               {selectedSubmission.status === 'pending' && (

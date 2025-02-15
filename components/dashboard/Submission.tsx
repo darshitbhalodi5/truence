@@ -10,6 +10,7 @@ interface SubmissionData {
   title: string;
   description: string;
   severityLevel: string;
+  reviewerSeverity?: string;
   status: string;
   createdAt: string;
   files?: string[];
@@ -151,6 +152,32 @@ export function Submission({ walletAddress }: { walletAddress?: string }) {
     }
   };
 
+  const renderSeverityInfo = (submission: SubmissionData) => {
+    if (submission.reviewerSeverity && submission.reviewerSeverity !== submission.severityLevel) {
+      return (
+        <div className="relative group">
+          <button className="ml-2 text-blue-500 hover:text-blue-400">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+            </svg>
+          </button>
+          <div className="absolute z-10 w-64 px-4 py-3 text-sm bg-gray-800 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 -translate-x-1/2 left-1/2 mt-2">
+            <p className="text-gray-300">Severity changed by reviewer</p>
+            <p className="mt-1">
+              <span className="text-gray-400">Your assessment: </span>
+              <span className="text-yellow-500">{submission.severityLevel.toUpperCase()}</span>
+            </p>
+            <p className="mt-1">
+              <span className="text-gray-400">Reviewer's assessment: </span>
+              <span className="text-green-500">{submission.reviewerSeverity.toUpperCase()}</span>
+            </p>
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[200px]">
@@ -250,13 +277,16 @@ export function Submission({ walletAddress }: { walletAddress?: string }) {
                   </span>
                 </td>
                 <td className="px-4 py-3">
-                  <span className={`px-2 py-1 rounded text-xs font-medium
-                    ${submission.severityLevel === 'critical' ? 'bg-red-500/20 text-red-500' :
-                      submission.severityLevel === 'high' ? 'bg-orange-500/20 text-orange-500' :
-                      submission.severityLevel === 'medium' ? 'bg-yellow-500/20 text-yellow-500' :
-                      'bg-blue-500/20 text-blue-500'}`}>
-                    {submission.severityLevel.toUpperCase()}
-                  </span>
+                  <div className="flex items-center space-x-2">
+                    <span className={`px-2 py-1 rounded text-xs font-medium
+                      ${submission.severityLevel === 'critical' ? 'bg-red-500/20 text-red-500' :
+                        submission.severityLevel === 'high' ? 'bg-orange-500/20 text-orange-500' :
+                        submission.severityLevel === 'medium' ? 'bg-yellow-500/20 text-yellow-500' :
+                        'bg-blue-500/20 text-blue-500'}`}>
+                      {submission.severityLevel.toUpperCase()}
+                    </span>
+                    {renderSeverityInfo(submission)}
+                  </div>
                 </td>
                 <td className="px-4 py-3">
                   {submission.files?.length || 0} file(s)
@@ -307,6 +337,45 @@ export function Submission({ walletAddress }: { walletAddress?: string }) {
               <div>
                 <h4 className="text-sm font-medium text-gray-400 mb-1">Description</h4>
                 <p className="text-white">{selectedSubmission.description}</p>
+              </div>
+
+              <div className="flex space-x-4">
+                <div>
+                  <h4 className="text-sm font-medium text-gray-400 mb-1">Status</h4>
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium
+                    ${selectedSubmission.status === 'pending' ? 'bg-yellow-500/20 text-yellow-500' :
+                      selectedSubmission.status === 'reviewing' ? 'bg-blue-500/20 text-blue-500' :
+                      selectedSubmission.status === 'accepted' ? 'bg-green-500/20 text-green-500' :
+                      'bg-red-500/20 text-red-500'}`}>
+                    {selectedSubmission.status.charAt(0).toUpperCase() + selectedSubmission.status.slice(1)}
+                  </span>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-gray-400 mb-1">Severity</h4>
+                  <div className="flex items-center space-x-2">
+                    <span className={`px-2 py-1 rounded text-xs font-medium
+                      ${selectedSubmission.severityLevel === 'critical' ? 'bg-red-500/20 text-red-500' :
+                        selectedSubmission.severityLevel === 'high' ? 'bg-orange-500/20 text-orange-500' :
+                        selectedSubmission.severityLevel === 'medium' ? 'bg-yellow-500/20 text-yellow-500' :
+                        'bg-blue-500/20 text-blue-500'}`}>
+                      {selectedSubmission.severityLevel.toUpperCase()}
+                    </span>
+                    {selectedSubmission.reviewerSeverity && selectedSubmission.reviewerSeverity !== selectedSubmission.severityLevel && (
+                      <div className="flex items-center space-x-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                        </svg>
+                        <span className={`px-2 py-1 rounded text-xs font-medium
+                          ${selectedSubmission.reviewerSeverity.toLowerCase() === 'critical' ? 'bg-red-500/20 text-red-500' :
+                            selectedSubmission.reviewerSeverity.toLowerCase() === 'high' ? 'bg-orange-500/20 text-orange-500' :
+                            selectedSubmission.reviewerSeverity.toLowerCase() === 'medium' ? 'bg-yellow-500/20 text-yellow-500' :
+                            'bg-blue-500/20 text-blue-500'}`}>
+                          {selectedSubmission.reviewerSeverity.toUpperCase()}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
 
               {selectedSubmission.files && selectedSubmission.files.length > 0 && (

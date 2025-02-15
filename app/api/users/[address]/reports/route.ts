@@ -3,6 +3,37 @@ import { connectMongoose } from '@/lib/mongodb';
 import User from '@/models/User';
 import Submission from '@/models/Submission';
 import DisplayBounty from '@/models/DisplayBounty';
+import Bounty from '@/models/Bounty';
+import { Types } from 'mongoose';
+
+interface DisplayBountyDoc {
+  _id: Types.ObjectId;
+  networkName: string;
+  logoUrl: string;
+  description: string;
+  maxRewards: number;
+  totalPaid: number;
+  startDate: Date | null;
+  endDate: Date | null;
+  lastUpdated: Date;
+  status: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface BountyDoc {
+  _id: Types.ObjectId;
+  networkName: string;
+  finalSeverity: boolean;
+  initialSeverities: string[];
+}
+
+interface CombinedBounty extends DisplayBountyDoc {
+  details?: {
+    finalSeverity: boolean;
+    initialSeverities: string[];
+  };
+}
 
 export async function GET(
   request: NextRequest,
@@ -29,9 +60,30 @@ export async function GET(
 
     // Get bounties where user is a reviewer (using reviewerTeam from user data)
     const reviewerBountyIds = user.reviewerTeam.map((team:any) => team.bountyId);
-    const reviewerBounties = await DisplayBounty.find({
-      _id: { $in: reviewerBountyIds }
-    }).lean();
+    const [reviewerDisplayBounties, reviewerBountyDetails] = await Promise.all([
+      DisplayBounty.find({
+        _id: { $in: reviewerBountyIds }
+      }).lean().exec().then(docs => docs as unknown as DisplayBountyDoc[]),
+      Bounty.find({
+        networkName: {
+          $in: user.reviewerTeam.map((team:any) => team.networkName)
+        }
+      }).lean().exec().then(docs => docs as unknown as BountyDoc[])
+    ]);
+
+    // Combine display bounty data with bounty details
+    const reviewerBounties: CombinedBounty[] = reviewerDisplayBounties.map(displayBounty => {
+      const bountyDetails = reviewerBountyDetails.find(
+        b => b.networkName === displayBounty.networkName
+      );
+      return {
+        ...displayBounty,
+        details: bountyDetails ? {
+          finalSeverity: bountyDetails.finalSeverity,
+          initialSeverities: bountyDetails.initialSeverities
+        } : undefined
+      };
+    });
 
     // Get submissions for bounties where user is a reviewer
     const reviewerSubmissions = reviewerBounties.length > 0
@@ -46,9 +98,30 @@ export async function GET(
 
     // Get bounties where user is a manager (using managerTeam from user data)
     const managerBountyIds = user.managerTeam.map((team:any) => team.bountyId);
-    const managerBounties = await DisplayBounty.find({
-      _id: { $in: managerBountyIds }
-    }).lean();
+    const [managerDisplayBounties, managerBountyDetails] = await Promise.all([
+      DisplayBounty.find({
+        _id: { $in: managerBountyIds }
+      }).lean().exec().then(docs => docs as unknown as DisplayBountyDoc[]),
+      Bounty.find({
+        networkName: {
+          $in: user.managerTeam.map((team:any) => team.networkName)
+        }
+      }).lean().exec().then(docs => docs as unknown as BountyDoc[])
+    ]);
+
+    // Combine display bounty data with bounty details for managers
+    const managerBounties: CombinedBounty[] = managerDisplayBounties.map(displayBounty => {
+      const bountyDetails = managerBountyDetails.find(
+        b => b.networkName === displayBounty.networkName
+      );
+      return {
+        ...displayBounty,
+        details: bountyDetails ? {
+          finalSeverity: bountyDetails.finalSeverity,
+          initialSeverities: bountyDetails.initialSeverities
+        } : undefined
+      };
+    });
 
     return NextResponse.json({
       submitter: {
