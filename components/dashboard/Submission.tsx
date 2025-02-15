@@ -13,6 +13,7 @@ interface SubmissionData {
   status: string;
   createdAt: string;
   files?: string[];
+  bountyLogo?: string;
 }
 
 interface SubmitterData {
@@ -53,8 +54,25 @@ export function Submission({ walletAddress }: { walletAddress?: string }) {
           throw new Error(data.error || 'Failed to fetch submissions');
         }
 
-        console.log('Submission data:', data.submitter);
-        setSubmitterData(data.submitter);
+        // Get bounty details from the reviewer data (which contains all bounties)
+        const bountyDetails = data.reviewer?.bounties || [];
+        
+        // Create a map of program names to logo URLs
+        const bountyLogoMap = bountyDetails.reduce((map: Record<string, string>, bounty: any) => {
+          map[bounty.networkName] = bounty.logoUrl;
+          return map;
+        }, {});
+
+        // Add logo URLs to submissions
+        const submissionsWithLogos = data.submitter.submissions.map((submission: SubmissionData) => ({
+          ...submission,
+          bountyLogo: bountyLogoMap[submission.programName]
+        }));
+
+        setSubmitterData({
+          ...data.submitter,
+          submissions: submissionsWithLogos
+        });
       } catch (error) {
         console.error('Error fetching submissions:', error);
         setError(error instanceof Error ? error.message : 'Failed to fetch submissions');
@@ -177,185 +195,149 @@ export function Submission({ walletAddress }: { walletAddress?: string }) {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className={`space-y-4 ${selectedSubmission ? 'lg:col-span-1' : 'lg:col-span-2'}`}>
-          {submitterData.submissions.map((submission) => (
-            <div
-              key={submission._id}
-              onClick={() => setSelectedSubmission(submission)}
-              className={`bg-gray-700 rounded-lg p-6 cursor-pointer transition-all duration-200 hover:bg-gray-600 
-                ${selectedSubmission?._id === submission._id ? 'ring-2 ring-blue-500' : ''}`}
-            >
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h3 className="text-lg font-semibold text-white mb-1">{submission.title}</h3>
-                  <p className="text-sm text-gray-400">{submission.programName}</p>
-                </div>
-                <div className="flex flex-col items-end">
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm text-left text-gray-300">
+          <thead className="text-xs uppercase bg-gray-700 text-gray-300">
+            <tr>
+              <th className="px-4 py-3">Bounty</th>
+              <th className="px-4 py-3">Title</th>
+              <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3">Severity</th>
+              <th className="px-4 py-3">Files</th>
+              <th className="px-4 py-3">Submission Date</th>
+              <th className="px-4 py-3">View Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            {submitterData.submissions.map((submission) => (
+              <tr key={submission._id} className="bg-gray-800 border-b border-gray-700 hover:bg-gray-700">
+                <td className="px-4 py-3">
+                  <div className="flex items-center space-x-3">
+                    {submission.bountyLogo ? (
+                      <div className="w-8 h-8 relative flex-shrink-0">
+                        <img 
+                          src={submission.bountyLogo} 
+                          alt={`${submission.programName} Logo`}
+                          className="w-8 h-8 rounded-full object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = '/default-bounty-logo.png'; // Fallback image
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center flex-shrink-0">
+                        <span className="text-xs text-gray-300">
+                          {submission.programName.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                    )}
+                    <span className="text-sm text-gray-300 truncate">
+                      {submission.programName}
+                    </span>
+                  </div>
+                </td>
+                <td className="px-4 py-3 font-medium text-white">
+                  {submission.title}
+                </td>
+                <td className="px-4 py-3">
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium
                     ${submission.status === 'pending' ? 'bg-yellow-500/20 text-yellow-500' :
                       submission.status === 'reviewing' ? 'bg-blue-500/20 text-blue-500' :
                       submission.status === 'accepted' ? 'bg-green-500/20 text-green-500' :
                       'bg-red-500/20 text-red-500'}`}>
                     {submission.status.charAt(0).toUpperCase() + submission.status.slice(1)}
                   </span>
-                  <span className="text-xs text-gray-400 mt-1">
-                    {new Date(submission.createdAt).toLocaleDateString()}
-                  </span>
-                </div>
-              </div>
-              <div className="flex items-center space-x-4">
-                <span className={`px-2 py-1 rounded text-xs font-medium
-                  ${submission.severityLevel === 'critical' ? 'bg-red-500/20 text-red-500' :
-                    submission.severityLevel === 'high' ? 'bg-orange-500/20 text-orange-500' :
-                    submission.severityLevel === 'medium' ? 'bg-yellow-500/20 text-yellow-500' :
-                    'bg-blue-500/20 text-blue-500'}`}>
-                  {submission.severityLevel.toUpperCase()}
-                </span>
-                {submission.files && submission.files.length > 0 && (
-                  <span className="text-xs text-gray-400">
-                    {submission.files.length} file{submission.files.length !== 1 ? 's' : ''} attached
-                  </span>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {selectedSubmission && (
-          <div className="lg:col-span-1">
-            <div className="bg-gray-700 rounded-lg p-6 sticky top-4">
-              <div className="flex justify-between items-start mb-6">
-                <h3 className="text-xl font-semibold text-white">{selectedSubmission.title}</h3>
-                <button
-                  onClick={() => setSelectedSubmission(null)}
-                  className="text-gray-400 hover:text-white"
-                >
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
-              </div>
-
-              <div className="space-y-6">
-                <div>
-                  <h4 className="text-sm font-medium text-gray-400 mb-2">Program</h4>
-                  <p className="text-white">{selectedSubmission.programName}</p>
-                </div>
-
-                <div>
-                  <h4 className="text-sm font-medium text-gray-400 mb-2">Description</h4>
-                  <p className="text-white whitespace-pre-wrap">{selectedSubmission.description}</p>
-                </div>
-
-                <div>
-                  <h4 className="text-sm font-medium text-gray-400 mb-2">Status</h4>
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium
-                    ${selectedSubmission.status === 'pending' ? 'bg-yellow-500/20 text-yellow-500' :
-                      selectedSubmission.status === 'reviewing' ? 'bg-blue-500/20 text-blue-500' :
-                      selectedSubmission.status === 'accepted' ? 'bg-green-500/20 text-green-500' :
-                      'bg-red-500/20 text-red-500'}`}>
-                    {selectedSubmission.status.charAt(0).toUpperCase() + selectedSubmission.status.slice(1)}
-                  </span>
-                </div>
-
-                <div>
-                  <h4 className="text-sm font-medium text-gray-400 mb-2">Severity Level</h4>
+                </td>
+                <td className="px-4 py-3">
                   <span className={`px-2 py-1 rounded text-xs font-medium
-                    ${selectedSubmission.severityLevel === 'critical' ? 'bg-red-500/20 text-red-500' :
-                      selectedSubmission.severityLevel === 'high' ? 'bg-orange-500/20 text-orange-500' :
-                      selectedSubmission.severityLevel === 'medium' ? 'bg-yellow-500/20 text-yellow-500' :
+                    ${submission.severityLevel === 'critical' ? 'bg-red-500/20 text-red-500' :
+                      submission.severityLevel === 'high' ? 'bg-orange-500/20 text-orange-500' :
+                      submission.severityLevel === 'medium' ? 'bg-yellow-500/20 text-yellow-500' :
                       'bg-blue-500/20 text-blue-500'}`}>
-                    {selectedSubmission.severityLevel.toUpperCase()}
+                    {submission.severityLevel.toUpperCase()}
                   </span>
-                </div>
+                </td>
+                <td className="px-4 py-3">
+                  {submission.files?.length || 0} file(s)
+                </td>
+                <td className="px-4 py-3 text-gray-400">
+                  {new Date(submission.createdAt).toLocaleDateString()}
+                </td>
+                <td className="px-4 py-3">
+                  <button
+                    onClick={() => setSelectedSubmission(submission)}
+                    className="text-blue-500 hover:text-blue-400"
+                  >
+                    View Details
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
-                {selectedSubmission.files && selectedSubmission.files.length > 0 && (
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-400 mb-2">Attached Files</h4>
-                    <div className="space-y-2">
-                      {selectedSubmission.files.map((fileUrl, index) => {
-                        const metadata = fileMetadata[fileUrl];
-                        const isDownloading = downloadingFiles[fileUrl];
-                        return (
-                          <div
-                            key={index}
-                            className="flex items-center justify-between bg-gray-600 rounded-lg p-3"
-                          >
-                            <div className="flex flex-col flex-grow mr-4 min-w-0">
-                              <span className="text-sm text-white truncate">
-                                {metadata ? metadata.originalName : `File ${index + 1}`}
-                              </span>
-                              {metadata && (
-                                <span className="text-xs text-gray-400">
-                                  {(metadata.size / 1024).toFixed(1)} KB
-                                </span>
-                              )}
-                            </div>
-                            <button
-                              onClick={() => handleDownloadFile(fileUrl)}
-                              disabled={isDownloading}
-                              className={`text-blue-400 hover:text-blue-300 transition-colors flex-shrink-0 w-5 h-5 ${
-                                isDownloading ? 'cursor-not-allowed opacity-50' : ''
-                              }`}
-                            >
-                              {isDownloading ? (
-                                <svg 
-                                  className="animate-spin" 
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  stroke="currentColor"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                                  />
-                                </svg>
-                              ) : (
-                                <svg
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke="currentColor"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                                  />
-                                </svg>
-                              )}
-                            </button>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
+      {selectedSubmission && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-gray-800 rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-start mb-6">
+              <h3 className="text-xl font-semibold text-white">{selectedSubmission.title}</h3>
+              <button
+                onClick={() => setSelectedSubmission(null)}
+                className="text-gray-400 hover:text-white"
+              >
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
 
-                <div>
-                  <h4 className="text-sm font-medium text-gray-400 mb-2">Submitted On</h4>
-                  <p className="text-white">
-                    {new Date(selectedSubmission.createdAt).toLocaleString()}
-                  </p>
-                </div>
+            <div className="space-y-4">
+              <div>
+                <h4 className="text-sm font-medium text-gray-400 mb-1">Description</h4>
+                <p className="text-white">{selectedSubmission.description}</p>
               </div>
+
+              {selectedSubmission.files && selectedSubmission.files.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-medium text-gray-400 mb-2">Attachments</h4>
+                  <div className="space-y-2">
+                    {selectedSubmission.files.map((fileUrl) => {
+                      const metadata = fileMetadata[fileUrl];
+                      const isDownloading = downloadingFiles[fileUrl];
+                      return (
+                        <div key={fileUrl} className="flex items-center justify-between bg-gray-700 p-2 rounded">
+                          <span className="text-sm text-white truncate">
+                            {metadata?.originalName || fileUrl.split('/').pop()}
+                          </span>
+                          <button
+                            onClick={() => handleDownloadFile(fileUrl)}
+                            disabled={isDownloading}
+                            className="ml-2 text-blue-500 hover:text-blue-400 disabled:text-gray-500"
+                          >
+                            {isDownloading ? 'Downloading...' : 'Download'}
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
