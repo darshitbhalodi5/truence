@@ -51,6 +51,12 @@ const submissionSchema = new Schema({
     sparse: true,
     index: true // Add sparse index for reviewer lookups
   },
+  reviewerSeverity: {
+    type: String,
+    enum: ['Critical', 'High', 'Medium', 'Low'],
+    sparse: true,
+    index: true // Add sparse index for reviewer severity lookups
+  },
   reviewedAt: {
     type: Date,
     sparse: true,

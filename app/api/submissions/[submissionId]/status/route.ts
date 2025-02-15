@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectMongoose } from '@/lib/mongodb';
 import Submission from '@/models/Submission';
+import Bounty from '@/models/Bounty';
 
 export async function PUT(
   request: NextRequest,
@@ -10,7 +11,7 @@ export async function PUT(
     await connectMongoose();
 
     const submissionId = (await params).submissionId;
-    const { status } = await request.json();
+    const { status, reviewerSeverity } = await request.json();
 
     // Validate status
     const validStatuses = ['pending', 'reviewing', 'accepted', 'rejected'];
@@ -21,22 +22,46 @@ export async function PUT(
       );
     }
 
-    // Update submission status
-    const updatedSubmission = await Submission.findByIdAndUpdate(
-      submissionId,
-      { 
-        status,
-        ...(status === 'reviewing' ? { reviewedAt: new Date() } : {}),
-      },
-      { new: true }
-    );
-
-    if (!updatedSubmission) {
+    // Get the submission to check the program name
+    const submission = await Submission.findById(submissionId);
+    if (!submission) {
       return NextResponse.json(
         { error: 'Submission not found' },
         { status: 404 }
       );
     }
+
+    // If status is accepted and reviewerSeverity is provided, validate against bounty settings
+    if (status === 'accepted' && reviewerSeverity) {
+      const bounty = await Bounty.findOne({ networkName: submission.programName });
+      if (!bounty) {
+        return NextResponse.json(
+          { error: 'Bounty not found' },
+          { status: 404 }
+        );
+      }
+
+      // If bounty requires final severity, validate the reviewer severity
+      if (bounty.finalSeverity && !bounty.initialSeverities.includes(reviewerSeverity)) {
+        return NextResponse.json(
+          { error: 'Invalid reviewer severity for this bounty' },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Update submission status and reviewer severity if provided
+    const updateData: any = {
+      status,
+      ...(status === 'reviewing' ? { reviewedAt: new Date() } : {}),
+      ...(reviewerSeverity ? { reviewerSeverity } : {})
+    };
+
+    const updatedSubmission = await Submission.findByIdAndUpdate(
+      submissionId,
+      updateData,
+      { new: true }
+    );
 
     return NextResponse.json({
       message: 'Status updated successfully',

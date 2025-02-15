@@ -9,11 +9,17 @@ interface ReviewSubmission {
   title: string;
   description: string;
   severityLevel: string;
+  reviewerSeverity?: string;
   status: string;
   createdAt: string;
   walletAddress: string;
   files?: { url: string; originalName: string }[];
   bountyLogo?: string;
+}
+
+interface BountyDetails {
+  finalSeverity: boolean;
+  initialSeverities?: string[];
 }
 
 interface ReviewerData {
@@ -22,6 +28,7 @@ interface ReviewerData {
   bounties: Array<{
     networkName: string;
     logoUrl: string;
+    details?: BountyDetails;
   }>;
 }
 
@@ -88,7 +95,7 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
     });
   }, [reviewData?.submissions, searchQuery, selectedStatus]);
 
-  const handleUpdateStatus = async (submissionId: string, newStatus: string) => {
+  const handleUpdateStatus = async (submissionId: string, newStatus: string, reviewerSeverity?: string) => {
     try {
       console.log('Updating status for submission:', submissionId, 'to:', newStatus);
       
@@ -97,7 +104,7 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify({ status: newStatus, reviewerSeverity }),
       });
 
       const data = await response.json();
@@ -109,7 +116,7 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
       // Update the submission in the list
       if (reviewData) {
         const updatedSubmissions = reviewData.submissions.map(sub =>
-          sub._id === submissionId ? { ...sub, status: newStatus } : sub
+          sub._id === submissionId ? { ...sub, status: newStatus, reviewerSeverity } : sub
         );
         setReviewData({ ...reviewData, submissions: updatedSubmissions });
       }
@@ -119,6 +126,32 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
       console.error('Error updating status:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to update status');
     }
+  };
+
+  const renderSeverityInfo = (submission: ReviewSubmission) => {
+    if (submission.reviewerSeverity && submission.reviewerSeverity !== submission.severityLevel) {
+      return (
+        <div className="relative group">
+          <button className="ml-2 text-blue-500 hover:text-blue-400">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+            </svg>
+          </button>
+          <div className="absolute z-10 w-64 px-4 py-3 text-sm bg-gray-800 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 -translate-x-1/2 left-1/2 mt-2">
+            <p className="text-gray-300">Report accepted with severity change</p>
+            <p className="mt-1">
+              <span className="text-gray-400">Original: </span>
+              <span className="text-yellow-500">{submission.severityLevel.toUpperCase()}</span>
+            </p>
+            <p className="mt-1">
+              <span className="text-gray-400">New: </span>
+              <span className="text-green-500">{submission.reviewerSeverity.toUpperCase()}</span>
+            </p>
+          </div>
+        </div>
+      );
+    }
+    return null;
   };
 
   if (loading) {
@@ -196,97 +229,127 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
             </tr>
           </thead>
           <tbody>
-            {filteredSubmissions.map((submission) => (
-              <tr key={submission._id} className="bg-gray-800 border-b border-gray-700 hover:bg-gray-700">
-                <td className="px-4 py-3">
-                  <div className="flex items-center space-x-3">
-                    {submission.bountyLogo ? (
-                      <div className="w-8 h-8 relative flex-shrink-0">
-                        <img 
-                          src={submission.bountyLogo} 
-                          alt={`${submission.programName} Logo`}
-                          className="w-8 h-8 rounded-full object-cover"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.src = '/default-bounty-logo.png';
-                          }}
-                        />
-                      </div>
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center flex-shrink-0">
-                        <span className="text-xs text-gray-300">
-                          {submission.programName.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                    )}
-                    <span className="text-sm text-gray-300 truncate">
-                      {submission.programName}
+            {filteredSubmissions.map((submission) => {
+              const bounty = reviewData.bounties.find(b => b.networkName === submission.programName);
+              const showSeveritySelection = bounty?.details?.finalSeverity && submission.status === 'reviewing';
+              
+              return (
+                <tr key={submission._id} className="bg-gray-800 border-b border-gray-700 hover:bg-gray-700">
+                  <td className="px-4 py-3">
+                    <div className="flex items-center space-x-3">
+                      {submission.bountyLogo ? (
+                        <div className="w-8 h-8 relative flex-shrink-0">
+                          <img 
+                            src={submission.bountyLogo} 
+                            alt={`${submission.programName} Logo`}
+                            className="w-8 h-8 rounded-full object-cover"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.src = '/default-bounty-logo.png';
+                            }}
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center flex-shrink-0">
+                          <span className="text-xs text-gray-300">
+                            {submission.programName.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                      )}
+                      <span className="text-sm text-gray-300 truncate">
+                        {submission.programName}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 font-medium text-white">
+                    {submission.title}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium
+                      ${submission.status === 'pending' ? 'bg-yellow-500/20 text-yellow-500' :
+                        submission.status === 'reviewing' ? 'bg-blue-500/20 text-blue-500' :
+                        submission.status === 'accepted' ? 'bg-green-500/20 text-green-500' :
+                        'bg-red-500/20 text-red-500'}`}>
+                      {submission.status.charAt(0).toUpperCase() + submission.status.slice(1)}
                     </span>
-                  </div>
-                </td>
-                <td className="px-4 py-3 font-medium text-white">
-                  {submission.title}
-                </td>
-                <td className="px-4 py-3">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium
-                    ${submission.status === 'pending' ? 'bg-yellow-500/20 text-yellow-500' :
-                      submission.status === 'reviewing' ? 'bg-blue-500/20 text-blue-500' :
-                      submission.status === 'accepted' ? 'bg-green-500/20 text-green-500' :
-                      'bg-red-500/20 text-red-500'}`}>
-                    {submission.status.charAt(0).toUpperCase() + submission.status.slice(1)}
-                  </span>
-                </td>
-                <td className="px-4 py-3">
-                  <span className={`px-2 py-1 rounded text-xs font-medium
-                    ${submission.severityLevel === 'critical' ? 'bg-red-500/20 text-red-500' :
-                      submission.severityLevel === 'high' ? 'bg-orange-500/20 text-orange-500' :
-                      submission.severityLevel === 'medium' ? 'bg-yellow-500/20 text-yellow-500' :
-                      'bg-blue-500/20 text-blue-500'}`}>
-                    {submission.severityLevel.toUpperCase()}
-                  </span>
-                </td>
-                <td className="px-4 py-3">
-                  {submission.files?.length || 0} file(s)
-                </td>
-                <td className="px-4 py-3 text-gray-400">
-                  {new Date(submission.createdAt).toLocaleDateString()}
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex items-center space-x-2">
-                    <button
-                      onClick={() => setSelectedSubmission(submission)}
-                      className="text-blue-500 hover:text-blue-400"
-                    >
-                      View
-                    </button>
-                    {submission.status === 'pending' && (
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center space-x-2">
+                      <span className={`px-2 py-1 rounded text-xs font-medium
+                        ${submission.severityLevel === 'critical' ? 'bg-red-500/20 text-red-500' :
+                          submission.severityLevel === 'high' ? 'bg-orange-500/20 text-orange-500' :
+                          submission.severityLevel === 'medium' ? 'bg-yellow-500/20 text-yellow-500' :
+                          'bg-blue-500/20 text-blue-500'}`}>
+                        {submission.severityLevel.toUpperCase()}
+                      </span>
+                      {renderSeverityInfo(submission)}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    {submission.files?.length || 0} file(s)
+                  </td>
+                  <td className="px-4 py-3 text-gray-400">
+                    {new Date(submission.createdAt).toLocaleDateString()}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center space-x-2">
                       <button
-                        onClick={() => handleUpdateStatus(submission._id, 'reviewing')}
-                        className="text-yellow-500 hover:text-yellow-400 ml-2"
+                        onClick={() => setSelectedSubmission(submission)}
+                        className="text-blue-500 hover:text-blue-400"
                       >
-                        Review
+                        View
                       </button>
-                    )}
-                    {submission.status === 'reviewing' && (
-                      <>
+                      {submission.status === 'pending' && (
                         <button
-                          onClick={() => handleUpdateStatus(submission._id, 'accepted')}
-                          className="text-green-500 hover:text-green-400 ml-2"
+                          onClick={() => handleUpdateStatus(submission._id, 'reviewing')}
+                          className="text-yellow-500 hover:text-yellow-400 ml-2"
                         >
-                          Accept
+                          Review
                         </button>
-                        <button
-                          onClick={() => handleUpdateStatus(submission._id, 'rejected')}
-                          className="text-red-500 hover:text-red-400 ml-2"
-                        >
-                          Reject
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ))}
+                      )}
+                      {submission.status === 'reviewing' && (
+                        <>
+                          {showSeveritySelection ? (
+                            <div className="flex items-center space-x-2">
+                              <select
+                                className="px-2 py-1 bg-gray-700 text-white rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                onChange={(e) => handleUpdateStatus(submission._id, 'accepted', e.target.value)}
+                              >
+                                <option value="">Select Severity</option>
+                                {bounty?.details?.initialSeverities?.map((severity) => (
+                                  <option key={severity} value={severity}>{severity}</option>
+                                ))}
+                              </select>
+                              <button
+                                onClick={() => handleUpdateStatus(submission._id, 'rejected')}
+                                className="px-3 py-1 bg-red-500/20 text-red-500 rounded hover:bg-red-500/30"
+                              >
+                                Reject
+                              </button>
+                            </div>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => handleUpdateStatus(submission._id, 'accepted')}
+                                className="px-3 py-1 bg-green-500/20 text-green-500 rounded hover:bg-green-500/30"
+                              >
+                                Accept
+                              </button>
+                              <button
+                                onClick={() => handleUpdateStatus(submission._id, 'rejected')}
+                                className="px-3 py-1 bg-red-500/20 text-red-500 rounded hover:bg-red-500/30"
+                              >
+                                Reject
+                              </button>
+                            </>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

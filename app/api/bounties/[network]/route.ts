@@ -33,12 +33,14 @@ export async function GET(
     const combinedData = {
       _id: bounty._id,
       networkName: bounty.networkName,
-      criticalReward:bounty.criticalReward,
-      highReward:bounty.highReward,
-      mediumReward:bounty.mediumReward,
-      lowReward:bounty.lowReward,
+      criticalReward: bounty.criticalReward,
+      highReward: bounty.highReward,
+      mediumReward: bounty.mediumReward,
+      lowReward: bounty.lowReward,
       additionalDetails: bounty.additionalDetails,
-      severityDescriptions:bounty.severityDescriptions
+      severityDescriptions: bounty.severityDescriptions,
+      finalSeverity: bounty.finalSeverity,
+      initialSeverities: bounty.initialSeverities
     };
 
     return NextResponse.json(combinedData);

@@ -18,6 +18,23 @@ const bountySchema = new mongoose.Schema({
     required: true,
     index: true
   },
+  finalSeverity: {
+    type: Boolean,
+    default: false,
+    required: true
+  },
+  initialSeverities: {
+    type: [{
+      type: String,
+      enum: ['Critical', 'High', 'Medium', 'Low']
+    }],
+    validate: {
+      validator: function(this: any, v: string[]) {
+        return !this.finalSeverity || (v && v.length > 0);
+      },
+      message: 'Initial severities are required when finalSeverity is true'
+    }
+  },
   criticalReward: {
     type: Number,
     default: 0,
