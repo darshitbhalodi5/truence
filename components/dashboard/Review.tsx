@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { toast } from "react-hot-toast";
 
 interface ReviewSubmission {
   _id: string;
@@ -89,6 +90,8 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
 
   const handleUpdateStatus = async (submissionId: string, newStatus: string) => {
     try {
+      console.log('Updating status for submission:', submissionId, 'to:', newStatus);
+      
       const response = await fetch(`/api/submissions/${submissionId}/status`, {
         method: 'PUT',
         headers: {
@@ -97,8 +100,10 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
         body: JSON.stringify({ status: newStatus }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error('Failed to update status');
+        throw new Error(data.error || 'Failed to update status');
       }
 
       // Update the submission in the list
@@ -108,8 +113,11 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
         );
         setReviewData({ ...reviewData, submissions: updatedSubmissions });
       }
+
+      toast.success(`Status updated to ${newStatus}`);
     } catch (error) {
       console.error('Error updating status:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to update status');
     }
   };
 
