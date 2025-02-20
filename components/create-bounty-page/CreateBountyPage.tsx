@@ -70,8 +70,8 @@ export default function CreateBountyPage() {
       {/* Left side - Information */}
       <div className="w-full md:w-1/2 p-8 md:p-16 flex flex-col justify-center">
         <div className="max-w-md mx-auto space-y-8">
-          <h1 className="text-4xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">
-            Join Truence's Journey
+          <h1 className="text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">
+            Join Truence
           </h1>
 
           <div className="space-y-6">
@@ -80,14 +80,14 @@ export default function CreateBountyPage() {
               to start our collaboration journey.
             </p>
             <p className="text-gray-300 leading-relaxed">
-              Our team is ready to discuss how Truence can elevate your projects
+              Our team is ready to discuss how Truence can meet your requirements
               and answer any questions you may have.
             </p>
           </div>
 
           <div className="mt-8 p-6 bg-white/5 rounded-lg backdrop-blur-sm">
-            <h2 className="text-xl font-semibold mb-4">Why Choose Truence?</h2>
-            <ul className="list-disc list-inside space-y-2 text-gray-300">
+            <h2 className="text-2xl font-semibold mb-4">Why Choose Truence?</h2>
+            <ul className="list-disc list-inside space-y-2 text-gray-300 marker:text-purple-500">
               <li>Cutting-edge technology solutions</li>
               <li>Tailored approaches for your unique needs</li>
               <li>Commitment to innovation and excellence</li>
@@ -104,7 +104,7 @@ export default function CreateBountyPage() {
               <div className="space-y-2">
                 <label
                   htmlFor="firstName"
-                  className="block text-sm font-medium text-gray-300"
+                  className="block text-md font-medium text-gray-300"
                 >
                   First Name <span className="text-red-500">*</span>
                 </label>
@@ -127,7 +127,7 @@ export default function CreateBountyPage() {
               <div className="space-y-2">
                 <label
                   htmlFor="lastName"
-                  className="block text-sm font-medium text-gray-300"
+                  className="block text-md font-medium text-gray-300"
                 >
                   Last Name <span className="text-red-500">*</span>
                 </label>
@@ -150,7 +150,7 @@ export default function CreateBountyPage() {
               <div className="space-y-2">
                 <label
                   htmlFor="email"
-                  className="block text-sm font-medium text-gray-300"
+                  className="block text-md font-medium text-gray-300"
                 >
                   Email <span className="text-red-500">*</span>
                 </label>
@@ -173,7 +173,7 @@ export default function CreateBountyPage() {
               <div className="space-y-2">
                 <label
                   htmlFor="company"
-                  className="block text-sm font-medium text-gray-300"
+                  className="block text-md font-medium text-gray-300"
                 >
                   Company <span className="text-red-500">*</span>
                 </label>
@@ -194,7 +194,7 @@ export default function CreateBountyPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-300">
+                <label className="block text-md font-medium text-gray-300">
                   Useful Links
                 </label>
                 {links.map((link, index) => (
