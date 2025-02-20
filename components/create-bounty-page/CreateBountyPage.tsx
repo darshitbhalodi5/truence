@@ -151,41 +151,18 @@ export default function CreateBountyPage() {
 
               <div>
                 <label
-                  htmlFor="region"
+                  htmlFor="links"
                   className="block text-sm font-medium text-gray-900 mb-1"
                 >
-                  Region <span className="text-red-500">*</span>
+                  Useful Links
                 </label>
-                <div className="relative">
-                  <select
-                    name="region"
-                    id="region"
-                    required
-                    className="block w-full px-4 py-3 rounded-md border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors text-gray-900 text-base shadow-sm appearance-none bg-white"
-                  >
-                    <option value="">--None--</option>
-                    {regions.map((region) => (
-                      <option key={region} value={region}>
-                        {region}
-                      </option>
-                    ))}
-                  </select>
-                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
-                    <svg
-                      className="h-4 w-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
-                  </div>
-                </div>
+                <input
+                  type="text"
+                  name="links"
+                  id="links"
+                  className="block w-full px-4 py-3 rounded-md border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors text-gray-900 text-base shadow-sm"
+                  placeholder="Enter useful link about your project"
+                />
               </div>
             </div>
 
