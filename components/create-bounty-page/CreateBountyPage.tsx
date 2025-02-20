@@ -68,7 +68,7 @@ export default function CreateBountyPage() {
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-gradient-to-br from-[#000108] to-[#0a1020] text-white">
       {/* Left side - Information */}
-      <div className="w-full md:w-1/2 p-8 md:p-16 flex flex-col justify-center">
+      <div className="w-full md:w-1/2 p-8 md:p-16 flex flex-col justify-center border-r border-gray-700">
         <div className="max-w-md mx-auto space-y-8">
           <h1 className="text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">
             Join Truence
@@ -97,7 +97,7 @@ export default function CreateBountyPage() {
       </div>
 
       {/* Right side - Form */}
-      <div className="w-full md:w-1/2 bg-white/5 backdrop-blur-md flex items-center justify-center">
+      <div className="w-full md:w-1/2 backdrop-blur-md flex items-center justify-center">
         <div className="max-w-md mx-auto p-8 md:p-16">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-4">
