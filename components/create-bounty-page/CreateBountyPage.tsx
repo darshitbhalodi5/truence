@@ -3,20 +3,20 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-const regions = [
-  "North America",
-  "South America",
-  "Europe",
-  "Asia",
-  "Africa",
-  "Australia",
-  "Antarctica",
-];
-
 export default function CreateBountyPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [links, setLinks] = useState<string[]>([""]);
+
+  const addLink = () => setLinks([...links, ""]);
+  const removeLink = (index: number) =>
+    setLinks(links.filter((_, i) => i !== index));
+  const updateLink = (index: number, value: string) => {
+    const newLinks = [...links];
+    newLinks[index] = value;
+    setLinks(newLinks);
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -29,7 +29,7 @@ export default function CreateBountyPage() {
       lastName: formData.get("lastName"),
       email: formData.get("email"),
       company: formData.get("company"),
-      region: formData.get("region"),
+      usefulLinks: links.filter((link) => link.trim() !== ""),
     };
 
     try {
@@ -150,19 +150,37 @@ export default function CreateBountyPage() {
               </div>
 
               <div>
-                <label
-                  htmlFor="links"
-                  className="block text-sm font-medium text-gray-900 mb-1"
-                >
+                <label className="block text-sm font-medium text-gray-900 mb-1">
                   Useful Links
                 </label>
-                <input
-                  type="text"
-                  name="links"
-                  id="links"
-                  className="block w-full px-4 py-3 rounded-md border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors text-gray-900 text-base shadow-sm"
-                  placeholder="Enter useful link about your project"
-                />
+                {links.map((link, index) => (
+                  <div key={index} className="flex gap-2">
+                    <input
+                      type="url"
+                      name={`links[${index}]`}
+                      value={link}
+                      onChange={(e) => updateLink(index, e.target.value)}
+                      className="block w-full px-4 py-3 rounded-md border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors text-gray-900 text-base shadow-sm"
+                      placeholder="Enter a useful link"
+                    />
+                    {links.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeLink(index)}
+                        className="text-red-500"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={addLink}
+                  className="text-blue-500 mt-2"
+                >
+                  + Add Another Link
+                </button>
               </div>
             </div>
 

@@ -25,7 +25,7 @@ const ContactSchema = new mongoose.Schema(
       trim: true,
     },
     usefulLinks: {
-      type: String,
+      type: [String],
     },
     createdAt: {
       type: Date,
@@ -33,7 +33,7 @@ const ContactSchema = new mongoose.Schema(
     },
   },
   {
-    timestamps: true,
+    timestamps: false,
   }
 );
 
