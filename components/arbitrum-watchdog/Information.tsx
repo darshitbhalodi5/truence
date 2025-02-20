@@ -1,30 +1,34 @@
 import React from "react";
-import { Shield } from "lucide-react";
+import { TargetIcon, PackageSearchIcon, GoalIcon, KeyIcon, WalletIcon } from "lucide-react";
+import Image from "next/image";
+import OverviewIcon from "@/public/assets/triangle.svg";
 
 export function ArbitrumWatchdogInfo() {
   return (
-    <div className="space-y-6 text-gray-300">
-      <div className="flex items-center space-x-3 mb-6">
-        <Shield className="w-6 h-6 text-blue-400" />
-        <h2 className="text-xl font-semibold bg-gradient-to-r from-blue-100 via-blue-200 to-blue-300 bg-clip-text text-transparent">
-          Program Overview
-        </h2>
-      </div>
+    <div className="space-y-6">
 
-      <div className="space-y-8">
-        <div className="bg-gray-800/40 border border-gray-700/50 rounded-lg p-6 hover:border-gray-600 transition-all duration-200">
+      {/* Program overview */}
+      <div className="bg-[#000317] p-6">
+        <div className="flex items-center space-x-3 mb-6">
+          <Image src={OverviewIcon} alt="Overview Icon" className="w-6 h-6" />
+          <h2 className="text-xl font-semibold text-[#FAFCA3]">
+            Program Overview
+          </h2>
+        </div>
+
+        <div className="border border-[#694770] rounded-lg p-6">
           <h3 className="text-lg font-medium text-white mb-3">
             About the Program
           </h3>
-          <div className="space-y-4 text-gray-400 leading-relaxed">
-            <p>
+          <div className="space-y-4 text-[#8E8E8E] leading-relaxed">
+            <p className="text-md">
               The Arbitrum Watchdog program is a community-driven initiative
               designed to protect the Arbitrum ecosystem&apos;s integrity by
               incentivizing the identification and reporting of fund misuse.
               With over 422m ARB tokens allocated across various initiatives,
               this program serves as a crucial oversight mechanism.
             </p>
-            <p>
+            <p className="text-md">
               The program employs a comprehensive review system where reports
               are evaluated by a committee of three trusted entities: the
               Arbitrum Foundation, Entropy Advisors, and the elected Research
@@ -34,10 +38,19 @@ export function ArbitrumWatchdogInfo() {
             </p>
           </div>
         </div>
+      </div>
 
-        <div className="bg-gray-800/40 border border-gray-700/50 rounded-lg p-6 hover:border-gray-600 transition-all duration-200">
-          <h3 className="text-lg font-medium text-white mb-3">Mission</h3>
-          <p className="text-gray-400 leading-relaxed">
+      {/* Mission */}
+      <div className="bg-[#000317] p-6">
+        <div className="flex items-center space-x-3 mb-6">
+          <TargetIcon className="w-6 h-6 text-[#FAFCA3]" />
+          <h2 className="text-xl font-semibold text-[#FAFCA3]">
+            Mission
+          </h2>
+        </div>
+
+        <div className="border border-[#694770] rounded-lg p-6 space-y-4 text-[#8E8E8E] leading-relaxed">
+          <p className="text-md">
             The Watchdog program is a specialized bounty initiative established
             by Entropy Advisors to protect the Arbitrum DAO&apos;s 422m+ ARB
             token allocations across various initiatives. It serves as a
@@ -45,136 +58,193 @@ export function ArbitrumWatchdogInfo() {
             misappropriation.
           </p>
         </div>
+      </div>
 
-        <div className="bg-gray-800/40 border border-gray-700/50 rounded-lg p-6 hover:border-gray-600 transition-all duration-200">
-          <h3 className="text-lg font-medium text-white mb-3">
+      {/* About Program Features */}
+      <div className="bg-[#000317] p-6">
+        <div className="flex items-center space-x-3 mb-6">
+          <GoalIcon className="w-6 h-6 text-[#FAFCA3]" />
+          <h2 className="text-xl font-semibold text-[#FAFCA3]">
             Program Objectives
+          </h2>
+        </div>
+
+        <div className="border border-[#694770] rounded-lg p-6 mb-2">
+          <h3 className="text-lg font-medium text-white mb-3">
+            Fund Protection
           </h3>
-          <div className="space-y-4">
-            <div className="p-4 bg-gray-700/20 rounded-lg">
-              <h4 className="text-white font-medium mb-2">Fund Protection</h4>
-              <p className="text-gray-400">
-                Safeguard the DAO&apos;s allocated funds through community
-                vigilance and systematic oversight, ensuring resources are used
-                as intended across all initiatives.
-              </p>
-            </div>
-            <div className="p-4 bg-gray-700/20 rounded-lg">
-              <h4 className="text-white font-medium mb-2">
-                Transparency Enhancement
-              </h4>
-              <p className="text-gray-400">
-                Foster an environment of accountability by creating clear
-                reporting channels and maintaining open communication about fund
-                usage.
-              </p>
-            </div>
-            <div className="p-4 bg-gray-700/20 rounded-lg">
-              <h4 className="text-white font-medium mb-2">
-                Ecosystem Integrity
-              </h4>
-              <p className="text-gray-400">
-                Maintain the integrity of Arbitrum&apos;s grant and incentive
-                programs by deterring potential misuse and ensuring proper fund
-                allocation.
-              </p>
-            </div>
+          <div className="space-y-4 text-md text-[#8E8E8E] leading-relaxed">
+            Safeguard the DAO&apos;s allocated funds through community
+            vigilance and systematic oversight, ensuring resources are used
+            as intended across all initiatives.
           </div>
         </div>
-        <div className="bg-gray-800/40 border border-gray-700/50 rounded-lg p-6 hover:border-gray-600 transition-all duration-200">
+
+        <div className="border border-[#694770] rounded-lg p-6 mb-2">
           <h3 className="text-lg font-medium text-white mb-3">
-            Program Features
+            Transparency Enhancement
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-4  rounded-lg">
-              <h4 className="text-blue-400 font-medium mb-2">
-                Anonymous Reporting
-              </h4>
-              <p className="text-gray-400">
-                Submit reports confidentially through our secure platform,
-                protecting whistleblower identities throughout the process.
-              </p>
-            </div>
-            <div className="p-4  rounded-lg">
-              <h4 className="text-green-400 font-medium mb-2">
-                Fair Evaluation
-              </h4>
-              <p className="text-gray-400">
-                Three-member committee ensures unbiased assessment of all
-                submissions with clear severity classifications.
-              </p>
-            </div>
-            <div className="p-4  rounded-lg">
-              <h4 className="text-purple-400 font-medium mb-2">
-                Structured Rewards
-              </h4>
-              <p className="text-gray-400">
-                Receive rewards based on impact level, with additional
-                percentage from recovered funds.
-              </p>
-            </div>
-            <div className="p-4  rounded-lg">
-              <h4 className="text-orange-400 font-medium mb-2">
-                Continuous Monitoring
-              </h4>
-              <p className="text-gray-400">
-                Ongoing oversight of all DAO-funded initiatives with regular
-                program reviews and updates.
-              </p>
-            </div>
+          <div className="space-y-4 text-md text-[#8E8E8E] leading-relaxed">
+            Foster an environment of accountability by creating clear
+            reporting channels and maintaining open communication about fund
+            usage.
+          </div>
+        </div>
+
+        <div className="border border-[#694770] rounded-lg p-6">
+          <h3 className="text-lg font-medium text-white mb-3">
+            Ecosystem Integrity
+          </h3>
+          <div className="space-y-4 text-md text-[#8E8E8E] leading-relaxed">
+            Maintain the integrity of Arbitrum&apos;s grant and incentive
+            programs by deterring potential misuse and ensuring proper fund
+            allocation.
           </div>
         </div>
       </div>
-      <div className="space-y-8">
-        <div className="bg-gray-800/40 border border-gray-700/50 rounded-lg p-6 hover:border-gray-600 transition-all duration-200">
-          <h3 className="text-lg font-medium text-white mb-3">Key Benefits</h3>
-          <ul className="space-y-2 text-gray-400">
-            <li className="flex items-start space-x-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-2 flex-shrink-0"></span>
-              <span>
-                Enables fund recovery through legal means, smart contract
-                enforcement, or community pressure
-              </span>
+
+      {/* Program Features */}
+      <div className="bg-[#000317] p-6">
+        <div className="flex items-center space-x-3 mb-6">
+          <PackageSearchIcon className="w-6 h-6 text-[#FAFCA3]" />
+          <h2 className="text-xl font-semibold text-[#FAFCA3]">
+            Program Features
+          </h2>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div
+            className="rounded-lg p-6 border border-[#D6188A] border-t-8"
+          >
+            <h3
+              className="text-lg font-medium mb-4 text-[#D6188A]"
+            >
+              Anonymous Reporting
+            </h3>
+            <p className="text-[#8E8E8E] text-sm leading-relaxed">
+              Submit reports confidentially through our secure platform,
+              protecting whistleblower identities throughout the process.
+            </p>
+          </div>
+
+          <div
+            className="rounded-lg p-6 border border-[#33C59E] border-t-8"
+          >
+            <h3
+              className="text-lg font-medium mb-4 text-[#33C59E]"
+            >
+              Fair Evaluation
+            </h3>
+            <p className="text-[#8E8E8E] text-sm leading-relaxed">
+              Three-member committee ensures unbiased assessment of all
+              submissions with clear severity classifications.
+            </p>
+          </div>
+
+          <div
+            className="rounded-lg p-6 border border-[#A4DB3C] border-t-8"
+          >
+            <h3
+              className="text-lg font-medium mb-4 text-[#A4DB3C]"
+            >
+              Structured Rewards
+            </h3>
+            <p className="text-[#8E8E8E] text-sm leading-relaxed">
+              Receive rewards based on impact level, with additional
+              percentage from recovered funds.
+            </p>
+          </div>
+
+          <div
+            className="rounded-lg p-6 border border-[#E06137] border-t-8"          >
+            <h3
+              className="text-lg font-medium mb-4 text-[#E06137]"
+            >
+              Continuous Monitoring
+            </h3>
+            <p className="text-[#8E8E8E] text-sm leading-relaxed">
+              Ongoing oversight of all DAO-funded initiatives with regular
+              program reviews and updates.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Key Benefits */}
+      <div className="bg-[#000317] p-6">
+        <div className="flex items-center space-x-3 mb-6">
+          <KeyIcon className="w-6 h-6 text-[#FAFCA3]" />
+          <h2 className="text-xl font-semibold text-[#FAFCA3]">
+            Key Benefits
+          </h2>
+        </div>
+
+        <div className="p-6 pt-0">
+          <ul className="list-disc list-inside space-y-2 text-[#8E8E8E] marker:text-[#FAFCA3]">
+            <li>
+              Enables fund recovery through legal means, smart contract
+              enforcement, or community pressure
             </li>
-            <li className="flex items-start space-x-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-2 flex-shrink-0"></span>
-              <span>
-                Provides evidence for improving underlying programs and
-                identifying bad actors
-              </span>
+            <li>
+              Provides evidence for improving underlying programs and
+              identifying bad actors
             </li>
-            <li className="flex items-start space-x-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-2 flex-shrink-0"></span>
-              <span>Creates deterrence against malicious actions</span>
-            </li>
-            <li className="flex items-start space-x-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-2 flex-shrink-0"></span>
-              <span>
-                Attracts sophisticated onchain investigators to the DAO
-              </span>
+            <li>
+              tes deterrence against malicious actions         </li>
+            <li>
+              Attracts sophisticated onchain investigators to the DAO
             </li>
           </ul>
         </div>
+      </div>
 
-        <div className="bg-gray-800/40 border border-gray-700/50 rounded-lg p-6 hover:border-gray-600 transition-all duration-200">
-          <h3 className="text-lg font-medium text-white mb-3">
+      {/* Budget & Management */}
+      <div className="bg-[#000317] p-6">
+        <div className="flex items-center space-x-3 mb-6">
+          <WalletIcon className="w-6 h-6 text-[#FAFCA3]" />
+          <h2 className="text-xl font-semibold text-[#FAFCA3]">
             Budget & Management
-          </h3>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 bg-gray-700/20 rounded-lg">
-              <span className="text-gray-400">Total Allocation</span>
-              <span className="text-white font-medium">400,000 ARB</span>
-            </div>
-            <div className="flex items-center justify-between p-3 bg-gray-700/20 rounded-lg">
-              <span className="text-gray-400">Review Committee</span>
-              <span className="text-white font-medium">3 Members</span>
-            </div>
-            <div className="flex items-center justify-between p-3 bg-gray-700/20 rounded-lg">
-              <span className="text-gray-400">Program Duration</span>
-              <span className="text-white font-medium">
-                Until Funds Exhausted
-              </span>
-            </div>
+          </h2>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div
+            className="rounded-lg p-6 border border-[#D6188A] border-l-8"
+          >
+            <h3
+              className="text-sm font-medium mb-4 text-white"
+            >
+              Total Allocation
+            </h3>
+            <p className="text-white text-xl leading-relaxed">
+              400,000 ARB
+            </p>
+          </div>
+
+          <div
+            className="rounded-lg p-6 border border-[#33C59E] border-l-8"
+          >
+            <h3
+              className="text-sm font-medium mb-4 text-white"
+            >
+              Review Committee
+            </h3>
+            <p className="text-white text-xl leading-relaxed">
+              3 Members
+            </p>
+          </div>
+
+          <div
+            className="rounded-lg p-6 border border-[#A4DB3C] border-l-8"
+          >
+            <h3
+              className="text-sm font-medium mb-4 text-white"
+            >
+              Program Duration
+            </h3>
+            <p className="text-white text-xl leading-relaxed">
+              Until Funds Exhausted
+            </p>
           </div>
         </div>
       </div>
