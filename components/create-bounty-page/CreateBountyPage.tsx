@@ -50,14 +50,16 @@ export default function CreateBountyPage() {
         body: JSON.stringify(data),
       });
 
+      const result = await response.json();
+
       if (!response.ok) {
-        throw new Error("Something went wrong");
+        throw new Error(result.error || "Something went wrong");
       }
 
       router.push("/thank-you");
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error while form submission", err);
-      setError("Failed to submit form. Please try again.");
+      setError(err.message || "Failed to submit form. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
