@@ -109,7 +109,7 @@ export default function BountyDetailsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900">
+    <div className="min-h-screen bg-[#000108]">
       <Navbar />
       <div className="container mx-auto px-4 py-8">
         {/* Back Button - Only show when not scrolled */}
@@ -124,8 +124,17 @@ export default function BountyDetailsPage() {
         )}
 
         {/* Bounty Header */}
-        <div className="bg-gradient-to-r from-gray-800 to-gray-700 rounded-lg p-8 mb-8">
-          <BountyHeader bounty={displayBounty} />
+        <div className="mb-16">
+          <BountyHeader
+            networkName={displayBounty.networkName}
+            logoUrl={displayBounty.logoUrl}
+            description={displayBounty.description}
+            maxRewards={displayBounty.maxRewards}
+            totalPaid={displayBounty.totalPaid}
+            startDate={displayBounty.startDate}
+            endDate={displayBounty.endDate}
+            lastUpdated={displayBounty.lastUpdated}
+          />
         </div>
 
         {/* Only show tabs and content sections if additional details are available */}
