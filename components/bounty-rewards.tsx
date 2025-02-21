@@ -6,19 +6,7 @@ import {
   ScaleIcon,
   ShieldAlertIcon,
 } from "lucide-react";
-interface SeverityDescription {
-  severity: "Critical" | "High" | "Medium" | "Low";
-  description: string;
-}
-
-interface BountyRewardsProps {
-  networkName: string;
-  criticalReward: number;
-  highReward: number;
-  mediumReward: number;
-  lowReward: number;
-  severityDescriptions?: SeverityDescription[];
-}
+import { BountyRewardsProps } from "@/types/bountyRewardProps";
 
 export function BountyRewards({
   networkName,
@@ -35,9 +23,9 @@ export function BountyRewards({
       reward: criticalReward,
       bg: "bg-[#000108]",
       border: "border-[#694770]",
-      borderLeft: "border-l-[#2E022E]",
-      text: "text-[#2E022E]",
-      icon: <ShieldAlertIcon className="h-6 w-6 text-[#2E022E]" />,
+      borderLeft: "border-l-[#D6188A]",
+      text: "text-[#D6188A]",
+      icon: <ShieldAlertIcon className="h-6 w-6 text-[#D6188A]" />,
     },
     {
       severity: "High",
@@ -132,7 +120,13 @@ export function BountyRewards({
                       {item.severity} Severity Scope
                     </span>
                   </div>
-                  <p className="text-[#8E8E8E] ml-4">{item.description}</p>
+                  <ul className="list-disc pl-8 space-y-2">
+                    {item.description.map((desc, i) => (
+                      <li key={i} className="text-[#8E8E8E]">
+                        {desc}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               );
             })}

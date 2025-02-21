@@ -15,7 +15,7 @@ import { Bars3Icon } from "@heroicons/react/24/solid";
 import { LoadingSpinner } from "@/components/multi-purpose-loader/LoadingSpinner";
 export interface SeverityDescription {
   severity: "Critical" | "High" | "Medium" | "Low";
-  description: string;
+  description: string[];
 }
 
 interface BountyDetails {
