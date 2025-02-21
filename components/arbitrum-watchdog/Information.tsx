@@ -119,7 +119,7 @@ export function ArbitrumWatchdogInfo() {
             <h3 className="text-lg font-medium mb-4 text-[#D6188A]">
               Anonymous Reporting
             </h3>
-            <p className="text-[#8E8E8E] text-sm leading-relaxed">
+            <p className="text-[#8E8E8E] text-md leading-relaxed">
               Submit reports confidentially through our secure platform,
               protecting whistleblower identities throughout the process.
             </p>
@@ -129,7 +129,7 @@ export function ArbitrumWatchdogInfo() {
             <h3 className="text-lg font-medium mb-4 text-[#33C59E]">
               Fair Evaluation
             </h3>
-            <p className="text-[#8E8E8E] text-sm leading-relaxed">
+            <p className="text-[#8E8E8E] text-md leading-relaxed">
               Three-member committee ensures unbiased assessment of all
               submissions with clear severity classifications.
             </p>
@@ -139,7 +139,7 @@ export function ArbitrumWatchdogInfo() {
             <h3 className="text-lg font-medium mb-4 text-[#A4DB3C]">
               Structured Rewards
             </h3>
-            <p className="text-[#8E8E8E] text-sm leading-relaxed">
+            <p className="text-[#8E8E8E] text-md leading-relaxed">
               Receive rewards based on impact level, with additional percentage
               from recovered funds.
             </p>
@@ -149,7 +149,7 @@ export function ArbitrumWatchdogInfo() {
             <h3 className="text-lg font-medium mb-4 text-[#E06137]">
               Continuous Monitoring
             </h3>
-            <p className="text-[#8E8E8E] text-sm leading-relaxed">
+            <p className="text-[#8E8E8E] text-md leading-relaxed">
               Ongoing oversight of all DAO-funded initiatives with regular
               program reviews and updates.
             </p>
@@ -190,21 +190,21 @@ export function ArbitrumWatchdogInfo() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="rounded-lg p-6 border border-[#694770] border-l-4 border-l-[#D6188A] min-h-[112px] min-w-[288px]">
+          <div className="bg-[#000108] rounded-lg p-6 border border-[#694770] border-l-4 border-l-[#D6188A] min-h-[112px] min-w-[288px]">
             <h3 className="text-sm font-medium mb-4 text-white">
               Total Allocation
             </h3>
             <p className="text-white text-xl leading-relaxed">400,000 ARB</p>
           </div>
 
-          <div className="rounded-lg p-6 border border-[#31695A] border-l-4 border-l-[#33C59E] min-h-[112px] min-w-[288px]">
+          <div className="bg-[#000108] rounded-lg p-6 border border-[#31695A] border-l-4 border-l-[#33C59E] min-h-[112px] min-w-[288px]">
             <h3 className="text-sm font-medium mb-4 text-white">
               Review Committee
             </h3>
             <p className="text-white text-xl leading-relaxed">3 Members</p>
           </div>
 
-          <div className="rounded-lg p-6 border border-[#576933] border-l-4 border-l-[#A4DB3C] min-h-[112px] min-w-[288px]">
+          <div className="bg-[#000108] rounded-lg p-6 border border-[#576933] border-l-4 border-l-[#A4DB3C] min-h-[112px] min-w-[288px]">
             <h3 className="text-sm font-medium mb-4 text-white">
               Program Duration
             </h3>
