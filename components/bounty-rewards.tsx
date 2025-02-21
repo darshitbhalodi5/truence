@@ -1,7 +1,13 @@
-import { formatRewardNumber, getCurrency } from '@/utils/networkCurrency';
-
+import { formatRewardNumber, getCurrency } from "@/utils/networkCurrency";
+import {
+  ArrowDownIcon,
+  ArrowUpIcon,
+  EqualIcon,
+  ScaleIcon,
+  ShieldAlertIcon,
+} from "lucide-react";
 interface SeverityDescription {
-  severity: 'Critical' | 'High' | 'Medium' | 'Low';
+  severity: "Critical" | "High" | "Medium" | "Low";
   description: string;
 }
 
@@ -20,123 +26,119 @@ export function BountyRewards({
   highReward,
   mediumReward,
   lowReward,
-  severityDescriptions
+  severityDescriptions,
 }: BountyRewardsProps) {
-
-  const getSeverityStyle = (severity: string) => {
-    const styles = {
-      Critical: {
-        border: 'border-pink-500/30',
-        bg: 'bg-pink-500/10',
-        text: 'text-pink-500',
-      },
-      High: {
-        border: 'border-orange-500/30',
-        bg: 'bg-orange-500/10',
-        text: 'text-orange-500',
-      },
-      Medium: {
-        border: 'border-blue-500/30',
-        bg: 'bg-blue-500/10',
-        text: 'text-blue-500',
-      },
-      Low: {
-        border: 'border-green-500/30',
-        bg: 'bg-green-500/10',
-        text: 'text-green-500',
-      }
-    };
-    return styles[severity as keyof typeof styles];
-  };
-
   // Create reward cards array to ensure consistent order
   const rewardCards = [
     {
-      severity: 'Critical',
+      severity: "Critical",
       reward: criticalReward,
-      color: 'bg-pink-500',
-      border:'border-pink-700/50',
-      hover:'hover:border-pink-700',
-      text: 'text-pink-500',
+      bg: "bg-[#000108]",
+      border: "border-[#694770]",
+      borderLeft: "border-l-[#2E022E]",
+      text: "text-[#2E022E]",
+      icon: <ShieldAlertIcon className="h-6 w-6 text-[#2E022E]" />,
     },
     {
-      severity: 'High',
+      severity: "High",
       reward: highReward,
-      color: 'bg-orange-500',
-      border:'border-orange-700/50',
-      hover:'hover:border-orange-700',
-      text: 'text-orange-500',
+      bg: "bg-[#000108]",
+      border: "border-[#663A2B]",
+      borderLeft: "border-l-[#AC350D]",
+      text: "text-[#AC350D]",
+      icon: <ArrowUpIcon className="h-6 w-6 text-[#AC350D]" />,
     },
     {
-      severity: 'Medium',
+      severity: "Medium",
       reward: mediumReward,
-      color: 'bg-blue-500',
-      border:'border-blue-700/50',
-      hover:'hover:border-blue-700',
-      text: 'text-blue-500',
+      bg: "bg-[#000108]",
+      border: "border-[#576933]",
+      borderLeft: "border-l-[#A4DB3C]",
+      text: "text-[#A4DB3C]",
+      icon: <EqualIcon className="h-6 w-6 text-[#A4DB3C]" />,
     },
     {
-      severity: 'Low',
+      severity: "Low",
       reward: lowReward,
-      color: 'bg-green-500',
-      border:'border-green-700/50',
-      hover:'hover:border-green-700',
-      text: 'text-green-500',
-    }
-  ].filter(card => card.reward > 0);
+      bg: "bg-[#000108]",
+      border: "border-[#31695A]",
+      borderLeft: "border-l-[#33C59E]",
+      text: "text-[#33C59E]",
+      icon: <ArrowDownIcon className="h-6 w-6 text-[#33C59E]" />,
+    },
+  ].filter((card) => card.reward > 0);
+
+  // Create a map for quick lookup by severity
+  const severityStyleMap: Record<
+    string,
+    { text: string; icon: React.ReactNode }
+  > = rewardCards.reduce((map, card) => {
+    map[card.severity] = {
+      text: card.text,
+      icon: card.icon,
+    };
+    return map;
+  }, {} as Record<string, { text: string; icon: React.ReactNode }>);
 
   return (
-    <div className="space-y-6">
-      {/* Title Section - Centered with line */}
-      <div className="text-center space-y-3">
-        <h2 className="text-xl font-semibold bg-gradient-to-r from-yellow-100 via-yellow-200 to-yellow-300 bg-clip-text text-transparent">
-          Impact Based Reward Distribution
-        </h2>
-        <div className="w-full h-px bg-gradient-to-r from-transparent via-[#f2f1ed] to-transparent"></div>
+    <div className="space-y-12">
+      <div className="bg-[#000317] p-6 mt-6 group hover:bg-[#0A0F29] hover:shadow-lg transition-all duration-300">
+        {/* Main title */}
+        <div className="flex items-center space-x-3 mb-6">
+          <ScaleIcon className="w-6 h-6 text-[#FAFCA3]" />
+          <h2 className="text-xl font-semibold text-[#FAFCA3]">
+            Impact Based Reward Distribution
+          </h2>
+        </div>
+
+        {/* Reward Structure */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {rewardCards.map((card) => (
+            <div
+              key={card.severity}
+              className={`${card.bg} rounded-lg p-6 sm:p-4 border ${card.border} border-l-4 ${card.borderLeft} w-full flex flex-col`}
+            >
+              <div className="flex items-center space-x-2 mb-4">
+                {card.icon}
+                <h3 className={`text-xl font-medium ${card.text}`}>
+                  {card.severity} Severity
+                </h3>
+              </div>
+              <div className="pl-8">
+                <div className="text-2xl font-bold text-white">
+                  {card.reward} <span>{getCurrency(networkName)}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* Rewards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-start">
-        {rewardCards.map((card) => (
-          <div 
-            key={card.severity}
-            className={`bg-gray-800/40 border ${card.border} rounded-lg p-4 ${card.hover} transition-all duration-200`}
-          >
-            <div className="flex justify-between items-center mb-2">
-              <div className="flex items-center space-x-2">
-                <div className={`w-2 h-2 rounded-full ${card.color}`}></div>
-                <span className={`${card.text}`}>{card.severity}</span>
-              </div>
-              <span className="ml-auto text-xs text-gray-500">{getCurrency(networkName)}</span>
-            </div>
-            <div className="text-2xl font-bold text-white">
-              {formatRewardNumber(card.reward)}
-            </div>
-          </div>
-        ))}
-      </div>
-      <div>
-      <div className="w-full h-px bg-gradient-to-r from-transparent via-[#f2f1ed] to-transparent"></div>
-      </div>
-       {/* Severity Descriptions */}
-       {severityDescriptions && severityDescriptions.length > 0 && (
-        <div className="grid grid-cols-1 gap-4 mt-8">
-          {severityDescriptions.map((item, index) => {
-            const style = getSeverityStyle(item.severity);
-            return (
-              <div
-                key={index}
-                className={`${style.bg} border ${style.border} rounded-lg p-4  transition-all duration-200`}
-              >
-                <div className="flex items-center space-x-2 mb-2">
-                  <span className={`${style.text} font-medium`}>{item.severity} Severity Scope</span>
+      {/* Severity Descriptions */}
+      <div className="bg-[#000317] p-6 mt-6 group hover:bg-[#0A0F29] hover:shadow-lg transition-all duration-300">
+        {severityDescriptions && severityDescriptions.length > 0 && (
+          <div className="bg-[#000108] grid grid-cols-1 gap-4 mt-8">
+            {severityDescriptions.map((item, index) => {
+              const style = severityStyleMap[item.severity] || {
+                text: "text-white",
+              };
+              return (
+                <div
+                  key={index}
+                  className={`bg-[#000108] border border-[#694770] rounded-lg p-4  transition-all duration-200`}
+                >
+                  <div className="flex items-center space-x-2 mb-2">
+                    <span className={`${style.text} text-xl font-semibold`}>
+                      {item.severity} Severity Scope
+                    </span>
+                  </div>
+                  <p className="text-[#8E8E8E] ml-4">{item.description}</p>
                 </div>
-                <p className="text-gray-300 ml-4">{item.description}</p>
-              </div>
-            );
-          })}
-        </div>
-      )}
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
-} 
+}
