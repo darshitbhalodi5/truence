@@ -12,15 +12,16 @@ import OverviewIcon from "@/public/assets/triangle.svg";
 export function ArbitrumWatchdogInfo() {
   return (
     <div className="space-y-12">
-      {/* Program overview */}
       <div className="bg-[#000317] p-6 mt-6 group hover:bg-[#0A0F29] hover:shadow-lg transition-all duration-300">
-        <div className="flex items-center space-x-3 mb-6">
-          <Image src={OverviewIcon} alt="Overview Icon" className="w-6 h-6" />
+        <div className="flex items-center space-x-3 mb-1">
+          <Image src={OverviewIcon} alt="overview icon" className="w-6 h-6" />
           <h2 className="text-xl font-semibold text-[#FAFCA3]">
             Program Overview
           </h2>
         </div>
-
+      </div>
+      {/* Program overview */}
+      <div className="bg-[#000317] p-6 mt-6 group hover:bg-[#0A0F29] hover:shadow-lg transition-all duration-300">
         <div className="border border-[#694770] rounded-lg p-6">
           <h3 className="text-lg font-medium text-white mb-3">
             About the Program

@@ -71,14 +71,15 @@ export function BountyRewards({
   return (
     <div className="space-y-12">
       <div className="bg-[#000317] p-6 mt-6 group hover:bg-[#0A0F29] hover:shadow-lg transition-all duration-300">
-        {/* Main title */}
-        <div className="flex items-center space-x-3 mb-6">
+        <div className="flex items-center space-x-3 mb-1">
           <ScaleIcon className="w-6 h-6 text-[#FAFCA3]" />
           <h2 className="text-xl font-semibold text-[#FAFCA3]">
             Impact Based Reward Distribution
           </h2>
         </div>
+      </div>
 
+      <div className="bg-[#000317] p-6 mt-6 group hover:bg-[#0A0F29] hover:shadow-lg transition-all duration-300">
         {/* Reward Structure */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {rewardCards.map((card) => (

@@ -11,14 +11,16 @@ import {
 export function ArbitrumWatchdogScope() {
   return (
     <div className="space-y-12">
-      {/* Program coverage and scope */}
       <div className="bg-[#000317] p-6 mt-6 group hover:bg-[#0A0F29] hover:shadow-lg transition-all duration-300">
-        <div className="flex items-center space-x-3 mb-6">
+        <div className="flex items-center space-x-3 mb-1">
           <Globe className="w-6 h-6 text-[#FAFCA3]" />
           <h2 className="text-xl font-semibold text-[#FAFCA3]">
             Program Coverage & Scope
           </h2>
         </div>
+      </div>
+      {/* Program coverage and scope */}
+      <div className="bg-[#000317] p-6 mt-6 group hover:bg-[#0A0F29] hover:shadow-lg transition-all duration-300">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <div className="lg:col-span-3 bg-[#000108] border border-[#694770] rounded-lg p-6">
             <h3 className="text-2xl font-medium text-white mb-5">
