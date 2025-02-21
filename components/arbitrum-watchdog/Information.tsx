@@ -1,14 +1,19 @@
 import React from "react";
-import { TargetIcon, PackageSearchIcon, GoalIcon, KeyIcon, WalletIcon } from "lucide-react";
+import {
+  TargetIcon,
+  PackageSearchIcon,
+  GoalIcon,
+  KeyIcon,
+  WalletIcon,
+} from "lucide-react";
 import Image from "next/image";
 import OverviewIcon from "@/public/assets/triangle.svg";
 
 export function ArbitrumWatchdogInfo() {
   return (
-    <div className="space-y-6">
-
+    <div className="space-y-12">
       {/* Program overview */}
-      <div className="bg-[#000317] p-6">
+      <div className="bg-[#000317] p-6 mt-6 group hover:bg-[#0A0F29] hover:shadow-lg transition-all duration-300">
         <div className="flex items-center space-x-3 mb-6">
           <Image src={OverviewIcon} alt="Overview Icon" className="w-6 h-6" />
           <h2 className="text-xl font-semibold text-[#FAFCA3]">
@@ -41,12 +46,10 @@ export function ArbitrumWatchdogInfo() {
       </div>
 
       {/* Mission */}
-      <div className="bg-[#000317] p-6">
+      <div className="bg-[#000317] p-6 group hover:bg-[#0A0F29] hover:shadow-lg transition-all duration-300">
         <div className="flex items-center space-x-3 mb-6">
           <TargetIcon className="w-6 h-6 text-[#FAFCA3]" />
-          <h2 className="text-xl font-semibold text-[#FAFCA3]">
-            Mission
-          </h2>
+          <h2 className="text-xl font-semibold text-[#FAFCA3]">Mission</h2>
         </div>
 
         <div className="border border-[#694770] rounded-lg p-6 space-y-4 text-[#8E8E8E] leading-relaxed">
@@ -60,8 +63,8 @@ export function ArbitrumWatchdogInfo() {
         </div>
       </div>
 
-      {/* About Program Features */}
-      <div className="bg-[#000317] p-6">
+      {/* About Program Objective */}
+      <div className="bg-[#000317] p-6 group hover:bg-[#0A0F29] hover:shadow-lg transition-all duration-300">
         <div className="flex items-center space-x-3 mb-6">
           <GoalIcon className="w-6 h-6 text-[#FAFCA3]" />
           <h2 className="text-xl font-semibold text-[#FAFCA3]">
@@ -74,9 +77,9 @@ export function ArbitrumWatchdogInfo() {
             Fund Protection
           </h3>
           <div className="space-y-4 text-md text-[#8E8E8E] leading-relaxed">
-            Safeguard the DAO&apos;s allocated funds through community
-            vigilance and systematic oversight, ensuring resources are used
-            as intended across all initiatives.
+            Safeguard the DAO&apos;s allocated funds through community vigilance
+            and systematic oversight, ensuring resources are used as intended
+            across all initiatives.
           </div>
         </div>
 
@@ -85,9 +88,8 @@ export function ArbitrumWatchdogInfo() {
             Transparency Enhancement
           </h3>
           <div className="space-y-4 text-md text-[#8E8E8E] leading-relaxed">
-            Foster an environment of accountability by creating clear
-            reporting channels and maintaining open communication about fund
-            usage.
+            Foster an environment of accountability by creating clear reporting
+            channels and maintaining open communication about fund usage.
           </div>
         </div>
 
@@ -104,7 +106,7 @@ export function ArbitrumWatchdogInfo() {
       </div>
 
       {/* Program Features */}
-      <div className="bg-[#000317] p-6">
+      <div className="bg-[#000317] p-6 group hover:bg-[#0A0F29] hover:shadow-lg transition-all duration-300">
         <div className="flex items-center space-x-3 mb-6">
           <PackageSearchIcon className="w-6 h-6 text-[#FAFCA3]" />
           <h2 className="text-xl font-semibold text-[#FAFCA3]">
@@ -113,12 +115,8 @@ export function ArbitrumWatchdogInfo() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div
-            className="rounded-lg p-6 border border-[#D6188A] border-t-8"
-          >
-            <h3
-              className="text-lg font-medium mb-4 text-[#D6188A]"
-            >
+          <div className="rounded-lg p-6 border border-[#694770] border-t-4 border-t-[#D6188A] min-h-[144px] min-w-[320px]">
+            <h3 className="text-lg font-medium mb-4 text-[#D6188A]">
               Anonymous Reporting
             </h3>
             <p className="text-[#8E8E8E] text-sm leading-relaxed">
@@ -127,12 +125,8 @@ export function ArbitrumWatchdogInfo() {
             </p>
           </div>
 
-          <div
-            className="rounded-lg p-6 border border-[#33C59E] border-t-8"
-          >
-            <h3
-              className="text-lg font-medium mb-4 text-[#33C59E]"
-            >
+          <div className="rounded-lg p-6 border border-[#31695A] border-t-4 border-t-[#33C59E] min-h-[144px] min-w-[320px]">
+            <h3 className="text-lg font-medium mb-4 text-[#33C59E]">
               Fair Evaluation
             </h3>
             <p className="text-[#8E8E8E] text-sm leading-relaxed">
@@ -141,25 +135,18 @@ export function ArbitrumWatchdogInfo() {
             </p>
           </div>
 
-          <div
-            className="rounded-lg p-6 border border-[#A4DB3C] border-t-8"
-          >
-            <h3
-              className="text-lg font-medium mb-4 text-[#A4DB3C]"
-            >
+          <div className="rounded-lg p-6 border border-[#576933] border-t-4 border-t-[#A4DB3C] min-h-[144px] min-w-[320px]">
+            <h3 className="text-lg font-medium mb-4 text-[#A4DB3C]">
               Structured Rewards
             </h3>
             <p className="text-[#8E8E8E] text-sm leading-relaxed">
-              Receive rewards based on impact level, with additional
-              percentage from recovered funds.
+              Receive rewards based on impact level, with additional percentage
+              from recovered funds.
             </p>
           </div>
 
-          <div
-            className="rounded-lg p-6 border border-[#E06137] border-t-8"          >
-            <h3
-              className="text-lg font-medium mb-4 text-[#E06137]"
-            >
+          <div className="rounded-lg p-6 border border-[#7C4F40] border-t-4 border-t-[#E06137] min-h-[144px] min-w-[320px]">
+            <h3 className="text-lg font-medium mb-4 text-[#E06137]">
               Continuous Monitoring
             </h3>
             <p className="text-[#8E8E8E] text-sm leading-relaxed">
@@ -171,12 +158,10 @@ export function ArbitrumWatchdogInfo() {
       </div>
 
       {/* Key Benefits */}
-      <div className="bg-[#000317] p-6">
+      <div className="bg-[#000317] p-6 group hover:bg-[#0A0F29] hover:shadow-lg transition-all duration-300">
         <div className="flex items-center space-x-3 mb-6">
           <KeyIcon className="w-6 h-6 text-[#FAFCA3]" />
-          <h2 className="text-xl font-semibold text-[#FAFCA3]">
-            Key Benefits
-          </h2>
+          <h2 className="text-xl font-semibold text-[#FAFCA3]">Key Benefits</h2>
         </div>
 
         <div className="p-6 pt-0">
@@ -189,17 +174,14 @@ export function ArbitrumWatchdogInfo() {
               Provides evidence for improving underlying programs and
               identifying bad actors
             </li>
-            <li>
-              tes deterrence against malicious actions         </li>
-            <li>
-              Attracts sophisticated onchain investigators to the DAO
-            </li>
+            <li>Testing deterrence measures against malicious actions </li>
+            <li>Attracts sophisticated onchain investigators to the DAO</li>
           </ul>
         </div>
       </div>
 
       {/* Budget & Management */}
-      <div className="bg-[#000317] p-6">
+      <div className="bg-[#000317] p-6 group hover:bg-[#0A0F29] hover:shadow-lg transition-all duration-300">
         <div className="flex items-center space-x-3 mb-6">
           <WalletIcon className="w-6 h-6 text-[#FAFCA3]" />
           <h2 className="text-xl font-semibold text-[#FAFCA3]">
@@ -208,38 +190,22 @@ export function ArbitrumWatchdogInfo() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div
-            className="rounded-lg p-6 border border-[#D6188A] border-l-8"
-          >
-            <h3
-              className="text-sm font-medium mb-4 text-white"
-            >
+          <div className="rounded-lg p-6 border border-[#694770] border-l-4 border-l-[#D6188A] min-h-[112px] min-w-[288px]">
+            <h3 className="text-sm font-medium mb-4 text-white">
               Total Allocation
             </h3>
-            <p className="text-white text-xl leading-relaxed">
-              400,000 ARB
-            </p>
+            <p className="text-white text-xl leading-relaxed">400,000 ARB</p>
           </div>
 
-          <div
-            className="rounded-lg p-6 border border-[#33C59E] border-l-8"
-          >
-            <h3
-              className="text-sm font-medium mb-4 text-white"
-            >
+          <div className="rounded-lg p-6 border border-[#31695A] border-l-4 border-l-[#33C59E] min-h-[112px] min-w-[288px]">
+            <h3 className="text-sm font-medium mb-4 text-white">
               Review Committee
             </h3>
-            <p className="text-white text-xl leading-relaxed">
-              3 Members
-            </p>
+            <p className="text-white text-xl leading-relaxed">3 Members</p>
           </div>
 
-          <div
-            className="rounded-lg p-6 border border-[#A4DB3C] border-l-8"
-          >
-            <h3
-              className="text-sm font-medium mb-4 text-white"
-            >
+          <div className="rounded-lg p-6 border border-[#576933] border-l-4 border-l-[#A4DB3C] min-h-[112px] min-w-[288px]">
+            <h3 className="text-sm font-medium mb-4 text-white">
               Program Duration
             </h3>
             <p className="text-white text-xl leading-relaxed">

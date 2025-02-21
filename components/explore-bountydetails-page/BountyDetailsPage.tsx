@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { BountyHeader } from "@/components/bounty-header";
@@ -11,6 +11,7 @@ import React from "react";
 import { componentsMap } from "@/utils/mapBounties";
 import { Navbar } from "@/components/navbar/Navbar";
 import useScroll from "@/hooks/useScroll";
+import { Bars3Icon } from "@heroicons/react/24/solid";
 import { LoadingSpinner } from "@/components/multi-purpose-loader/LoadingSpinner";
 export interface SeverityDescription {
   severity: "Critical" | "High" | "Medium" | "Low";
@@ -45,6 +46,9 @@ export default function BountyDetailsPage() {
   );
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("information");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
 
   const lastSegment = pathname.split("/").filter(Boolean).pop();
   const components = componentsMap[lastSegment as string] || [];
@@ -82,6 +86,36 @@ export default function BountyDetailsPage() {
       fetchData();
     }
   }, [params.network]);
+
+  // Close mobile menu when tab changes
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [activeTab]);
+
+  // Add click outside handler to close menu
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        mobileMenuOpen &&
+        menuRef.current &&
+        !menuRef.current.contains(event.target as Node) &&
+        menuButtonRef.current &&
+        !menuButtonRef.current.contains(event.target as Node)
+      ) {
+        setMobileMenuOpen(false);
+      }
+    }
+
+    // Add event listener when menu is open
+    if (mobileMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    // Cleanup event listener
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [mobileMenuOpen]);
 
   // Show loader
   if (loading) {
@@ -129,54 +163,115 @@ export default function BountyDetailsPage() {
         {bountyDetails && (
           <>
             {/* Navigation Tabs and Submit Button */}
-            <div className="sticky top-0 z-50 pt-0 pb-0">
-              <div className="flex items-center justify-between mb-6 border-b border-[#757575]">
-                <div className="flex space-x-6">
-                  {isScrolled && (
-                    <button
-                      onClick={() => router.back()}
-                      className="text-white hover:text-[#FAFCA3] transition-colors p-2"
-                    >
-                      <ArrowLeftIcon className="w-5 h-5" />
-                    </button>
-                  )}
-                  {["information", "scope", "rewards", "rules"].map((tab) => (
-                    <button
-                      key={tab}
-                      onClick={() => setActiveTab(tab)}
-                      className="relative py-4 px-2 text-sm font-medium capitalize transition-all duration-200 group"
-                    >
-                      <span
-                        className={`${
-                          activeTab === tab
-                            ? "text-[#FAFCA3]"
-                            : "text-[#DBDBDB] hover:text-gray-200"
-                        }`}
+            <div className="sticky top-0 z-50 pt-0 pb-0 bg-[#000108]">
+              <div className="relative border-b border-[#757575]">
+                {/* Desktop Navigation */}
+                <div className="hidden md:flex items-center justify-between mb-0">
+                  <div className="flex space-x-6">
+                    {isScrolled && (
+                      <button
+                        onClick={() => router.back()}
+                        className="text-white hover:text-[#FAFCA3] transition-colors p-2"
                       >
-                        {tab}
-                      </span>
-                      {/* Bottom line indicator */}
-                      <span
-                        className={`absolute bottom-0 left-0 w-full h-0.5 transform transition-all duration-200
-                        ${
-                          activeTab === tab
-                            ? "bg-[#FAFCA3] scale-x-100 rounded-t-lg"
-                            : "bg-[#FAFCA3] scale-x-0 group-hover:bg-[#FAFCA3] group-hover:scale-x-75"
-                        }`}
-                      />
-                    </button>
-                  ))}
+                        <ArrowLeftIcon className="w-5 h-5" />
+                      </button>
+                    )}
+                    {["information", "scope", "rewards", "rules"].map((tab) => (
+                      <button
+                        key={tab}
+                        onClick={() => setActiveTab(tab)}
+                        className="relative py-4 px-2 text-lg capitalize transition-all duration-200 group"
+                      >
+                        <span
+                          className={`${
+                            activeTab === tab
+                              ? "text-[#FAFCA3]"
+                              : "text-[#DBDBDB] hover:text-gray-200"
+                          }`}
+                        >
+                          {tab}
+                        </span>
+                        {/* Bottom line indicator */}
+                        <span
+                          className={`absolute bottom-0 left-0 w-full h-1 transform transition-all duration-200
+                          ${
+                            activeTab === tab
+                              ? "bg-[#FAFCA3] scale-x-100 rounded-tr rounded-tl"
+                              : "bg-[#FAFCA3] scale-x-0 group-hover:bg-[#FAFCA3] group-hover:scale-x-75 rounded-tr rounded-tl"
+                          }`}
+                        />
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Desktop Submit Button */}
+                  <button
+                    className="bg-gradient-to-r from-[#990F62] via-[#99168E] to-[#991DB5] hover:from-[#b02579] hover:via-[#a12796] hover:to-[#9e2eb8] 
+                      text-white px-6 py-2.5 rounded-lg font-medium text-lg transition-all duration-200 
+                      shadow-lg hover:shadow-pink-200/40"
+                    onClick={() => router.push("/submission")}
+                  >
+                    Submit Evidence
+                  </button>
                 </div>
 
-                {/* Submit Button */}
-                <button
-                  className="bg-gradient-to-r from-[#990F62] via-[#99168E] to-[#991DB5] hover:from-[#b02579] hover:via-[#a12796] hover:to-[#9e2eb8] 
-                    text-white px-6 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 
-                    shadow-lg hover:shadow-pink-200/40"
-                  onClick={() => router.push("/submission")}
-                >
-                  Submit Evidence
-                </button>
+                {/* Mobile Navigation */}
+                <div className="flex md:hidden items-center justify-between py-3">
+                  <div className="flex items-center">
+                    {isScrolled && (
+                      <button
+                        onClick={() => router.back()}
+                        className="text-white mr-3"
+                      >
+                        <ArrowLeftIcon className="w-5 h-5" />
+                      </button>
+                    )}
+
+                    <button
+                      ref={menuButtonRef}
+                      onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                      className="text-white flex items-center"
+                    >
+                      <Bars3Icon className="w-6 h-6 mr-2" />
+                      <span className="capitalize">{activeTab}</span>
+                    </button>
+                  </div>
+
+                  {/* Mobile Submit Button */}
+                  <button
+                    className="bg-gradient-to-r from-[#990F62] via-[#99168E] to-[#991DB5]
+                    text-white px-4 py-1.5 rounded-lg font-medium text-sm"
+                    onClick={() => router.push("/submission")}
+                  >
+                    Submit
+                  </button>
+                </div>
+
+                {/* Mobile Menu Dropdown */}
+                {mobileMenuOpen && (
+                  <div
+                    ref={menuRef}
+                    className="absolute top-full left-0 right-0 bg-[#121218] z-50 shadow-lg rounded-b-lg md:hidden"
+                  >
+                    {["information", "scope", "rewards", "rules"].map((tab) => (
+                      <button
+                        key={tab}
+                        onClick={() => setActiveTab(tab)}
+                        className="block w-full text-left py-3 px-4 capitalize border-b border-[#2A2A2A] last:border-b-0"
+                      >
+                        <span
+                          className={`${
+                            activeTab === tab
+                              ? "text-[#FAFCA3]"
+                              : "text-[#DBDBDB]"
+                          }`}
+                        >
+                          {tab}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -191,7 +286,6 @@ export default function BountyDetailsPage() {
               {activeTab === "scope" &&
                 components[2] &&
                 React.createElement(components[2])}
-
               {activeTab === "rewards" && (
                 <div className="space-y-6">
                   <BountyRewards
