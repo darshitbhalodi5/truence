@@ -7,6 +7,8 @@ import Image from "next/image";
 import { Loader2, X, Upload, AlertCircle, CheckCircle2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { usePrivy } from "@privy-io/react-auth";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 type SeverityLevel = "critical" | "high" | "medium" | "low";
 
@@ -45,6 +47,11 @@ const ALLOWED_FILE_TYPES = [
 
 export default function EvidenceSubmissionPage() {
   const { user, ready, authenticated, login } = usePrivy();
+
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const bounty = searchParams.get("bountyName") || "";
+
   const [currentStep, setCurrentStep] = useState(0);
   const [bounties, setBounties] = useState<DisplayBounty[]>([]);
   const [selectedBounty, setSelectedBounty] = useState<string>("");
@@ -82,6 +89,12 @@ export default function EvidenceSubmissionPage() {
       setIsWalletVerified(true);
     }
   }, [user?.wallet?.address]);
+
+  useEffect(() => {
+    if (bounty) {
+      setSelectedBounty(bounty);
+    }
+  }, [bounty]);
 
   const validateFile = useCallback((file: File): string | null => {
     if (file.size > MAX_FILE_SIZE) {
@@ -263,6 +276,7 @@ export default function EvidenceSubmissionPage() {
         throw new Error("Submission failed");
       }
 
+      router.push("dashboard");
       // Reset form
       setSelectedBounty("");
       setTitle("");

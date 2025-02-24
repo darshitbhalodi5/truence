@@ -209,7 +209,13 @@ export default function BountyDetailsPage() {
                     className="bg-gradient-to-r from-[#990F62] via-[#99168E] to-[#991DB5] hover:from-[#b02579] hover:via-[#a12796] hover:to-[#9e2eb8] 
                       text-white px-6 py-2.5 rounded-lg font-medium text-lg transition-all duration-200 
                       shadow-lg hover:shadow-pink-200/40"
-                    onClick={() => router.push("/submission")}
+                    onClick={() =>
+                      router.push(
+                        `/submission?bountyName=${encodeURIComponent(
+                          displayBounty?.networkName || ""
+                        )}`
+                      )
+                    }
                   >
                     Submit Evidence
                   </button>
@@ -241,7 +247,13 @@ export default function BountyDetailsPage() {
                   <button
                     className="bg-gradient-to-r from-[#990F62] via-[#99168E] to-[#991DB5]
                     text-white px-4 py-1.5 rounded-lg font-medium text-sm"
-                    onClick={() => router.push("/submission")}
+                    onClick={() =>
+                      router.push(
+                        `/submission?bountyName=${encodeURIComponent(
+                          displayBounty?.networkName || ""
+                        )}`
+                      )
+                    }
                   >
                     Submit
                   </button>
