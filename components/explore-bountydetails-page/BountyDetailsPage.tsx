@@ -10,7 +10,6 @@ import { usePathname } from "next/navigation";
 import React from "react";
 import { componentsMap } from "@/utils/mapBounties";
 import { Navbar } from "@/components/navbar/Navbar";
-import useScroll from "@/hooks/useScroll";
 import { Bars3Icon } from "@heroicons/react/24/solid";
 import { LoadingSpinner } from "@/components/multi-purpose-loader/LoadingSpinner";
 export interface SeverityDescription {
@@ -37,7 +36,6 @@ export default function BountyDetailsPage() {
   const pathname = usePathname();
   const router = useRouter();
   const params = useParams();
-  const isScrolled = useScroll();
   const [displayBounty, setDisplayBounty] = useState<DisplayBounty | null>(
     null
   );
@@ -132,16 +130,6 @@ export default function BountyDetailsPage() {
     <div className="min-h-screen bg-[#000108]">
       <Navbar />
       <div className="container mx-auto px-4 py-8">
-        {/* Back Button - Only show when not scrolled */}
-        {!isScrolled && (
-          <button
-            onClick={() => router.back()}
-            className="flex items-center space-x-2 text-white hover:text-[#FAFCA3] mb-6 transition-colors"
-          >
-            <ArrowLeftIcon className="w-5 h-5" />
-            <span>Back to Opportunities</span>
-          </button>
-        )}
 
         {/* Bounty Header */}
         <div className="mb-4">
@@ -168,14 +156,12 @@ export default function BountyDetailsPage() {
                 {/* Desktop Navigation */}
                 <div className="hidden md:flex items-center justify-between mb-0">
                   <div className="flex space-x-6">
-                    {isScrolled && (
-                      <button
-                        onClick={() => router.back()}
-                        className="text-white hover:text-[#FAFCA3] transition-colors p-2"
-                      >
-                        <ArrowLeftIcon className="w-5 h-5" />
-                      </button>
-                    )}
+                    <button
+                      onClick={() => router.back()}
+                      className="text-white hover:text-[#FAFCA3] transition-colors p-2"
+                    >
+                      <ArrowLeftIcon className="w-5 h-5" />
+                    </button>
                     {["information", "scope", "rewards", "rules"].map((tab) => (
                       <button
                         key={tab}
@@ -183,22 +169,20 @@ export default function BountyDetailsPage() {
                         className="relative py-4 px-2 text-lg capitalize transition-all duration-200 group"
                       >
                         <span
-                          className={`${
-                            activeTab === tab
-                              ? "text-[#FAFCA3]"
-                              : "text-[#DBDBDB] hover:text-gray-200"
-                          }`}
+                          className={`${activeTab === tab
+                            ? "text-[#FAFCA3]"
+                            : "text-[#DBDBDB] hover:text-gray-200"
+                            }`}
                         >
                           {tab}
                         </span>
                         {/* Bottom line indicator */}
                         <span
                           className={`absolute bottom-0 left-0 w-full h-1 transform transition-all duration-200
-                          ${
-                            activeTab === tab
+                          ${activeTab === tab
                               ? "bg-[#FAFCA3] scale-x-100 rounded-tr rounded-tl"
                               : "bg-[#FAFCA3] scale-x-0 group-hover:bg-[#FAFCA3] group-hover:scale-x-75 rounded-tr rounded-tl"
-                          }`}
+                            }`}
                         />
                       </button>
                     ))}
@@ -224,14 +208,12 @@ export default function BountyDetailsPage() {
                 {/* Mobile Navigation */}
                 <div className="flex md:hidden items-center justify-between py-3">
                   <div className="flex items-center">
-                    {isScrolled && (
-                      <button
-                        onClick={() => router.back()}
-                        className="text-white mr-3"
-                      >
-                        <ArrowLeftIcon className="w-5 h-5" />
-                      </button>
-                    )}
+                    <button
+                      onClick={() => router.back()}
+                      className="text-white mr-3"
+                    >
+                      <ArrowLeftIcon className="w-5 h-5" />
+                    </button>
 
                     <button
                       ref={menuButtonRef}
@@ -272,11 +254,10 @@ export default function BountyDetailsPage() {
                         className="block w-full text-left py-3 px-4 capitalize border-b border-[#2A2A2A] last:border-b-0"
                       >
                         <span
-                          className={`${
-                            activeTab === tab
-                              ? "text-[#FAFCA3]"
-                              : "text-[#DBDBDB]"
-                          }`}
+                          className={`${activeTab === tab
+                            ? "text-[#FAFCA3]"
+                            : "text-[#DBDBDB]"
+                            }`}
                         >
                           {tab}
                         </span>
