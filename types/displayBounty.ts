@@ -1,4 +1,8 @@
-export type DisplayBountyStatus = 'LIVE_SOON' | 'IN_PROCESS' | 'CLOSED' | 'UPCOMING';
+export type DisplayBountyStatus =
+  | "LIVE_SOON"
+  | "IN_PROCESS"
+  | "CLOSED"
+  | "UPCOMING";
 
 export interface DisplayBounty {
   _id: string;
@@ -14,4 +18,15 @@ export interface DisplayBounty {
   createdAt: Date;
   updatedAt: Date;
   tags: string[];
-} 
+}
+
+export interface BountyCardProps {
+  bounty: DisplayBounty;
+}
+
+export interface BountyTableProps {
+  bounties: Array<BountyCardProps["bounty"]>;
+}
+
+export type SortField = "rewards" | "startDate" | "endDate";
+export type SortDirection = "asc" | "desc";

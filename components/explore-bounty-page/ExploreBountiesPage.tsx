@@ -1,26 +1,28 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { DisplayBounty } from '@/types/displayBounty';
-import { BountyCard } from '@/components/bounty-card';
-import { Navbar } from '@/components/navbar/Navbar';
+import { useEffect, useState } from "react";
+import { DisplayBounty } from "@/types/displayBounty";
+import { BountyTable } from "@/components/bounty-card";
+import { Navbar } from "@/components/navbar/Navbar";
+import { NoBounties } from "@/components/no-bounties/NoBounties";
+import toast from "react-hot-toast";
 
 export default function ExploreBountiesPage() {
   const [bounties, setBounties] = useState<DisplayBounty[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchBounties = async () => {
       try {
-        const response = await fetch('/api/display-bounties');
+        const response = await fetch("/api/display-bounties");
         if (!response.ok) {
-          throw new Error('Failed to fetch bounties');
+          throw new Error("Failed to fetch bounties");
         }
         const data = await response.json();
         setBounties(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load bounties');
+        console.log("Error while fetch bounties list", err);
+        toast.error("Failed to fetch bounties list");
       } finally {
         setIsLoading(false);
       }
@@ -29,9 +31,10 @@ export default function ExploreBountiesPage() {
     fetchBounties();
   }, []);
 
+  // Skeleton loader
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-900 p-4 md:p-6">
+      <div className="min-h-screen bg-[#000108] p-4 md:p-6">
         <div className="max-w-6xl mx-auto">
           <div className="h-32 mb-6" /> {/* Space for future content */}
           <div className="animate-pulse space-y-3">
@@ -44,42 +47,27 @@ export default function ExploreBountiesPage() {
     );
   }
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-900 p-4 md:p-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="h-32 mb-6" /> {/* Space for future content */}
-          <div className="bg-red-500/10 text-red-500 p-4 rounded-lg">
-            {error}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gray-900">
+    <div className="min-h-screen bg-[#000108]">
       <Navbar />
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-        {/* <div className="h-32 mb-6"> Space for future content */}
-          <p className="text-gray-400 text-sm md:text-base">
-            Discover and participate in bounties from various blockchain networks
+          <p className="text-[#FAFCA3] text-sm md:text-base">
+            Discover and participate in bounties or program from various
+            blockchain networks
           </p>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-2">
           {bounties.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-gray-400">No bounties available at the moment</p>
+              <NoBounties />
             </div>
           ) : (
-            bounties.map((bounty) => (
-              <BountyCard key={bounty._id} bounty={bounty} />
-            ))
+            <BountyTable bounties={bounties} />
           )}
         </div>
       </div>
     </div>
   );
-} 
+}

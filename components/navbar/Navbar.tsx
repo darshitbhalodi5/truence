@@ -61,7 +61,7 @@ export function Navbar() {
   };
 
   return (
-    <div className="container mx-auto flex justify-between items-center p-4 border border-white rounded-lg">
+    <div className=" bg-[#000108] container mx-auto flex justify-between items-center p-4 border-b-2 border-b-[#99168E] rounded-b-none rounded-lg">
       <div className="flex items-center gap-2">
         <Image src={Symbol} alt="Truence Symbol" height={24} width={24} />
         <span className="text-2xl font-bold">Truence</span>
