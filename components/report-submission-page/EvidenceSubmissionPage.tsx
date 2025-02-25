@@ -736,7 +736,7 @@ export default function EvidenceSubmissionPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-3xl mx-auto">
           {/* Progress Steps */}
-          <div className="mb-8 overflow-x-auto">
+          {/* <div className="mb-8 overflow-x-auto">
             <div className="flex items-center justify-between min-w-max px-2">
               {steps.map((step, index) => (
                 <div key={index} className="flex items-center">
@@ -780,6 +780,46 @@ export default function EvidenceSubmissionPage() {
                 >
                   {step}
                 </span>
+              ))}
+            </div>
+          </div> */}
+          <div className="mb-8 overflow-x-auto">
+            <div className="flex items-center justify-between min-w-max px-2">
+              {steps.map((step, index) => (
+                <div key={index} className="flex items-center">
+                  <div className="flex flex-col items-center">
+                    <div
+                      className={`flex items-center justify-center w-8 h-8 rounded-full border-2 ${
+                        index <= currentStep
+                          ? "border-[#99168E] text-[#99168E]"
+                          : "border-white/50 text-white/50"
+                      }`}
+                    >
+                      {index + 1}
+                    </div>
+                    <span
+                      className={`mt-1 text-xs text-center sm:hidden ${
+                        index <= currentStep ? "text-white" : "text-white/50"
+                      }`}
+                    >
+                      {step}
+                    </span>
+                    <span
+                      className={`mt-2 ml-2 text-sm hidden sm:inline ${
+                        index <= currentStep ? "text-white" : "text-white/50"
+                      }`}
+                    >
+                      {step}
+                    </span>
+                  </div>
+                  {index < steps.length - 1 && (
+                    <div
+                      className={`w-6 sm:w-16 h-px mx-2 sm:mx-4 hidden sm:block ${
+                        index < currentStep ? "bg-[#99168E]" : "bg-white/50"
+                      }`}
+                    />
+                  )}
+                </div>
               ))}
             </div>
           </div>
