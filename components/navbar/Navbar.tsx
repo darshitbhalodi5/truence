@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { useWallet } from "@/hooks/use-wallet";
-import { LogOut, Search, Trophy, Menu, X } from "lucide-react";
+import { LogOut, Menu, X } from "lucide-react";
 import {
   ClipboardDocumentIcon,
   ClipboardDocumentCheckIcon,
@@ -39,7 +39,6 @@ export function Navbar() {
   const navItems = [
     {
       label: "Dashboard",
-      icon: <Trophy size={16} />,
       onClick: () => {
         if (!isConnected) {
           toast.error("Please connect your wallet first");
@@ -51,7 +50,6 @@ export function Navbar() {
     },
     {
       label: "Explore",
-      icon: <Search size={16} />,
       onClick: () => {
         router.push("/bounties/explore");
         setMobileMenuOpen(false);
@@ -70,7 +68,7 @@ export function Navbar() {
         <button
           onClick={handleConnection}
           disabled={isLoading}
-          className="px-6 py-2 rounded-lg bg-[#3A6EA5]/20 hover:bg-[#3A6EA5]/30 text-white font-medium transition-all duration-200 hover:opacity-90 disabled:opacity-50"
+          className="px-6 py-2 text-white font-medium"
         >
           {isLoading ? (
             <div className="flex items-center gap-2">
@@ -78,7 +76,7 @@ export function Navbar() {
               Connecting...
             </div>
           ) : (
-            "Connect Wallet"
+            "Connect"
           )}
         </button>
       );
@@ -88,7 +86,7 @@ export function Navbar() {
       <div className="flex items-center gap-2">
         <button
           onClick={copyAddress}
-          className="flex items-center gap-2 px-4 py-2 bg-[#3A6EA5]/20 hover:bg-[#3A6EA5]/30 text-white rounded-lg transition-all duration-200"
+          className="flex items-center gap-2 px-4 py-2 text-white"
         >
           {user?.wallet?.address && (
             <>
@@ -149,9 +147,8 @@ export function Navbar() {
               <button
                 key={index}
                 onClick={item.onClick}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#3A6EA5]/20 hover:bg-[#3A6EA5]/30 text-white transition-all duration-200"
+                className="flex items-center gap-2 px-4 py-2 text-white"
               >
-                {item.icon}
                 <span>{item.label}</span>
               </button>
             ))}
@@ -166,9 +163,8 @@ export function Navbar() {
               <button
                 key={index}
                 onClick={item.onClick}
-                className="flex items-center gap-2 w-full px-4 py-2 rounded-lg bg-[#3A6EA5]/20 hover:bg-[#3A6EA5]/30 text-white transition-all duration-200"
+                className="flex items-center gap-2 w-full px-4 py-2 text-white"
               >
-                {item.icon}
                 <span>{item.label}</span>
               </button>
             ))}

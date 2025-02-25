@@ -345,7 +345,7 @@ export default function EvidenceSubmissionPage() {
           Upload Files ({uploadedFiles.length}/{MAX_FILES})
         </label>
         <span className="text-sm text-white/80">
-          Max {MAX_FILES} files, {MAX_FILE_SIZE / (1024 * 1024)}MB each
+          Max {MAX_FILES} files, 2MB each
         </span>
       </div>
 
@@ -375,7 +375,7 @@ export default function EvidenceSubmissionPage() {
                 "Maximum files reached"
               ) : (
                 <div className="text-center">
-                  <span>Drop files here or click to upload</span>
+                  <span> Click here to upload</span>
                   <div>
                     Supported File Types: .jpg, .jpeg, .png, .pdf, .doc, .docx,
                     .txt, .json, .zip
@@ -540,7 +540,7 @@ export default function EvidenceSubmissionPage() {
                 onChange={(e) => setTitle(e.target.value)}
                 maxLength={100}
                 className="w-full p-3 bg-[#000108] text-white/80 border border-white/60 rounded-lg"
-                placeholder="Enter report title"
+                placeholder="Enter suitable title"
               />
               <p className="mt-1 text-sm text-[#DBDBDB]">
                 {title.length}/100 characters
@@ -557,7 +557,7 @@ export default function EvidenceSubmissionPage() {
                 rows={6}
                 maxLength={2500}
                 className="w-full p-3 bg-[#000108] text-white/80 border border-white/60 rounded-lg"
-                placeholder="Describe the vulnerability in detail"
+                placeholder="Describe your submission purpose in detail"
               />
               <p className="mt-1 text-sm text-[#DBDBDB]">
                 {description.split(/\s+/).filter(Boolean).length}/500 words
@@ -661,67 +661,98 @@ export default function EvidenceSubmissionPage() {
       case 2:
         return (
           <div className="space-y-6">
-            <div>
-              <label className="block text-lg font-medium text-[#FAFCA3] mb-2">
-                Wallet Address
-              </label>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="text"
-                  value={walletAddress}
-                  onChange={(e) => setWalletAddress(e.target.value)}
-                  className="w-full p-3 bg-[#000108] text-white/80 border border-white/60 rounded-lg"
-                  readOnly
-                />
-                {!authenticated && (
-                  <button
-                    type="button"
-                    onClick={() => login()}
-                    className="px-4 py-3 bg-gradient-to-r from  from-[#990F62] via-[#99168E] to-[#991DB5] text-white/80 rounded-lg"
-                  >
-                    Connect
-                  </button>
-                )}
-              </div>
-              {authenticated && (
-                <p className="mt-1 text-sm text-green-500 flex items-center">
-                  <CheckCircle2 className="w-4 h-4 mr-1" />
-                  Wallet connected and verified
-                </p>
-              )}
-            </div>
-
-            <div className="bg-[#000625] rounded-lg p-4">
-              <h3 className="text-lg font-medium text-[#FAFCA3] mb-4">
-                Submission Summary
-              </h3>
-              <dl className="space-y-3">
+            {authenticated ? (
+              <>
                 <div>
-                  <dt className="text-sm text-white/60">Program</dt>
-                  <dd className="text-white/90">{selectedBounty}</dd>
-                </div>
-                <div>
-                  <dt className="text-sm text-white/60">Title</dt>
-                  <dd className="text-white/90">{title}</dd>
-                </div>
-                <div>
-                  <dt className="text-sm text-white/60">Severity</dt>
-                  <dd className="text-white/90 capitalize">{severityLevel}</dd>
-                </div>
-                {selectedMisUse && (
-                  <div>
-                    <dt className="text-sm text-white/60">Category</dt>
-                    <dd className="text-white/90">{selectedMisUse}</dd>
+                  <label className="block text-lg font-medium text-[#FAFCA3] mb-2">
+                    Wallet Address
+                  </label>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="text"
+                      value={walletAddress}
+                      onChange={(e) => setWalletAddress(e.target.value)}
+                      className="w-full p-3 bg-[#000108] text-white/80 border border-white/60 rounded-lg"
+                      readOnly
+                    />
                   </div>
-                )}
-                <div>
-                  <dt className="text-sm text-white/60">Files</dt>
-                  <dd className="text-white/90">
-                    {uploadedFiles.length} attached
-                  </dd>
+                  <p className="mt-1 text-sm text-green-500 flex items-center">
+                    <CheckCircle2 className="w-4 h-4 mr-1" />
+                    Wallet connected and verified
+                  </p>
                 </div>
-              </dl>
-            </div>
+                <div className="bg-[#000625] rounded-lg p-4">
+                  <h3 className="text-lg font-medium text-[#FAFCA3] mb-4">
+                    Submission Summary
+                  </h3>
+                  <dl className="space-y-3">
+                    <div>
+                      <dt className="text-sm text-white/60">Program</dt>
+                      <dd className="text-white/90">{selectedBounty}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm text-white/60">Title</dt>
+                      <dd className="text-white/90">{title}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm text-white/60">Severity</dt>
+                      <dd className="text-white/90 capitalize">
+                        {severityLevel}
+                      </dd>
+                    </div>
+                    {selectedMisUse && (
+                      <div>
+                        <dt className="text-sm text-white/60">Misuse Range</dt>
+                        <dd className="text-white/90">
+                          {selectedMisUse}{" "}
+                          {getCurrency(bountyDetails!.networkName)}
+                        </dd>
+                      </div>
+                    )}
+                    <div>
+                      <dt className="text-sm text-white/60">Files</dt>
+                      <dd className="text-white/90">
+                        {uploadedFiles.length} attached
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
+              </>
+            ) : (
+              <div className="bg-[#000625] rounded-lg p-4">
+                <h3 className="text-lg font-medium text-[#FAFCA3] mb-4">
+                  Submission Summary
+                </h3>
+                <dl className="space-y-3">
+                  <div>
+                    <dt className="text-sm text-white/60">Program</dt>
+                    <dd className="text-white/90">{selectedBounty}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm text-white/60">Title</dt>
+                    <dd className="text-white/90">{title}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm text-white/60">Severity</dt>
+                    <dd className="text-white/90 capitalize">
+                      {severityLevel}
+                    </dd>
+                  </div>
+                  {selectedMisUse && (
+                    <div>
+                      <dt className="text-sm text-white/60">Category</dt>
+                      <dd className="text-white/90">{selectedMisUse}</dd>
+                    </div>
+                  )}
+                  <div>
+                    <dt className="text-sm text-white/60">Files</dt>
+                    <dd className="text-white/90">
+                      {uploadedFiles.length} attached
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+            )}
           </div>
         );
 
@@ -803,22 +834,39 @@ export default function EvidenceSubmissionPage() {
                     Back
                   </button>
                 )}
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="ml-auto px-4 sm:px-6 py-2 text-white bg-gradient-to-r from  from-[#990F62] via-[#99168E] to-[#991DB5] rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isSubmitting ? (
-                    <div className="flex items-center space-x-2">
-                      <Loader2 className="animate-spin" />
-                      <span>Submitting...</span>
-                    </div>
-                  ) : currentStep === steps.length - 1 ? (
-                    "Submit Report"
+                {currentStep === steps.length - 1 ? (
+                  authenticated ? (
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="ml-auto px-4 sm:px-6 py-2 text-white bg-gradient-to-r from from-[#990F62] via-[#99168E] to-[#991DB5] rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isSubmitting ? (
+                        <div className="flex items-center space-x-2">
+                          <Loader2 className="animate-spin" />
+                          <span>Submitting...</span>
+                        </div>
+                      ) : (
+                        "Submit Evidence"
+                      )}
+                    </button>
                   ) : (
-                    "Next"
-                  )}
-                </button>
+                    <button
+                      type="button"
+                      onClick={() => login()}
+                      className="ml-auto px-4 sm:px-6 py-2 text-white bg-gradient-to-r from from-[#990F62] via-[#99168E] to-[#991DB5] rounded-lg"
+                    >
+                      Connect
+                    </button>
+                  )
+                ) : (
+                  <button
+                    type="submit"
+                    className="ml-auto px-4 sm:px-6 py-2 text-white bg-gradient-to-r from from-[#990F62] via-[#99168E] to-[#991DB5] rounded-lg"
+                  >
+                    Next
+                  </button>
+                )}
               </div>
             </form>
           </div>
