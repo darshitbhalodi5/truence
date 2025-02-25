@@ -1,6 +1,7 @@
 export const NETWORK_CURRENCIES: { [key: string]: string } = {
   Arbitrum: "ARB",
   "Arbitrum Watchdog": "ARB",
+  Solana:"SOL",
   Optimism: "OP",
   Ethereum: "ETH",
   Polygon: "MATIC",

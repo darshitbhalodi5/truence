@@ -3,6 +3,7 @@
 import { Navbar } from "@/components/navbar/Navbar";
 import { DisplayBounty } from "@/types/displayBounty";
 import { useState, useEffect, useCallback } from "react";
+import { getCurrency } from "@/utils/networkCurrency";
 import Image from "next/image";
 import {
   Loader2,
@@ -243,7 +244,15 @@ export default function EvidenceSubmissionPage() {
 
   const removeFile = (fileUrl: string) => {
     setUploadedFiles((prev) => prev.filter((file) => file.url !== fileUrl));
-    toast.success("File removed");
+
+    const removedFileName = uploadedFiles.find(
+      (file) => file.url === fileUrl
+    )?.originalName;
+    if (removedFileName) {
+      setUploadProgress((prev) =>
+        prev.filter((p) => p.fileName !== removedFileName)
+      );
+    }
   };
 
   const handleSubmit = async () => {
@@ -321,7 +330,6 @@ export default function EvidenceSubmissionPage() {
       setUploadedFiles([]);
       setCurrentStep(0);
       setIsWalletVerified(false);
-      toast.success("Report submitted successfully!");
     } catch (err) {
       console.error("Submission error:", err);
       toast.error("Failed to submit report");
@@ -361,7 +369,7 @@ export default function EvidenceSubmissionPage() {
           }`}
         >
           <div className="flex flex-col items-center space-y-2">
-            <Upload className="w-8 h-8 text-[#E06137]" />
+            <Upload className="w-8 h-8 text-[#99168E]" />
             <span className="text-sm text-white/80">
               {uploadedFiles.length >= MAX_FILES ? (
                 "Maximum files reached"
@@ -382,6 +390,7 @@ export default function EvidenceSubmissionPage() {
       {/* Upload Progress */}
       {uploadProgress.length > 0 && (
         <div className="space-y-2">
+          <h4 className="text-sm font-medium text-white/80">Upload Status</h4>
           {uploadProgress.map((progress, index) => (
             <div
               key={index}
@@ -414,6 +423,7 @@ export default function EvidenceSubmissionPage() {
       {/* Uploaded Files List */}
       {uploadedFiles.length > 0 && (
         <div className="space-y-2">
+          <h4 className="text-sm font-medium text-white/80">Uploaded Files</h4>
           {uploadedFiles.map((file, index) => (
             <div
               key={index}
@@ -452,18 +462,38 @@ export default function EvidenceSubmissionPage() {
               <label className="block text-lg font-medium text-[#FAFCA3] mb-2">
                 Select a Program
               </label>
-              <select
-                value={selectedBounty}
-                onChange={(e) => setSelectedBounty(e.target.value)}
-                className="w-full p-3 bg-[#000108] text-white/80 border border-white/60 rounded-lg"
-              >
-                <option value="">-- Choose a program --</option>
-                {bounties.map((bounty) => (
-                  <option key={bounty.networkName} value={bounty.networkName}>
-                    {bounty.networkName}
+              <div className="relative">
+                <select
+                  value={selectedBounty}
+                  onChange={(e) => setSelectedBounty(e.target.value)}
+                  className="appearance-none w-full p-3 bg-[#000108] text-white/80 border border-[#99168E] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#99168E] focus:border-[#99168E] transition-all duration-200 pl-4 pr-10"
+                >
+                  <option value="" disabled>
+                    -- Choose a program --
                   </option>
-                ))}
-              </select>
+                  {bounties.map((bounty) => (
+                    <option key={bounty.networkName} value={bounty.networkName}>
+                      {bounty.networkName}
+                    </option>
+                  ))}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[#FAFCA3]">
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M19 9l-7 7-7-7"
+                    ></path>
+                  </svg>
+                </div>
+              </div>
             </div>
 
             {isLoadingBountyDetails && (
@@ -538,20 +568,41 @@ export default function EvidenceSubmissionPage() {
               bountyDetails.misUseRange.length > 0 && (
                 <div>
                   <label className="block text-lg font-medium text-[#FAFCA3] mb-2">
-                    Category
+                    Estimated Misuse Amount Range (In{" "}
+                    {getCurrency(bountyDetails.networkName)})
                   </label>
-                  <select
-                    value={selectedMisUse}
-                    onChange={(e) => setSelectedMisUse(e.target.value)}
-                    className="w-full p-3 bg-[#000108] text-white/80 border border-white/60 rounded-lg"
-                  >
-                    <option value="">-- Select a Misuse Range --</option>
-                    {bountyDetails.misUseRange.map((category, index) => (
-                      <option key={index} value={category}>
-                        {category}
+                  <div className="relative">
+                    <select
+                      value={selectedMisUse}
+                      onChange={(e) => setSelectedMisUse(e.target.value)}
+                      className="appearance-none w-full p-3 bg-[#000108] text-white/80 border border-[#99168E] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#99168E] focus:border-[#99168E] transition-all duration-200 pl-4 pr-10"
+                    >
+                      <option value="" disabled>
+                        -- Select a Misuse Range --
                       </option>
-                    ))}
-                  </select>
+                      {bountyDetails.misUseRange.map((category, index) => (
+                        <option key={index} value={category}>
+                          {category}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[#FAFCA3]">
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M19 9l-7 7-7-7"
+                        ></path>
+                      </svg>
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -559,30 +610,48 @@ export default function EvidenceSubmissionPage() {
               <label className="block text-lg font-medium text-[#FAFCA3] mb-2">
                 Severity Level
               </label>
-              <select
-                value={severityLevel}
-                onChange={(e) =>
-                  setSeverityLevel(e.target.value as SeverityLevel)
-                }
-                className="w-full p-3 bg-[#000108] text-white/80 border border-white/60 rounded-lg"
-              >
-                {/* Show options based on initialSeverities if available, otherwise show default options */}
-                {bountyDetails?.initialSeverities &&
-                bountyDetails.initialSeverities.length > 0 ? (
-                  bountyDetails.initialSeverities.map((severity, index) => (
-                    <option key={index} value={severity.toLowerCase()}>
-                      {severity}
-                    </option>
-                  ))
-                ) : (
-                  <>
-                    <option value="critical">Critical</option>
-                    <option value="high">High</option>
-                    <option value="medium">Medium</option>
-                    <option value="low">Low</option>
-                  </>
-                )}
-              </select>
+              <div className="relative">
+                <select
+                  value={severityLevel}
+                  onChange={(e) =>
+                    setSeverityLevel(e.target.value as SeverityLevel)
+                  }
+                  className="appearance-none w-full p-3 bg-[#000108] text-white/80 border border-[#99168E] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#99168E] focus:border-[#99168E] transition-all duration-200 pl-4 pr-10"
+                >
+                  {/* Show options based on initialSeverities if available, otherwise show default options */}
+                  {bountyDetails?.initialSeverities &&
+                  bountyDetails.initialSeverities.length > 0 ? (
+                    bountyDetails.initialSeverities.map((severity, index) => (
+                      <option key={index} value={severity.toLowerCase()}>
+                        {severity}
+                      </option>
+                    ))
+                  ) : (
+                    <>
+                      <option value="critical">Critical</option>
+                      <option value="high">High</option>
+                      <option value="medium">Medium</option>
+                      <option value="low">Low</option>
+                    </>
+                  )}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[#FAFCA3]">
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M19 9l-7 7-7-7"
+                    ></path>
+                  </svg>
+                </div>
+              </div>
             </div>
 
             {renderFileUploadSection()}
@@ -667,8 +736,8 @@ export default function EvidenceSubmissionPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-3xl mx-auto">
           {/* Progress Steps */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between">
+          <div className="mb-8 overflow-x-auto">
+            <div className="flex items-center justify-between min-w-max px-2">
               {steps.map((step, index) => (
                 <div key={index} className="flex items-center">
                   <div
@@ -681,7 +750,7 @@ export default function EvidenceSubmissionPage() {
                     {index + 1}
                   </div>
                   <span
-                    className={`ml-2 text-sm ${
+                    className={`ml-2 text-xs sm:text-sm hidden sm:inline ${
                       index <= currentStep ? "text-white" : "text-white/50"
                     }`}
                   >
@@ -689,7 +758,7 @@ export default function EvidenceSubmissionPage() {
                   </span>
                   {index < steps.length - 1 && (
                     <div
-                      className={`w-16 h-px mx-4 ${
+                      className={`w-6 sm:w-16 h-px mx-2 sm:mx-4 ${
                         index < currentStep ? "bg-[#99168E]" : "bg-white/50"
                       }`}
                     />
@@ -697,10 +766,26 @@ export default function EvidenceSubmissionPage() {
                 </div>
               ))}
             </div>
+            <div className="flex justify-between mt-1 px-2 sm:hidden">
+              {steps.map((step, index) => (
+                <span
+                  key={index}
+                  className={`text-xs ${
+                    index <= currentStep ? "text-white" : "text-white/50"
+                  }`}
+                  style={{
+                    width: `${100 / steps.length}%`,
+                    textAlign: "center",
+                  }}
+                >
+                  {step}
+                </span>
+              ))}
+            </div>
           </div>
 
           {/* Form */}
-          <div className="bg-[#3A6EA5]/10 rounded-lg p-6 border border-gray-800">
+          <div className="bg-[#3A6EA5]/10 rounded-lg p-4 sm:p-6 border border-gray-800">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -720,7 +805,7 @@ export default function EvidenceSubmissionPage() {
                   <button
                     type="button"
                     onClick={() => setCurrentStep((prev) => prev - 1)}
-                    className="px-6 py-2 text-white bg-gray-800 rounded-lg"
+                    className="px-4 sm:px-6 py-2 text-white bg-gray-800 rounded-lg"
                   >
                     Back
                   </button>
@@ -728,7 +813,7 @@ export default function EvidenceSubmissionPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="ml-auto px-6 py-2 text-white bg-gradient-to-r from  from-[#990F62] via-[#99168E] to-[#991DB5] rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="ml-auto px-4 sm:px-6 py-2 text-white bg-gradient-to-r from  from-[#990F62] via-[#99168E] to-[#991DB5] rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? (
                     <div className="flex items-center space-x-2">
