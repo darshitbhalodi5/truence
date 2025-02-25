@@ -4,52 +4,31 @@ import { Navbar } from "@/components/navbar/Navbar";
 import { DisplayBounty } from "@/types/displayBounty";
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
-import { Loader2, X, Upload, AlertCircle, CheckCircle2 } from "lucide-react";
+import {
+  Loader2,
+  X,
+  Upload,
+  AlertCircle,
+  CheckCircle2,
+  File,
+} from "lucide-react";
 import toast from "react-hot-toast";
 import { usePrivy } from "@privy-io/react-auth";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
-
-type SeverityLevel = "critical" | "high" | "medium" | "low";
-
-interface UploadedFile {
-  url: string;
-  filename: string;
-  originalName: string;
-  size: number;
-  type: string;
-  uploadedAt: string;
-}
-
-interface FileUploadProgress {
-  fileName: string;
-  progress: number;
-  status: "uploading" | "success" | "error";
-  error?: string;
-}
-
-interface BountyDetails {
-  networkName: string;
-  initialSeverities?: string[];
-  misUseRange?: string[];
-}
+import {
+  UploadedFile,
+  FileUploadProgress,
+  BountyDetails,
+  SeverityLevel,
+} from "@/types/evidenceSubmissionTypes";
+import {
+  MAX_FILES,
+  ALLOWED_FILE_TYPES,
+  MAX_FILE_SIZE,
+} from "@/utils/fileConfig";
 
 const steps = ["Select Program", "Report Details", "Wallet Info"];
-
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-const MAX_FILES = 5;
-const ALLOWED_FILE_TYPES = [
-  "image/jpeg",
-  "image/png",
-  "image/gif",
-  "application/pdf",
-  "application/msword",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  "text/plain",
-  "application/json",
-  "application/zip",
-  "application/x-zip-compressed",
-];
 
 export default function EvidenceSubmissionPage() {
   const { user, ready, authenticated, login } = usePrivy();
@@ -354,10 +333,10 @@ export default function EvidenceSubmissionPage() {
   const renderFileUploadSection = () => (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <label className="block text-lg font-medium text-white">
+        <label className="block text-lg font-medium text-[#FAFCA3]">
           Upload Files ({uploadedFiles.length}/{MAX_FILES})
         </label>
-        <span className="text-sm text-gray-400">
+        <span className="text-sm text-white/80">
           Max {MAX_FILES} files, {MAX_FILE_SIZE / (1024 * 1024)}MB each
         </span>
       </div>
@@ -375,18 +354,26 @@ export default function EvidenceSubmissionPage() {
         />
         <label
           htmlFor="file-upload"
-          className={`flex items-center justify-center w-full h-32 px-4 transition bg-gray-800 border-2 border-gray-600 border-dashed rounded-lg appearance-none cursor-pointer hover:border-gray-500 focus:outline-none ${
+          className={`flex items-center justify-center w-full h-32 px-4 transition bg-[#000108] border-2 border-white/40 border-dashed rounded-lg appearance-none cursor-pointer hover:border-white/60 focus:outline-none ${
             uploadedFiles.length >= MAX_FILES
               ? "opacity-50 cursor-not-allowed"
               : ""
           }`}
         >
           <div className="flex flex-col items-center space-y-2">
-            <Upload className="w-8 h-8 text-gray-400" />
-            <span className="text-sm text-gray-400">
-              {uploadedFiles.length >= MAX_FILES
-                ? "Maximum files reached"
-                : "Drop files here or click to upload"}
+            <Upload className="w-8 h-8 text-[#E06137]" />
+            <span className="text-sm text-white/80">
+              {uploadedFiles.length >= MAX_FILES ? (
+                "Maximum files reached"
+              ) : (
+                <div className="text-center">
+                  <span>Drop files here or click to upload</span>
+                  <div>
+                    Supported File Types: .jpg, .jpeg, .png, .pdf, .doc, .docx,
+                    .txt, .json, .zip
+                  </div>
+                </div>
+              )}
             </span>
           </div>
         </label>
@@ -396,14 +383,17 @@ export default function EvidenceSubmissionPage() {
       {uploadProgress.length > 0 && (
         <div className="space-y-2">
           {uploadProgress.map((progress, index) => (
-            <div key={index} className="bg-gray-800 rounded-lg p-3">
+            <div
+              key={index}
+              className="bg-[#000108] border-[#FAFCA3] border-b-2 rounded-b-none rounded-lg p-3"
+            >
               <div className="flex items-center justify-between mb-1">
-                <span className="text-sm text-white truncate">
+                <span className="text-sm text-white/80 truncate">
                   {progress.fileName}
                 </span>
                 <div className="flex items-center space-x-2">
                   {progress.status === "uploading" && (
-                    <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />
+                    <Loader2 className="w-4 h-4 text-[#99168E] animate-spin" />
                   )}
                   {progress.status === "success" && (
                     <CheckCircle2 className="w-4 h-4 text-green-500" />
@@ -412,14 +402,6 @@ export default function EvidenceSubmissionPage() {
                     <AlertCircle className="w-4 h-4 text-red-500" />
                   )}
                 </div>
-              </div>
-              <div className="w-full bg-gray-700 rounded-full h-1.5">
-                <div
-                  className={`h-1.5 rounded-full ${
-                    progress.status === "error" ? "bg-red-500" : "bg-blue-500"
-                  }`}
-                  style={{ width: `${progress.progress}%` }}
-                />
               </div>
               {progress.error && (
                 <p className="text-xs text-red-500 mt-1">{progress.error}</p>
@@ -435,30 +417,24 @@ export default function EvidenceSubmissionPage() {
           {uploadedFiles.map((file, index) => (
             <div
               key={index}
-              className="flex items-center justify-between bg-gray-800 rounded-lg p-3"
+              className="flex items-center justify-between bg-[#000625] rounded-lg p-3"
             >
               <div className="flex items-center space-x-3">
-                <Image
-                  src="/file.svg"
-                  alt="File icon"
-                  width={24}
-                  height={24}
-                  className="text-gray-400"
-                />
+                <File size={24} className="text-[#FAFCA3]" />
                 <div>
-                  <p className="text-sm text-white truncate">
+                  <p className="text-sm text-white/80 truncate">
                     {file.originalName}
                   </p>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-white/80">
                     {(file.size / 1024).toFixed(1)} KB
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => removeFile(file.url)}
-                className="p-1 hover:bg-gray-700 rounded-full transition-colors"
+                className="p-1 hover:bg-[#99168E] rounded-full transition-colors"
               >
-                <X className="w-4 h-4 text-gray-400" />
+                <X className="w-4 h-4 text-[#FAFCA3]" />
               </button>
             </div>
           ))}
@@ -473,13 +449,13 @@ export default function EvidenceSubmissionPage() {
         return (
           <div className="space-y-4">
             <div>
-              <label className="block text-lg font-medium text-white mb-2">
-                Select a Bounty Program
+              <label className="block text-lg font-medium text-[#FAFCA3] mb-2">
+                Select a Program
               </label>
               <select
                 value={selectedBounty}
                 onChange={(e) => setSelectedBounty(e.target.value)}
-                className="w-full p-3 bg-gray-800 text-white border border-gray-600 rounded-lg"
+                className="w-full p-3 bg-[#000108] text-white/80 border border-white/60 rounded-lg"
               >
                 <option value="">-- Choose a program --</option>
                 {bounties.map((bounty) => (
@@ -492,7 +468,7 @@ export default function EvidenceSubmissionPage() {
 
             {isLoadingBountyDetails && (
               <div className="flex justify-center p-4">
-                <Loader2 className="w-6 h-6 text-blue-500 animate-spin" />
+                <Loader2 className="w-6 h-6 text-[#99168E] animate-spin" />
               </div>
             )}
 
@@ -512,7 +488,9 @@ export default function EvidenceSubmissionPage() {
                         className="object-contain rounded-full"
                       />
                     </div>
-                    <span className="text-lg text-white">{selectedBounty}</span>
+                    <span className="text-lg text-white/80">
+                      {selectedBounty}
+                    </span>
                   </div>
                 </div>
               )}
@@ -523,7 +501,7 @@ export default function EvidenceSubmissionPage() {
         return (
           <div className="space-y-6">
             <div>
-              <label className="block text-lg font-medium text-white mb-2">
+              <label className="block text-lg font-medium text-[#FAFCA3] mb-2">
                 Title
               </label>
               <input
@@ -531,16 +509,16 @@ export default function EvidenceSubmissionPage() {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 maxLength={100}
-                className="w-full p-3 bg-gray-800 text-white border border-gray-600 rounded-lg"
+                className="w-full p-3 bg-[#000108] text-white/80 border border-white/60 rounded-lg"
                 placeholder="Enter report title"
               />
-              <p className="mt-1 text-sm text-gray-400">
+              <p className="mt-1 text-sm text-[#DBDBDB]">
                 {title.length}/100 characters
               </p>
             </div>
 
             <div>
-              <label className="block text-lg font-medium text-white mb-2">
+              <label className="block text-lg font-medium text-[#FAFCA3] mb-2">
                 Description
               </label>
               <textarea
@@ -548,10 +526,10 @@ export default function EvidenceSubmissionPage() {
                 onChange={(e) => setDescription(e.target.value)}
                 rows={6}
                 maxLength={2500}
-                className="w-full p-3 bg-gray-800 text-white border border-gray-600 rounded-lg"
+                className="w-full p-3 bg-[#000108] text-white/80 border border-white/60 rounded-lg"
                 placeholder="Describe the vulnerability in detail"
               />
-              <p className="mt-1 text-sm text-gray-400">
+              <p className="mt-1 text-sm text-[#DBDBDB]">
                 {description.split(/\s+/).filter(Boolean).length}/500 words
               </p>
             </div>
@@ -559,13 +537,13 @@ export default function EvidenceSubmissionPage() {
             {bountyDetails?.misUseRange &&
               bountyDetails.misUseRange.length > 0 && (
                 <div>
-                  <label className="block text-lg font-medium text-white mb-2">
+                  <label className="block text-lg font-medium text-[#FAFCA3] mb-2">
                     Category
                   </label>
                   <select
                     value={selectedMisUse}
                     onChange={(e) => setSelectedMisUse(e.target.value)}
-                    className="w-full p-3 bg-gray-800 text-white border border-gray-600 rounded-lg"
+                    className="w-full p-3 bg-[#000108] text-white/80 border border-white/60 rounded-lg"
                   >
                     <option value="">-- Select a Misuse Range --</option>
                     {bountyDetails.misUseRange.map((category, index) => (
@@ -578,7 +556,7 @@ export default function EvidenceSubmissionPage() {
               )}
 
             <div>
-              <label className="block text-lg font-medium text-white mb-2">
+              <label className="block text-lg font-medium text-[#FAFCA3] mb-2">
                 Severity Level
               </label>
               <select
@@ -586,7 +564,7 @@ export default function EvidenceSubmissionPage() {
                 onChange={(e) =>
                   setSeverityLevel(e.target.value as SeverityLevel)
                 }
-                className="w-full p-3 bg-gray-800 text-white border border-gray-600 rounded-lg"
+                className="w-full p-3 bg-[#000108] text-white/80 border border-white/60 rounded-lg"
               >
                 {/* Show options based on initialSeverities if available, otherwise show default options */}
                 {bountyDetails?.initialSeverities &&
@@ -615,7 +593,7 @@ export default function EvidenceSubmissionPage() {
         return (
           <div className="space-y-6">
             <div>
-              <label className="block text-lg font-medium text-white mb-2">
+              <label className="block text-lg font-medium text-[#FAFCA3] mb-2">
                 Wallet Address
               </label>
               <div className="flex items-center space-x-2">
@@ -623,14 +601,14 @@ export default function EvidenceSubmissionPage() {
                   type="text"
                   value={walletAddress}
                   onChange={(e) => setWalletAddress(e.target.value)}
-                  className="w-full p-3 bg-gray-800 text-white border border-gray-600 rounded-lg"
+                  className="w-full p-3 bg-[#000108] text-white/80 border border-white/60 rounded-lg"
                   readOnly
                 />
                 {!authenticated && (
                   <button
                     type="button"
                     onClick={() => login()}
-                    className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                    className="px-4 py-3 bg-gradient-to-r from  from-[#990F62] via-[#99168E] to-[#991DB5] text-white/80 rounded-lg"
                   >
                     Connect
                   </button>
@@ -644,32 +622,32 @@ export default function EvidenceSubmissionPage() {
               )}
             </div>
 
-            <div className="bg-gray-800 rounded-lg p-4">
-              <h3 className="text-lg font-medium text-white mb-4">
+            <div className="bg-[#000625] rounded-lg p-4">
+              <h3 className="text-lg font-medium text-[#FAFCA3] mb-4">
                 Submission Summary
               </h3>
               <dl className="space-y-3">
                 <div>
-                  <dt className="text-sm text-gray-400">Program</dt>
-                  <dd className="text-white">{selectedBounty}</dd>
+                  <dt className="text-sm text-white/60">Program</dt>
+                  <dd className="text-white/90">{selectedBounty}</dd>
                 </div>
                 <div>
-                  <dt className="text-sm text-gray-400">Title</dt>
-                  <dd className="text-white">{title}</dd>
+                  <dt className="text-sm text-white/60">Title</dt>
+                  <dd className="text-white/90">{title}</dd>
                 </div>
                 <div>
-                  <dt className="text-sm text-gray-400">Severity</dt>
-                  <dd className="text-white capitalize">{severityLevel}</dd>
+                  <dt className="text-sm text-white/60">Severity</dt>
+                  <dd className="text-white/90 capitalize">{severityLevel}</dd>
                 </div>
                 {selectedMisUse && (
                   <div>
-                    <dt className="text-sm text-gray-400">Category</dt>
-                    <dd className="text-white">{selectedMisUse}</dd>
+                    <dt className="text-sm text-white/60">Category</dt>
+                    <dd className="text-white/90">{selectedMisUse}</dd>
                   </div>
                 )}
                 <div>
-                  <dt className="text-sm text-gray-400">Files</dt>
-                  <dd className="text-white">
+                  <dt className="text-sm text-white/60">Files</dt>
+                  <dd className="text-white/90">
                     {uploadedFiles.length} attached
                   </dd>
                 </div>
@@ -684,7 +662,7 @@ export default function EvidenceSubmissionPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900">
+    <div className="min-h-screen bg-[#000108]">
       <Navbar />
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-3xl mx-auto">
@@ -696,15 +674,15 @@ export default function EvidenceSubmissionPage() {
                   <div
                     className={`flex items-center justify-center w-8 h-8 rounded-full border-2 ${
                       index <= currentStep
-                        ? "border-blue-500 text-blue-500"
-                        : "border-gray-600 text-gray-600"
+                        ? "border-[#99168E] text-[#99168E]"
+                        : "border-white/50 text-white/50"
                     }`}
                   >
                     {index + 1}
                   </div>
                   <span
                     className={`ml-2 text-sm ${
-                      index <= currentStep ? "text-white" : "text-gray-600"
+                      index <= currentStep ? "text-white" : "text-white/50"
                     }`}
                   >
                     {step}
@@ -712,7 +690,7 @@ export default function EvidenceSubmissionPage() {
                   {index < steps.length - 1 && (
                     <div
                       className={`w-16 h-px mx-4 ${
-                        index < currentStep ? "bg-blue-500" : "bg-gray-600"
+                        index < currentStep ? "bg-[#99168E]" : "bg-white/50"
                       }`}
                     />
                   )}
@@ -722,7 +700,7 @@ export default function EvidenceSubmissionPage() {
           </div>
 
           {/* Form */}
-          <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
+          <div className="bg-[#3A6EA5]/10 rounded-lg p-6 border border-gray-800">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -742,7 +720,7 @@ export default function EvidenceSubmissionPage() {
                   <button
                     type="button"
                     onClick={() => setCurrentStep((prev) => prev - 1)}
-                    className="px-6 py-2 text-white bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors"
+                    className="px-6 py-2 text-white bg-gray-800 rounded-lg"
                   >
                     Back
                   </button>
@@ -750,7 +728,7 @@ export default function EvidenceSubmissionPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="ml-auto px-6 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="ml-auto px-6 py-2 text-white bg-gradient-to-r from  from-[#990F62] via-[#99168E] to-[#991DB5] rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? (
                     <div className="flex items-center space-x-2">
