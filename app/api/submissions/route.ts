@@ -1,4 +1,3 @@
-// app/api/submissions/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { connectMongoose } from '@/lib/mongodb';
 import Submission from '@/models/Submission';
@@ -8,7 +7,8 @@ import User from '@/models/User';
 export async function POST(request: NextRequest) {
   try {
     const data = await request.json();
-    const { programName, title, description, severityLevel, files, walletAddress } = data;
+    console.log("submission data",data);
+    const { programName, title, description, severityLevel, files, walletAddress, misUseCategory } = data;
 
     if (!programName || !title || !description || !severityLevel || !walletAddress) {
       return NextResponse.json(
@@ -36,7 +36,8 @@ export async function POST(request: NextRequest) {
       severityLevel,
       files,
       walletAddress: walletAddress.toLowerCase(),
-      status: 'pending'
+      status: 'pending',
+      misUseRange: misUseCategory
     });
 
     // Find or create user and add submission to their record

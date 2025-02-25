@@ -276,7 +276,7 @@ export default function EvidenceSubmissionPage() {
           bountyDetails.misUseRange.length > 0 &&
           !selectedMisUse
         ) {
-          toast.error("Please select a category");
+          toast.error("Please select a misuse range");
           return;
         }
       }
@@ -313,7 +313,7 @@ export default function EvidenceSubmissionPage() {
           files: uploadedFiles.map((file) => file.url),
           walletAddress,
           verified: isWalletVerified,
-          ...(selectedMisUse && { misUseCategory: selectedMisUse }),
+          misUseCategory: selectedMisUse,
         }),
       });
 
@@ -736,53 +736,6 @@ export default function EvidenceSubmissionPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-3xl mx-auto">
           {/* Progress Steps */}
-          {/* <div className="mb-8 overflow-x-auto">
-            <div className="flex items-center justify-between min-w-max px-2">
-              {steps.map((step, index) => (
-                <div key={index} className="flex items-center">
-                  <div
-                    className={`flex items-center justify-center w-8 h-8 rounded-full border-2 ${
-                      index <= currentStep
-                        ? "border-[#99168E] text-[#99168E]"
-                        : "border-white/50 text-white/50"
-                    }`}
-                  >
-                    {index + 1}
-                  </div>
-                  <span
-                    className={`ml-2 text-xs sm:text-sm hidden sm:inline ${
-                      index <= currentStep ? "text-white" : "text-white/50"
-                    }`}
-                  >
-                    {step}
-                  </span>
-                  {index < steps.length - 1 && (
-                    <div
-                      className={`w-6 sm:w-16 h-px mx-2 sm:mx-4 ${
-                        index < currentStep ? "bg-[#99168E]" : "bg-white/50"
-                      }`}
-                    />
-                  )}
-                </div>
-              ))}
-            </div>
-            <div className="flex justify-between mt-1 px-2 sm:hidden">
-              {steps.map((step, index) => (
-                <span
-                  key={index}
-                  className={`text-xs ${
-                    index <= currentStep ? "text-white" : "text-white/50"
-                  }`}
-                  style={{
-                    width: `${100 / steps.length}%`,
-                    textAlign: "center",
-                  }}
-                >
-                  {step}
-                </span>
-              ))}
-            </div>
-          </div> */}
           <div className="mb-8 overflow-x-auto">
             <div className="flex items-center justify-between min-w-max px-2">
               {steps.map((step, index) => (

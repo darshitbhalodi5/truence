@@ -46,6 +46,10 @@ const submissionSchema = new Schema({
     default: 'pending',
     index: true // Add index for status filtering
   },
+  misUseRange: {
+    type: String,
+    default: null,
+  },
   reviewedBy: {
     type: String,
     sparse: true,
