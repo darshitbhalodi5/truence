@@ -59,6 +59,11 @@ export function Navbar() {
     },
   ];
 
+  const navigateToHome = () => {
+    router.push("/");
+    setMobileMenuOpen(false);
+  };
+
   const WalletButton = () => {
     if (!isConnected) {
       return (
@@ -114,7 +119,10 @@ export function Navbar() {
     <div className="bg-[#000108] container mx-auto p-4 border-b-2 border-b-[#99168E] rounded-b-none rounded-lg">
       <div className="flex flex-col md:flex-row justify-between items-center gap-4">
         <div className="flex items-center justify-between w-full md:w-auto">
-          <div className="flex items-center gap-2">
+          <div
+            className="flex items-center gap-2 cursor-pointer"
+            onClick={navigateToHome}
+          >
             <Image
               src="/assets/symbol.png"
               alt="Truence Symbol"
