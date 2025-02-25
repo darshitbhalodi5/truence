@@ -28,6 +28,12 @@ interface FileUploadProgress {
   error?: string;
 }
 
+interface BountyDetails {
+  networkName: string;
+  initialSeverities?: string[];
+  misUseRange?: string[];
+}
+
 const steps = ["Select Program", "Report Details", "Wallet Info"];
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -55,6 +61,13 @@ export default function EvidenceSubmissionPage() {
   const [currentStep, setCurrentStep] = useState(0);
   const [bounties, setBounties] = useState<DisplayBounty[]>([]);
   const [selectedBounty, setSelectedBounty] = useState<string>("");
+
+  const [bountyDetails, setBountyDetails] = useState<BountyDetails | null>(
+    null
+  );
+  const [selectedMisUse, setSelectedMisUse] = useState<string>("");
+  const [isLoadingBountyDetails, setIsLoadingBountyDetails] = useState(false);
+
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [severityLevel, setSeverityLevel] = useState<SeverityLevel>("medium");
@@ -90,9 +103,44 @@ export default function EvidenceSubmissionPage() {
     }
   }, [user?.wallet?.address]);
 
+  const fetchBountyDetails = async (networkName: string) => {
+    if (!networkName) return;
+
+    setIsLoadingBountyDetails(true);
+    try {
+      const response = await fetch(
+        `/api/bounties/form-data?networkName=${networkName}`
+      );
+      if (!response.ok) throw new Error("Failed to fetch bounty details");
+
+      const { success, data } = await response.json();
+      if (success && data) {
+        setBountyDetails(data);
+
+        // Set default severity if initialSeverities exists
+        if (data.initialSeverities && data.initialSeverities.length > 0) {
+          // Find the first severity that matches our enum (case insensitive)
+          const defaultSeverity = data.initialSeverities
+            .find((sev: any) => sev.toLowerCase() as SeverityLevel)
+            ?.toLowerCase() as SeverityLevel;
+
+          if (defaultSeverity) {
+            setSeverityLevel(defaultSeverity);
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching bounty details:", err);
+      toast.error("Failed to load bounty details");
+    } finally {
+      setIsLoadingBountyDetails(false);
+    }
+  };
+
   useEffect(() => {
     if (bounty) {
       setSelectedBounty(bounty);
+      fetchBountyDetails(bounty);
     }
   }, [bounty]);
 
@@ -235,6 +283,14 @@ export default function EvidenceSubmissionPage() {
           toast.error("Please enter a description");
           return;
         }
+        if (
+          bountyDetails?.misUseRange &&
+          bountyDetails.misUseRange.length > 0 &&
+          !selectedMisUse
+        ) {
+          toast.error("Please select a category");
+          return;
+        }
       }
       setCurrentStep((prev) => prev + 1);
       return;
@@ -269,6 +325,7 @@ export default function EvidenceSubmissionPage() {
           files: uploadedFiles.map((file) => file.url),
           walletAddress,
           verified: isWalletVerified,
+          ...(selectedMisUse && { misUseCategory: selectedMisUse }),
         }),
       });
 
@@ -433,6 +490,12 @@ export default function EvidenceSubmissionPage() {
               </select>
             </div>
 
+            {isLoadingBountyDetails && (
+              <div className="flex justify-center p-4">
+                <Loader2 className="w-6 h-6 text-blue-500 animate-spin" />
+              </div>
+            )}
+
             {selectedBounty &&
               bounties.find((b) => b.networkName === selectedBounty)
                 ?.logoUrl && (
@@ -493,6 +556,27 @@ export default function EvidenceSubmissionPage() {
               </p>
             </div>
 
+            {bountyDetails?.misUseRange &&
+              bountyDetails.misUseRange.length > 0 && (
+                <div>
+                  <label className="block text-lg font-medium text-white mb-2">
+                    Category
+                  </label>
+                  <select
+                    value={selectedMisUse}
+                    onChange={(e) => setSelectedMisUse(e.target.value)}
+                    className="w-full p-3 bg-gray-800 text-white border border-gray-600 rounded-lg"
+                  >
+                    <option value="">-- Select a Misuse Range --</option>
+                    {bountyDetails.misUseRange.map((category, index) => (
+                      <option key={index} value={category}>
+                        {category}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
             <div>
               <label className="block text-lg font-medium text-white mb-2">
                 Severity Level
@@ -504,10 +588,22 @@ export default function EvidenceSubmissionPage() {
                 }
                 className="w-full p-3 bg-gray-800 text-white border border-gray-600 rounded-lg"
               >
-                <option value="critical">Critical</option>
-                <option value="high">High</option>
-                <option value="medium">Medium</option>
-                <option value="low">Low</option>
+                {/* Show options based on initialSeverities if available, otherwise show default options */}
+                {bountyDetails?.initialSeverities &&
+                bountyDetails.initialSeverities.length > 0 ? (
+                  bountyDetails.initialSeverities.map((severity, index) => (
+                    <option key={index} value={severity.toLowerCase()}>
+                      {severity}
+                    </option>
+                  ))
+                ) : (
+                  <>
+                    <option value="critical">Critical</option>
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                  </>
+                )}
               </select>
             </div>
 
@@ -565,6 +661,12 @@ export default function EvidenceSubmissionPage() {
                   <dt className="text-sm text-gray-400">Severity</dt>
                   <dd className="text-white capitalize">{severityLevel}</dd>
                 </div>
+                {selectedMisUse && (
+                  <div>
+                    <dt className="text-sm text-gray-400">Category</dt>
+                    <dd className="text-white">{selectedMisUse}</dd>
+                  </div>
+                )}
                 <div>
                   <dt className="text-sm text-gray-400">Files</dt>
                   <dd className="text-white">

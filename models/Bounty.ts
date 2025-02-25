@@ -47,6 +47,10 @@ const bountySchema = new mongoose.Schema(
         message: "Initial severities are required when finalSeverity is true",
       },
     },
+    misUseRange: {
+      type: [String],
+      default: undefined,
+    },
     criticalReward: {
       type: Number,
       default: 0,
@@ -110,7 +114,7 @@ const bountySchema = new mongoose.Schema(
 bountySchema.index({ status: 1, startDate: -1 });
 bountySchema.index({ networkName: 1, status: 1 });
 bountySchema.index({ criticalReward: -1, highReward: -1 });
-
+bountySchema.index({ misUseRange: 1 });
 bountySchema.index({
   networkName: "text",
   "additionalDetails.scope": "text",
