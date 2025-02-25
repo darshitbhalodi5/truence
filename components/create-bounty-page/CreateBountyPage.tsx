@@ -80,8 +80,8 @@ export default function CreateBountyPage() {
               to start our collaboration journey.
             </p>
             <p className="text-gray-300 leading-relaxed">
-              Our team is ready to discuss how Truence can meet your requirements
-              and answer any questions you may have.
+              Our team is ready to discuss how Truence can meet your
+              requirements and answer any questions you may have.
             </p>
           </div>
 
@@ -98,9 +98,9 @@ export default function CreateBountyPage() {
 
       {/* Right side - Form */}
       <div className="w-full md:w-1/2 backdrop-blur-md flex items-center justify-center">
-        <div className="max-w-md mx-auto p-8 md:p-16">
+        <div className="w-full max-w-2xl mx-auto p-6 md:p-12 lg:p-16">
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-4">
+            <div className="space-y-5">
               <div className="space-y-2">
                 <label
                   htmlFor="firstName"
@@ -183,7 +183,7 @@ export default function CreateBountyPage() {
                     name="company"
                     id="company"
                     required
-                    placeholder="Enter your company name"
+                    placeholder="Enter your organization name"
                     className="w-full pl-10 pr-3 py-2 bg-gray-900/50 border border-gray-700 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                   <Building
@@ -205,7 +205,7 @@ export default function CreateBountyPage() {
                         name={`links[${index}]`}
                         value={link}
                         onChange={(e) => updateLink(index, e.target.value)}
-                        placeholder="Enter a useful link"
+                        placeholder="Enter a useful links"
                         className="w-full pl-10 pr-3 py-2 bg-gray-900/50 border border-gray-700 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                       <LinkIcon

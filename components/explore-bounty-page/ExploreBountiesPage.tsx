@@ -6,6 +6,7 @@ import { BountyTable } from "@/components/bounty-card";
 import { Navbar } from "@/components/navbar/Navbar";
 import { NoBounties } from "@/components/no-bounties/NoBounties";
 import toast from "react-hot-toast";
+import { ChevronDown, Filter } from "lucide-react";
 
 export default function ExploreBountiesPage() {
   const [bounties, setBounties] = useState<DisplayBounty[]>([]);
@@ -31,22 +32,6 @@ export default function ExploreBountiesPage() {
     fetchBounties();
   }, []);
 
-  // Skeleton loader
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-[#000108] p-4 md:p-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="h-32 mb-6" /> {/* Space for future content */}
-          <div className="animate-pulse space-y-3">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="h-28 bg-gray-800 rounded-lg" />
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-[#000108]">
       <Navbar />
@@ -59,7 +44,83 @@ export default function ExploreBountiesPage() {
         </div>
 
         <div className="space-y-2">
-          {bounties.length === 0 ? (
+          {isLoading ? (
+            <div className="space-y-4">
+              <div className="flex justify-end mb-4">
+                <div className="relative">
+                  <div className="flex items-center gap-2 bg-gray-800 text-white rounded-lg px-4 py-2.5 border border-gray-700 animate-pulse">
+                    <Filter className="w-4 h-4" />
+                    <div className="w-24 h-5 bg-gray-700 rounded"></div>
+                    <ChevronDown className="w-4 h-4" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="text-left text-gray-400 text-sm">
+                      <th className="py-3 px-4">Description</th>
+                      <th className="py-3 px-4">
+                        <div className="flex items-center space-x-1">
+                          <span>Max Rewards</span>
+                          <div className="h-4 w-4 bg-gray-400 rounded-full"></div>
+                        </div>
+                      </th>
+                      <th className="py-3 px-4 hidden sm:table-cell">
+                        <div className="flex items-center space-x-1">
+                          <span>Start Date</span>
+                          <div className="h-4 w-4 bg-gray-400 rounded-full"></div>
+                        </div>
+                      </th>
+                      <th className="py-3 px-4 hidden sm:table-cell">
+                        <div className="flex items-center space-x-1">
+                          <span>End Date</span>
+                          <div className="h-4 w-4 bg-gray-400 rounded-full"></div>
+                        </div>
+                      </th>
+                      <th className="py-3 px-4 text-center md:text-left">
+                        Status
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[1, 2, 3, 4].map((i) => (
+                      <tr
+                        key={i}
+                        className="hover:bg-gray-800/50 transition-colors"
+                      >
+                        <td className="py-3 px-4">
+                          <div className="flex items-center gap-3">
+                            <div className="relative w-8 h-8 flex-shrink-0 rounded-full overflow-hidden bg-gray-700 animate-pulse"></div>
+                            <div>
+                              <div className="h-5 w-32 bg-gray-700 rounded animate-pulse mb-1"></div>
+                              <div className="h-4 w-48 bg-gray-700 rounded animate-pulse"></div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className="h-5 w-24 bg-gray-700 rounded animate-pulse"></div>
+                        </td>
+                        <td className="py-3 px-4 hidden sm:table-cell">
+                          <div className="h-5 w-20 bg-gray-700 rounded animate-pulse"></div>
+                        </td>
+                        <td className="py-3 px-4 hidden sm:table-cell">
+                          <div className="h-5 w-20 bg-gray-700 rounded animate-pulse"></div>
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className="hidden md:flex px-2 py-1 rounded-full items-center gap-2 w-24 h-6 bg-gray-700 animate-pulse"></div>
+                          <div className="md:hidden flex justify-center">
+                            <div className="w-3 h-3 rounded-full bg-gray-700 animate-pulse"></div>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ) : bounties.length === 0 ? (
             <div className="text-center py-8">
               <NoBounties />
             </div>
