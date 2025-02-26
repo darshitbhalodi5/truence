@@ -16,7 +16,7 @@ export async function GET(
 
     const user = await User.findOne({ walletAddress: address });
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json({ error: 'No submission was found from your wallet.' }, { status: 404 });
     }
 
     const userSubmissions = await Submission.find({ walletAddress: address })

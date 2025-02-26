@@ -120,9 +120,14 @@ export default function EvidenceSubmissionPage() {
   useEffect(() => {
     if (bounty) {
       setSelectedBounty(bounty);
-      fetchBountyDetails(bounty);
     }
   }, [bounty]);
+
+  useEffect(() => {
+    if (selectedBounty) {
+      fetchBountyDetails(selectedBounty);
+    }
+  }, [selectedBounty]);
 
   const validateFile = useCallback((file: File): string | null => {
     if (file.size > MAX_FILE_SIZE) {

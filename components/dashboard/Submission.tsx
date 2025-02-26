@@ -3,14 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
-import { SubmissionData } from "@/types/submissionData";
-interface FileMetadata {
-  filename: string;
-  originalName: string;
-  contentType: string;
-  size: number;
-  uploadDate: string;
-}
+import { SubmissionData, FileMetadata } from "@/types/submissionData";
+import { LoadingSpinner } from "@/components/multi-purpose-loader/LoadingSpinner";
 
 export function Submission({ walletAddress }: { walletAddress?: string }) {
   const [submissions, setSubmissions] = useState<SubmissionData[]>([]);
@@ -30,7 +24,7 @@ export function Submission({ walletAddress }: { walletAddress?: string }) {
     // Function to fetch the submisison data of connected address
     const fetchSubmissions = async () => {
       if (!walletAddress) {
-        setError("No wallet address provided");
+        setError("No wallet address provided to fetch submissions.");
         setLoading(false);
         return;
       }
@@ -177,7 +171,7 @@ export function Submission({ walletAddress }: { walletAddress?: string }) {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[200px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+        <LoadingSpinner text="Fetching latest data for your submission" />
       </div>
     );
   }
@@ -185,10 +179,10 @@ export function Submission({ walletAddress }: { walletAddress?: string }) {
   if (error) {
     return (
       <div className="text-center py-12">
-        <h3 className="text-xl font-semibold text-red-400 mb-2">
-          Error Loading Reports
+        <h3 className="text-xl font-semibold text-[#AC350D] mb-2">
+          Error Loading Submissions
         </h3>
-        <p className="text-gray-500">{error}</p>
+        <p className="text-[#FAFCA3] text-lg">{error}</p>
       </div>
     );
   }
@@ -196,17 +190,17 @@ export function Submission({ walletAddress }: { walletAddress?: string }) {
   if (!submissions || submissions.length === 0) {
     return (
       <div className="text-center py-12">
-        <h3 className="text-xl font-semibold text-gray-400 mb-2">
-          No Reports Submitted
+        <h3 className="text-xl font-semibold text-[#FAFCA3] mb-2">
+          No submissions found.
         </h3>
-        <p className="text-gray-500">
-          You haven't submitted any bug reports yet.
+        <p className="text-white/80">
+          You haven't submitted any submissions yet.
         </p>
         <button
           onClick={() => router.push("/submission")}
-          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+          className="mt-4 px-4 py-2 bg-gradient-to-r from-[#990F62] via-[#99168E] to-[#991DB5] hover:from-[#b02579] hover:via-[#a12796] hover:to-[#9e2eb8] text-white rounded-lg transition-colors"
         >
-          Submit a Bug
+          Submit Evidence
         </button>
       </div>
     );

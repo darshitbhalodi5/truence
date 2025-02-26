@@ -11,3 +11,11 @@ export interface SubmissionData {
   fileNames?: string[];
   bountyLogo?: string;
 }
+
+export interface FileMetadata {
+  filename: string;
+  originalName: string;
+  contentType: string;
+  size: number;
+  uploadDate: string;
+}
