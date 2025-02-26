@@ -197,7 +197,7 @@ export function Submission({ walletAddress }: { walletAddress?: string }) {
           You haven't submitted any submissions yet.
         </p>
         <button
-          onClick={() => router.push("/submission")}
+          onClick={() => router.push("/submission?bountyName=Arbitrum%20Watchdog")}
           className="mt-4 px-4 py-2 bg-gradient-to-r from-[#990F62] via-[#99168E] to-[#991DB5] hover:from-[#b02579] hover:via-[#a12796] hover:to-[#9e2eb8] text-white rounded-lg transition-colors"
         >
           Submit Evidence
@@ -211,18 +211,18 @@ export function Submission({ walletAddress }: { walletAddress?: string }) {
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-semibold text-white">Your Submissions</h2>
         <button
-          onClick={() => router.push("/submission")}
-          className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+          onClick={() => router.push("/submission?bountyName=Arbitrum%20Watchdog")}
+          className="px-4 py-2 text-white rounded-lg bg-gradient-to-r from-[#990F62] via-[#99168E] to-[#991DB5] hover:from-[#b02579] hover:via-[#a12796] hover:to-[#9e2eb8] transition-colors"
         >
-          Submit a Bug
+          Submit Evidence
         </button>
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full text-sm text-left text-gray-300">
-          <thead className="text-xs uppercase bg-gray-700 text-gray-300">
+        <table className="w-full text-sm text-left text-gray-400">
+          <thead className="text-sm text-gray-400">
             <tr>
-              <th className="px-4 py-3">Bounty</th>
+              <th className="px-4 py-3">Program</th>
               <th className="px-4 py-3">Title</th>
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3">Severity</th>
@@ -235,30 +235,18 @@ export function Submission({ walletAddress }: { walletAddress?: string }) {
             {submissions.map((submission) => (
               <tr
                 key={submission._id}
-                className="bg-gray-800 border-b border-gray-700 hover:bg-gray-700"
+                className="hover:bg-gray-800/50 transition-colors"
               >
                 <td className="px-4 py-3">
                   <div className="flex items-center space-x-3">
-                    {submission.bountyLogo ? (
                       <div className="w-8 h-8 relative flex-shrink-0">
                         <img
                           src={submission.bountyLogo}
                           alt={`${submission.programName} Logo`}
-                          className="w-8 h-8 rounded-full object-cover"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.src = "/default-bounty-logo.png"; // Fallback image
-                          }}
+                          className="w-7 h-7 rounded-full"
                         />
                       </div>
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center flex-shrink-0">
-                        <span className="text-xs text-gray-300">
-                          {submission.programName.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                    )}
-                    <span className="text-sm text-gray-300 truncate">
+                    <span className="text-sm text-white truncate">
                       {submission.programName}
                     </span>
                   </div>
