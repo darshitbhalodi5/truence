@@ -5,7 +5,7 @@ import { DisplayBounty } from "@/types/displayBounty";
 import { BountyTable } from "@/components/bounty-card";
 import { Navbar } from "@/components/navbar/Navbar";
 import { NoBounties } from "@/components/no-bounties/NoBounties";
-import toast from "react-hot-toast";
+import { showCustomToast } from "@/components/custom-toast/CustomToast";
 import { ChevronDown, Filter } from "lucide-react";
 
 export default function ExploreBountiesPage() {
@@ -23,7 +23,7 @@ export default function ExploreBountiesPage() {
         setBounties(data);
       } catch (err) {
         console.log("Error while fetch bounties list", err);
-        toast.error("Failed to fetch bounties list");
+        showCustomToast("error","Error while fetching bounties for you. Please try again!")
       } finally {
         setIsLoading(false);
       }

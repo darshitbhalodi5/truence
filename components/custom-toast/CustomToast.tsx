@@ -63,22 +63,22 @@ export const showCustomToast = (type: ToastType, message?: string) => {
   toast.custom(
     (t) => (
       <div
-        className={`flex flex-col shadow-lg rounded-lg`}
+        className="flex flex-col shadow-lg rounded-lg p-3 text-sm md:text-base"
         style={{
           border: `1px solid ${borderColor}`,
           backgroundColor: bgColor,
           color: textColor,
           minWidth: "250px",
+          maxWidth: "90vw", // Ensures responsiveness on smaller screens
         }}
       >
-        <div className="flex items-center p-4">
+        <div className="flex items-center p-2 gap-2 flex-wrap">
           {icon}
-          <span className="ml-3">{message || text}</span>
-          <div className="border-l border-[#99168E] h-6 mx-3"></div>
+          <span className="flex-1 truncate">{message || text}</span>
           {/* Close Button */}
           <button
             onClick={() => toast.dismiss(t.id)}
-            className="ml-auto p-1 hover:bg-[#99168E] hover:text-white rounded"
+            className="p-1 rounded hover:bg-[#99168E] hover:text-white transition"
           >
             <X className="w-4 h-4" />
           </button>

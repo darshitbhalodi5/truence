@@ -13,7 +13,7 @@ import {
   CheckCircle2,
   File,
 } from "lucide-react";
-import toast from "react-hot-toast";
+import { showCustomToast } from "@/components/custom-toast/CustomToast";
 import { usePrivy } from "@privy-io/react-auth";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
@@ -72,7 +72,7 @@ export default function EvidenceSubmissionPage() {
         setBounties(data);
       } catch (err) {
         console.error("Error fetching bounties:", err);
-        toast.error("Failed to load bounties");
+        showCustomToast("error", "Failed to fetch program list");
       }
     };
 
@@ -111,7 +111,7 @@ export default function EvidenceSubmissionPage() {
       }
     } catch (err) {
       console.error("Error fetching bounty details:", err);
-      toast.error("Failed to load bounty details");
+      showCustomToast("error", "Failes to fetch program parameters");
     } finally {
       setIsLoadingBountyDetails(false);
     }
@@ -143,7 +143,7 @@ export default function EvidenceSubmissionPage() {
     if (!files) return;
 
     if (uploadedFiles.length + files.length > MAX_FILES) {
-      toast.error(`Maximum ${MAX_FILES} files allowed`);
+      showCustomToast("error", `Maximum ${MAX_FILES} files allowed`);
       return;
     }
 
@@ -165,7 +165,7 @@ export default function EvidenceSubmissionPage() {
 
     // Show errors for invalid files
     if (invalidFiles.length > 0) {
-      invalidFiles.forEach((error) => toast.error(error));
+      invalidFiles.forEach((error) => showCustomToast("error", `${error}`));
     }
 
     // Upload valid files
@@ -204,7 +204,7 @@ export default function EvidenceSubmissionPage() {
                 : p
             )
           );
-          toast.success(`Successfully uploaded ${file.name}`);
+          showCustomToast("success", `Successfully uploaded ${file.name}`);
         } else {
           throw new Error(data.error || "Upload failed");
         }
@@ -221,14 +221,17 @@ export default function EvidenceSubmissionPage() {
               : p
           )
         );
-        toast.error(`Failed to upload ${file.name}`);
+        showCustomToast("error", `Failed to upload ${file.name}`);
       }
     });
   };
 
   const verifyWalletOwnership = async () => {
     if (!user?.wallet) {
-      toast.error("No wallet connected");
+      showCustomToast(
+        "error",
+        "Please connect your wallet to verify ownership"
+      );
       return false;
     }
 
@@ -237,7 +240,7 @@ export default function EvidenceSubmissionPage() {
       return true;
     } catch (err) {
       console.error("Verification error:", err);
-      toast.error("Failed to verify wallet ownership");
+      showCustomToast("error", "Failed to verify wallet ownership");
       return false;
     }
   };
@@ -259,16 +262,16 @@ export default function EvidenceSubmissionPage() {
     if (currentStep !== 2) {
       // Validate current step before proceeding
       if (currentStep === 0 && !selectedBounty) {
-        toast.error("Please select a bounty program");
+        showCustomToast("error", "Please select a program for submission");
         return;
       }
       if (currentStep === 1) {
         if (!title.trim()) {
-          toast.error("Please enter a title");
+          showCustomToast("error", "Please enter a title for submission");
           return;
         }
         if (!description.trim()) {
-          toast.error("Please enter a description");
+          showCustomToast("error", "Please enter a description for submission");
           return;
         }
         if (
@@ -276,7 +279,7 @@ export default function EvidenceSubmissionPage() {
           bountyDetails.misUseRange.length > 0 &&
           !selectedMisUse
         ) {
-          toast.error("Please select a misuse range");
+          showCustomToast("error", "Please select a misuse range");
           return;
         }
       }
@@ -285,7 +288,7 @@ export default function EvidenceSubmissionPage() {
     }
 
     if (!authenticated) {
-      toast.error("Please connect your wallet first");
+      showCustomToast("error", "Please connect your wallet first");
       login();
       return;
     }
@@ -332,7 +335,10 @@ export default function EvidenceSubmissionPage() {
       setIsWalletVerified(false);
     } catch (err) {
       console.error("Submission error:", err);
-      toast.error("Failed to submit report");
+      showCustomToast(
+        "error",
+        "Failed to submit your efforts. Please try again!"
+      );
     } finally {
       setIsSubmitting(false);
     }

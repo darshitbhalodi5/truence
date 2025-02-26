@@ -7,7 +7,8 @@ import {
   ClipboardDocumentCheckIcon,
 } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
-import { toast } from "react-hot-toast";
+import { showCustomToast } from "@/components/custom-toast/CustomToast";
+
 import Image from "next/image";
 
 export function Navbar() {
@@ -41,7 +42,10 @@ export function Navbar() {
       label: "Dashboard",
       onClick: () => {
         if (!isConnected) {
-          toast.error("Please connect your wallet first");
+          showCustomToast(
+            "error",
+            "Connect your wallet to view your dashboard"
+          );
           return;
         }
         router.push("/dashboard");
