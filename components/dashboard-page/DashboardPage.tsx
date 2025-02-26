@@ -7,15 +7,22 @@ import { Submission } from "@/components/dashboard/Submission";
 import { Review } from "@/components/dashboard/Review";
 import { Management } from "@/components/dashboard/Management";
 import Chat from "@/components/dashboard/Chat";
-import { ArrowLeftIcon } from "lucide-react";
+import { ArrowLeftIcon, MenuIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { toast } from "react-hot-toast";
+import { showCustomToast } from "@/components/custom-toast/CustomToast";
+import { LoadingSpinner } from "@/components/multi-purpose-loader/LoadingSpinner";
 
 export default function DashboardPage() {
   const { user, ready } = usePrivy();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("Your Submission");
   const [isLoading, setIsLoading] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userRoles, setUserRoles] = useState({
+    isSubmitter: true,
+    isReviewer: false,
+    isManager: false,
+  });
   const [availableChats, setAvailableChats] = useState<
     Array<{
       bountyId: string;
@@ -31,7 +38,10 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (ready && !user) {
-      toast.error("Please connect your wallet first");
+      showCustomToast(
+        "error",
+        "Please connect your wallet to access dashboard"
+      );
       router.push("/");
       return;
     }
@@ -52,6 +62,8 @@ export default function DashboardPage() {
       .then((res) => res.json())
       .then((data) => {
         const chats: typeof availableChats = [];
+        let hasReviewerRole = false;
+        let hasManagerRole = false;
 
         // Add submitter's reports
         if (data.submitter.submissions) {
@@ -67,6 +79,7 @@ export default function DashboardPage() {
 
         // Add reviewer's reports
         if (data.reviewer.submissions) {
+          hasReviewerRole = data.reviewer.submissions.length > 0;
           data.reviewer.submissions.forEach((submission: any) => {
             chats.push({
               bountyId: submission.bountyId,
@@ -77,79 +90,143 @@ export default function DashboardPage() {
           });
         }
 
+        // Check if user is a manager
+        if (data.manager && data.manager.bounties) {
+          hasManagerRole = data.manager.bounties.length > 0;
+        }
+
+        // Set user roles
+        setUserRoles({
+          isSubmitter: true, // Everyone can submit
+          isReviewer: hasReviewerRole,
+          isManager: hasManagerRole,
+        });
+
+        // Set default active tab based on priority
+        if (hasManagerRole) {
+          setActiveTab("Manage Bounties");
+        } else if (hasReviewerRole) {
+          setActiveTab("Review Submission");
+        } else {
+          setActiveTab("Your Submission");
+        }
+
         setAvailableChats(chats);
       })
       .catch((error) => {
         console.error("Error fetching available chats:", error);
-        toast.error("Failed to load available chats");
       });
   }, [user?.wallet?.address]);
 
+  const handleTabClick = (tabId: string) => {
+    setActiveTab(tabId);
+    setMobileMenuOpen(false); // Close mobile menu after selection
+  };
+
   if (isLoading || !ready) {
     return (
-      <div className="min-h-screen bg-gray-900">
+      <div className="min-h-screen bg-[#000108]">
         <Navbar />
-        <div className="flex flex-col items-center justify-center min-h-[60vh]">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
-          <p className="text-gray-400">Preparing your dashboard...</p>
-        </div>
+        <LoadingSpinner text="Preparing your dashboard.." />
       </div>
     );
   }
 
   if (!user?.wallet?.address) {
     return (
-      <div className="min-h-screen bg-gray-900">
+      <div className="min-h-screen bg-[#000108]">
         <Navbar />
-        <div className="flex flex-col items-center justify-center min-h-[60vh]">
-          <p className="text-red-400 text-lg">
-            Please connect your wallet to view the dashboard
-          </p>
-        </div>
+        <LoadingSpinner text="Please connect your wallet to view the dashboard" />
       </div>
     );
   }
 
+  // Determine which tabs to show based on user roles
+  const availableTabs = [
+    { id: "Your Submission", visible: userRoles.isSubmitter },
+    { id: "Review Submission", visible: userRoles.isReviewer },
+    { id: "Manage Bounties", visible: userRoles.isManager },
+  ].filter((tab) => tab.visible);
+
   return (
-    <div className="min-h-screen bg-gray-900">
+    <div className="min-h-screen bg-[#000108]">
       <Navbar />
-      <div className="container mx-auto px-4 py-8">
-        <div className="sticky top-0 z-50 bg-gray-900 pt-4 pb-0">
-          <div className="flex items-center mb-6 border-b border-gray-700/50">
+      <div className="container mx-auto px-4 py-4 md:py-8">
+        <div className="sticky top-0 z-50 bg-[#000108] pt-2 md:pt-4 pb-0">
+          {/* Mobile navigation */}
+          <div className="flex items-center justify-between md:hidden border-b border-[#757575] pb-3">
             <button
               onClick={() => router.back()}
-              className="text-gray-400 hover:text-white transition-colors p-2"
+              className="text-white hover:text-[#FAFCA3] transition-colors p-2"
             >
               <ArrowLeftIcon className="w-5 h-5" />
             </button>
-            {["Your Submission", "Review Submission", "Manage Bounties"].map(
-              (tab) => (
+            <span className="text-[#FAFCA3] font-medium text-lg">
+              {activeTab}
+            </span>
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="text-white hover:text-[#FAFCA3] transition-colors p-2"
+            >
+              <MenuIcon className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Mobile dropdown menu */}
+          {mobileMenuOpen && (
+            <div className="md:hidden bg-[#0A0A0A] rounded-md mt-2 shadow-lg absolute w-full left-0 right-0 z-50 border border-[#303030]">
+              {availableTabs.map((tab) => (
                 <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className="relative py-4 px-2 text-sm font-medium capitalize transition-all duration-200 group"
+                  key={tab.id}
+                  onClick={() => handleTabClick(tab.id)}
+                  className={`w-full text-left px-4 py-3 block ${
+                    activeTab === tab.id
+                      ? "text-[#FAFCA3] bg-[#101010]"
+                      : "text-[#DBDBDB] hover:bg-[#101010]"
+                  }`}
                 >
-                  <span
-                    className={`${activeTab === tab
-                      ? "text-blue-500"
-                      : "text-gray-400 hover:text-gray-200"
-                      }`}
-                  >
-                    {tab}
-                  </span>
-                  <span
-                    className={`absolute bottom-0 left-0 w-full h-0.5 transform transition-all duration-200
-                        ${activeTab === tab
-                        ? "bg-gradient-to-r from-blue-500 to-blue-600 scale-x-100"
-                        : "bg-blue-500/0 scale-x-0 group-hover:bg-blue-500/50 group-hover:scale-x-75"
-                      }`}
-                  />
+                  {tab.id}
                 </button>
-              )
-            )}
+              ))}
+            </div>
+          )}
+
+          {/* Desktop navigation */}
+          <div className="hidden md:flex items-center mb-6 border-b border-[#757575]">
+            <button
+              onClick={() => router.back()}
+              className="text-white hover:text-[#FAFCA3] transition-colors p-2"
+            >
+              <ArrowLeftIcon className="w-5 h-5" />
+            </button>
+            {availableTabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className="relative py-4 px-2 text-lg font-medium capitalize transition-all duration-200 group"
+              >
+                <span
+                  className={`${
+                    activeTab === tab.id
+                      ? "text-[#FAFCA3]"
+                      : "text-[#DBDBDB] hover:text-gray-200"
+                  }`}
+                >
+                  {tab.id}
+                </span>
+                <span
+                  className={`absolute bottom-0 left-0 w-full h-1 transform transition-all duration-200
+                          ${
+                            activeTab === tab.id
+                              ? "bg-[#FAFCA3] scale-x-100 rounded-tr rounded-tl"
+                              : "bg-[#FAFCA3] scale-x-0 group-hover:bg-[#FAFCA3] group-hover:scale-x-75 rounded-tr rounded-tl"
+                          }`}
+                />
+              </button>
+            ))}
           </div>
         </div>
-        <div className="bg-gray-800 rounded-lg p-6">
+        <div className="bg-[#000108] rounded-lg p-2 md:p-6">
           {activeTab === "Your Submission" && (
             <Submission walletAddress={user.wallet.address} />
           )}
@@ -161,14 +238,16 @@ export default function DashboardPage() {
           )}
         </div>
 
-        <Chat
-          bountyId={selectedChat?.bountyId}
-          reportId={selectedChat?.reportId}
-          onSelectChat={(bountyId, reportId) =>
-            setSelectedChat({ bountyId, reportId })
-          }
-          availableChats={availableChats}
-        />
+        <div className="mt-4 md:mt-6">
+          <Chat
+            bountyId={selectedChat?.bountyId}
+            reportId={selectedChat?.reportId}
+            onSelectChat={(bountyId, reportId) =>
+              setSelectedChat({ bountyId, reportId })
+            }
+            availableChats={availableChats}
+          />
+        </div>
       </div>
     </div>
   );
