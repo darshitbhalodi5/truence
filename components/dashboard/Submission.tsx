@@ -10,7 +10,6 @@ import {
   ChevronDown,
   Filter,
   Search,
-  ArrowRight,
   Download,
   Loader2,
   X,
@@ -290,20 +289,22 @@ export function Submission({ walletAddress }: { walletAddress?: string }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold text-white">Your Submissions</h2>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <h2 className="text-xl sm:text-2xl font-semibold text-white">
+          Your Submissions
+        </h2>
         <button
           onClick={() =>
             router.push("/submission?bountyName=Arbitrum%20Watchdog")
           }
-          className="px-4 py-2 text-white rounded-lg bg-gradient-to-r from-[#990F62] via-[#99168E] to-[#991DB5] hover:from-[#b02579] hover:via-[#a12796] hover:to-[#9e2eb8] transition-colors"
+          className="px-4 py-2 text-white rounded-lg bg-gradient-to-r from-[#990F62] via-[#99168E] to-[#991DB5] hover:from-[#b02579] hover:via-[#a12796] hover:to-[#9e2eb8] transition-colors whitespace-nowrap"
         >
           Submit Evidence
         </button>
       </div>
 
-      <div className="flex flex-col md:flex-row justify-between gap-4 mb-4">
-        <div className="relative flex-grow max-w-md">
+      <div className="flex flex-col sm:flex-row justify-between gap-4 mb-4">
+        <div className="relative flex-grow max-w-full sm:max-w-md">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <Search className="h-5 w-5 text-white" />
           </div>
@@ -377,55 +378,58 @@ export function Submission({ walletAddress }: { walletAddress?: string }) {
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <div className="scroll-container overflow-y-auto max-h-[600px] scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-700 scrollbar-thumb-rounded-lg">
-          <table className="w-full text-sm text-left text-gray-400">
-            <thead className="text-sm text-gray-400 sticky top-0 bg-gray-900 z-10">
-              <tr>
-                <th className="px-4 py-3">Program</th>
-                <th className="px-4 py-3">Title</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3">Severity</th>
-                <th className="px-4 py-3">Files</th>
-                <th
-                  className="px-4 py-3 cursor-pointer"
-                  onClick={() => handleSort("createdAt")}
-                >
-                  <div className="flex items-center space-x-1">
-                    <span>Submission Date</span>
-                    <SortIcon field="createdAt" />
-                  </div>
-                </th>
-                <th>Details</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sortedAndFilteredSubmissions.map((submission) => (
-                <tr
-                  key={submission._id}
-                  className="hover:bg-gray-800/50 transition-colors cursor-pointer"
-                  onClick={() => handleRowClick(submission)}
-                >
-                  <td className="px-4 py-3">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 relative flex-shrink-0">
-                        <img
-                          src={submission.bountyLogo}
-                          alt={`${submission.programName} Logo`}
-                          className="w-7 h-7 rounded-full"
-                        />
-                      </div>
-                      <span className="text-sm text-white truncate">
-                        {submission.programName}
-                      </span>
+      <div className="overflow-x-auto -mx-4 sm:mx-0">
+        <div className="inline-block min-w-full align-middle">
+          <div className="scroll-container overflow-y-auto max-h-[600px] scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-700 scrollbar-thumb-rounded-lg">
+            <table className="w-full text-sm text-left text-gray-400">
+              <thead className="text-sm text-gray-400 sticky top-0 bg-gray-900 z-10">
+                <tr>
+                  <th className="px-4 py-3 hidden md:table-cell">Program</th>
+                  <th className="px-4 py-3">Title</th>
+                  <th className="px-4 py-3">Status</th>
+                  <th className="px-4 py-3 hidden sm:table-cell">Severity</th>
+                  <th className="px-4 py-3 hidden lg:table-cell">
+                    Misuse Amt.
+                  </th>
+                  <th className="px-4 py-3 hidden md:table-cell">Files</th>
+                  <th
+                    className="px-4 py-3 hidden sm:table-cell cursor-pointer"
+                    onClick={() => handleSort("createdAt")}
+                  >
+                    <div className="flex items-center space-x-1">
+                      <span>Submission Date</span>
+                      <SortIcon field="createdAt" />
                     </div>
-                  </td>
-                  <td className="px-4 py-3 font-medium text-white">
-                    {submission.title}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`px-2 py-1 rounded-full uppercase text-xs font-medium
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {sortedAndFilteredSubmissions.map((submission) => (
+                  <tr
+                    key={submission._id}
+                    className="hover:bg-gray-800/50 transition-colors cursor-pointer"
+                    onClick={() => handleRowClick(submission)}
+                  >
+                    <td className="px-4 py-3 hidden md:table-cell">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 relative flex-shrink-0">
+                          <img
+                            src={submission.bountyLogo}
+                            alt={`${submission.programName} Logo`}
+                            className="w-7 h-7 rounded-full"
+                          />
+                        </div>
+                        <span className="text-sm text-white truncate">
+                          {submission.programName}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 font-medium text-white">
+                      {submission.title}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`px-2 py-1 rounded-full uppercase text-xs font-medium
                     ${
                       submission.status === "pending"
                         ? "bg-yellow-500/10 text-yellow-500"
@@ -435,15 +439,15 @@ export function Submission({ walletAddress }: { walletAddress?: string }) {
                         ? "bg-green-500/10 text-green-500"
                         : "bg-red-500/10 text-red-500"
                     }`}
-                    >
-                      {submission.status.charAt(0).toUpperCase() +
-                        submission.status.slice(1)}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center space-x-2">
-                      <span
-                        className={`px-2 py-1 text-xs font-medium rounded-full
+                      >
+                        {submission.status.charAt(0).toUpperCase() +
+                          submission.status.slice(1)}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 hidden sm:table-cell">
+                      <div className="flex items-center space-x-2">
+                        <span
+                          className={`px-2 py-1 text-xs font-medium rounded-full
                       ${
                         submission.severityLevel === "critical"
                           ? "bg-red-500/10 text-red-500"
@@ -453,43 +457,36 @@ export function Submission({ walletAddress }: { walletAddress?: string }) {
                           ? "bg-yellow-500/10 text-yellow-500"
                           : "bg-blue-500/10 text-blue-500"
                       }`}
-                      >
-                        {submission.severityLevel.toUpperCase()}
-                      </span>
-                      {renderSeverityInfo(submission)}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    {submission.files?.length || 0} Files
-                  </td>
-                  <td className="px-4 py-3 text-gray-400">
-                    {new Date(submission.createdAt).toLocaleDateString()}
-                  </td>
-                  <td className="px-4 py-3">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation(); // Prevent row click event
-                        setSelectedSubmission(submission);
-                      }}
-                      className="text-[#FAFCA3] hover:text-[#99168E]"
-                    >
-                      <ArrowRight className="w-6 h-6" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                        >
+                          {submission.severityLevel.toUpperCase()}
+                        </span>
+                        {renderSeverityInfo(submission)}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 hidden lg:table-cell">
+                      {submission.misUseRange || "-"}
+                    </td>
+                    <td className="px-4 py-3 hidden md:table-cell">
+                      {submission.files?.length || 0} Files
+                    </td>
+                    <td className="px-4 py-3 hidden sm:table-cell text-gray-400">
+                      {new Date(submission.createdAt).toLocaleDateString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
       {selectedSubmission && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-          <div className="bg-[#00041B] rounded-xl p-6 max-w-2xl w-full max-h-[90vh] border border-[#99168E] shadow-xl">
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-2 sm:p-4 z-50 backdrop-blur-sm overflow-y-auto">
+          <div className="bg-[#00041B] rounded-xl p-3 sm:p-6 max-w-2xl w-full max-h-[90vh] border border-[#99168E] shadow-xl my-4">
             <div className="scroll-container overflow-y-auto max-h-[600px] scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-700 scrollbar-thumb-rounded-lg">
               <div className="flex flex-wrap justify-between gap-4 bg-[#00041B] p-4 rounded-lg sticky top-0 z-10">
                 <div>
-                  <h3 className="text-2xl font-semibold text-[#FAFCA3] mb-1 mt-1 animate-pulse">
+                  <h3 className="text-xl sm:text-2xl font-semibold text-[#FAFCA3] mb-1 mt-1 animate-pulse">
                     {selectedSubmission.title}
                   </h3>
                 </div>
@@ -501,7 +498,7 @@ export function Submission({ walletAddress }: { walletAddress?: string }) {
                 </button>
               </div>
 
-              <div className="flex flex-wrap gap-4 bg-[#00041B] p-4 rounded-lg">
+              <div className="flex flex-wrap gap-2 sm:gap-4 bg-[#00041B] p-2 sm:p-4 rounded-lg">
                 <h4 className="text-sm font-medium text-white/80 mb-1">
                   Program :
                 </h4>
@@ -517,7 +514,7 @@ export function Submission({ walletAddress }: { walletAddress?: string }) {
                 </div>
               </div>
 
-              <div className="flex flex-wrap gap-4 bg-[#00041B] p-4 rounded-lg">
+              <div className="flex flex-wrap gap-2 sm:gap-4 bg-[#00041B] p-2 sm:p-4 rounded-lg">
                 <h4 className="text-sm font-medium text-white/80 mb-1">
                   Status :{" "}
                 </h4>
@@ -538,7 +535,7 @@ export function Submission({ walletAddress }: { walletAddress?: string }) {
                 </span>
               </div>
 
-              <div className="flex flex-wrap gap-4 bg-[#00041B] p-4 rounded-lg">
+              <div className="flex flex-wrap gap-2 sm:gap-4 bg-[#00041B] p-2 sm:p-4 rounded-lg">
                 <h4 className="text-sm font-medium text-white/80 mb-1">
                   Severity :
                 </h4>
@@ -595,18 +592,27 @@ export function Submission({ walletAddress }: { walletAddress?: string }) {
                 </div>
               </div>
 
-              <div className="flex flex-wrap gap-4 bg-[#00041B] p-4 rounded-lg">
+              <div className="flex flex-wrap gap-2 sm:gap-4 bg-[#00041B] p-2 sm:p-4 rounded-lg">
+                <h4 className="text-sm font-medium text-white/80 mb-3">
+                  Misuse Amount :
+                </h4>
+                <p className="text-white/90 text-sm whitespace-pre-line text-justify">
+                  {selectedSubmission.misUseRange || "-"}
+                </p>
+              </div>
+
+              <div className="flex flex-wrap gap-2 sm:gap-4 bg-[#00041B] p-2 sm:p-4 rounded-lg">
                 <h4 className="text-sm font-medium text-white/80 mb-3">
                   Description :
                 </h4>
-                <p className="text-white/90 text-sm whitespace-pre-line">
+                <p className="text-white/90 text-xs sm:text-sm whitespace-pre-line text-justify">
                   {selectedSubmission.description}
                 </p>
               </div>
 
               {selectedSubmission.files &&
                 selectedSubmission.files.length > 0 && (
-                  <div className="gap-4 bg-[#00041B] p-4 rounded-lg">
+                  <div className="gap-2 sm:gap-4 bg-[#00041B] p-2 sm:p-4 rounded-lg">
                     <h4 className="text-sm font-medium text-white/80 mb-3">
                       Attachments :
                     </h4>
@@ -630,7 +636,7 @@ export function Submission({ walletAddress }: { walletAddress?: string }) {
                                 handleDownloadFile(fileUrl);
                               }}
                               disabled={isDownloading}
-                              className="ml-2 flex items-center gap-2 px-3 py-1 text-sm bg-[#FAFCA3] text-white rounded-md disabled:bg-gray-600 disabled:text-gray-400 transition-colors"
+                              className="ml-2 flex items-center gap-2 px-3 py-2 text-sm bg-[#FAFCA3] text-white rounded-md disabled:bg-gray-600 disabled:text-gray-400 transition-colors"
                             >
                               {isDownloading ? (
                                 <Loader2 className="animate-spin w-4 h-4 text-[#99168E]" />

@@ -5,6 +5,7 @@ export interface SubmissionData {
   description: string;
   severityLevel: string;
   reviewerSeverity?: string;
+  misUseRange?:string;
   status: string;
   createdAt: string;
   files?: string[];
