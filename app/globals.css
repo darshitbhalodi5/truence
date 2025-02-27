@@ -26,3 +26,23 @@ body {
   font-weight: normal;
   font-style: normal;
 }
+
+/* Target only the scrollable div around the tables */
+.scroll-container::-webkit-scrollbar {
+  width: 8px; /* Adjust thickness */
+}
+
+.scroll-container::-webkit-scrollbar-thumb {
+  background: #FAFCA3; /* Gray-600 */
+  border-radius: 8px;
+  transition: background 0.3s;
+}
+
+.scroll-container::-webkit-scrollbar-thumb:hover {
+  background: #99168E; /* Gray-500 */
+}
+
+.scroll-container::-webkit-scrollbar-track {
+  background: #1f2937; /* Gray-800 */
+  border-radius: 8px;
+}

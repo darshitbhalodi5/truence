@@ -207,98 +207,100 @@ export function BountyTable({ bounties }: BountyTableProps) {
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="text-left text-gray-400 text-sm">
-              <th className="py-3 px-4">Description</th>
-              <th
-                className="py-3 px-4 cursor-pointer"
-                onClick={() => handleSort("rewards")}
-              >
-                <div className="flex items-center space-x-1">
-                  <span>Max Rewards</span>
-                  <SortIcon field="rewards" />
-                </div>
-              </th>
-              <th
-                className="py-3 px-4 cursor-pointer hidden sm:table-cell"
-                onClick={() => handleSort("startDate")}
-              >
-                <div className="flex items-center space-x-1">
-                  <span>Start Date</span>
-                  <SortIcon field="startDate" />
-                </div>
-              </th>
-              <th
-                className="py-3 px-4 cursor-pointer hidden sm:table-cell"
-                onClick={() => handleSort("endDate")}
-              >
-                <div className="flex items-center space-x-1">
-                  <span>End Date</span>
-                  <SortIcon field="endDate" />
-                </div>
-              </th>
-              <th className="py-3 px-4 text-center md:text-left">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sortedAndFilteredBounties.map((bounty) => {
-              const status = bounty.status;
-              const isClosed = status === "CLOSED";
-
-              return (
-                <tr
-                  key={bounty._id}
-                  className="hover:bg-gray-800/50 transition-colors"
+      <div className="relative overflow-x-auto">
+        <div className="scroll-container overflow-y-auto max-h-[600px] scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-700 scrollbar-thumb-rounded-lg">
+          <table className="w-full">
+            <thead>
+              <tr className="text-left text-gray-400 text-sm">
+                <th className="py-3 px-4">Description</th>
+                <th
+                  className="py-3 px-4 cursor-pointer"
+                  onClick={() => handleSort("rewards")}
                 >
-                  <td className="py-3 px-4">
-                    <Link
-                      href={`/bounties/explore/${bounty.networkName
-                        .toLowerCase()
-                        .replace(/\s+/g, "-")}`}
-                      className="flex items-center gap-3"
-                    >
-                      <div className="relative w-8 h-8 flex-shrink-0 rounded-full overflow-hidden">
-                        <Image
-                          src={bounty.logoUrl}
-                          alt={bounty.networkName}
-                          fill
-                          className={`object-contain ${
-                            isClosed ? "grayscale" : ""
-                          }`}
-                        />
-                      </div>
-                      <div>
-                        <h3 className="text-white font-medium">
-                          {bounty.networkName}
-                        </h3>
-                        <p className="text-gray-400 text-sm line-clamp-1">
-                          {bounty.description}
-                        </p>
-                      </div>
-                    </Link>
-                  </td>
-                  <td className="py-3 px-4">
-                    <span className="text-[#FAFCA3]">
-                      {formatRewardNumber(bounty.maxRewards)}{" "}
-                      {getCurrency(bounty.networkName)}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4 hidden sm:table-cell">
-                    {formatDate(bounty.startDate)}
-                  </td>
-                  <td className="py-3 px-4 hidden sm:table-cell">
-                    {formatDate(bounty.endDate)}
-                  </td>
-                  <td className="py-3 px-4">
-                    <StatusCell status={status} />
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                  <div className="flex items-center space-x-1">
+                    <span>Max Rewards</span>
+                    <SortIcon field="rewards" />
+                  </div>
+                </th>
+                <th
+                  className="py-3 px-4 cursor-pointer hidden sm:table-cell"
+                  onClick={() => handleSort("startDate")}
+                >
+                  <div className="flex items-center space-x-1">
+                    <span>Start Date</span>
+                    <SortIcon field="startDate" />
+                  </div>
+                </th>
+                <th
+                  className="py-3 px-4 cursor-pointer hidden sm:table-cell"
+                  onClick={() => handleSort("endDate")}
+                >
+                  <div className="flex items-center space-x-1">
+                    <span>End Date</span>
+                    <SortIcon field="endDate" />
+                  </div>
+                </th>
+                <th className="py-3 px-4 text-center md:text-left">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sortedAndFilteredBounties.map((bounty) => {
+                const status = bounty.status;
+                const isClosed = status === "CLOSED";
+
+                return (
+                  <tr
+                    key={bounty._id}
+                    className="hover:bg-gray-800/50 transition-colors"
+                  >
+                    <td className="py-3 px-4">
+                      <Link
+                        href={`/bounties/explore/${bounty.networkName
+                          .toLowerCase()
+                          .replace(/\s+/g, "-")}`}
+                        className="flex items-center gap-3"
+                      >
+                        <div className="relative w-8 h-8 flex-shrink-0 rounded-full overflow-hidden">
+                          <Image
+                            src={bounty.logoUrl}
+                            alt={bounty.networkName}
+                            fill
+                            className={`object-contain ${
+                              isClosed ? "grayscale" : ""
+                            }`}
+                          />
+                        </div>
+                        <div>
+                          <h3 className="text-white font-medium">
+                            {bounty.networkName}
+                          </h3>
+                          <p className="text-gray-400 text-sm line-clamp-1">
+                            {bounty.description}
+                          </p>
+                        </div>
+                      </Link>
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className="text-[#FAFCA3]">
+                        {formatRewardNumber(bounty.maxRewards)}{" "}
+                        {getCurrency(bounty.networkName)}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 hidden sm:table-cell">
+                      {formatDate(bounty.startDate)}
+                    </td>
+                    <td className="py-3 px-4 hidden sm:table-cell">
+                      {formatDate(bounty.endDate)}
+                    </td>
+                    <td className="py-3 px-4">
+                      <StatusCell status={status} />
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
