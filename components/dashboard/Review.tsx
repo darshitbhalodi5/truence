@@ -415,75 +415,62 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
           />
         </div>
 
-        <div className="relative">
+        <div className="flex flex-wrap gap-2">
           <button
-            onClick={() => setIsFilterOpen(!isFilterOpen)}
-            className="flex items-center gap-2 bg-gray-800 text-white rounded-lg px-4 py-2.5 
-                     hover:bg-gray-700 transition-colors duration-200 border border-gray-700"
+            onClick={() => setSelectedStatus("ALL")}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-200
+                ${
+                  selectedStatus === "ALL"
+                    ? "bg-gray-700 text-white"
+                    : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                }`}
           >
-            <Filter className="w-4 h-4" />
-            <span className="text-sm font-medium">
-              {selectedStatus === "ALL"
-                ? "All Statuses"
-                : selectedStatus.charAt(0).toUpperCase() +
-                  selectedStatus.slice(1)}
-            </span>
-            {selectedStatus !== "ALL" && (
-              <span className="md:hidden">
-                <StatusDot status={selectedStatus} />
-              </span>
-            )}
-            <ChevronDown
-              className={`w-4 h-4 transition-transform duration-200 
-              ${isFilterOpen ? "rotate-180" : ""}`}
-            />
+            All ({statusCounts.all || 0})
           </button>
-
-          {isFilterOpen && (
-            <div
-              className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-lg 
-                        border border-gray-700 py-1 z-50"
-            >
-              <button
-                onClick={() => {
-                  setSelectedStatus("ALL");
-                  setIsFilterOpen(false);
-                }}
-                className={`w-full px-4 py-2 text-sm text-left flex items-center gap-2 
-                         hover:bg-gray-700 transition-colors duration-200
-                         ${selectedStatus === "ALL" ? "bg-gray-700" : ""}`}
-              >
-                <span>All Statuses</span>
-                <span className="bg-gray-600 text-xs rounded-full px-2 py-0.5">
-                  {statusCounts.all || 0}
-                </span>
-              </button>
-              {Object.entries(statusConfig)
-                .filter(([key]) => key !== "ALL")
-                .map(([status, config]) => (
-                  <button
-                    key={status}
-                    onClick={() => {
-                      setSelectedStatus(status as StatusFilter);
-                      setIsFilterOpen(false);
-                    }}
-                    className={`w-full px-4 py-2 text-sm text-left flex items-center gap-2 
-                           hover:bg-gray-700 transition-colors duration-200
-                           ${selectedStatus === status ? "bg-gray-700" : ""}`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`w-2 h-2 rounded-full ${config.color}`}
-                      />
-                      {config.tooltip}
-                    </div>
-                    <span className="bg-gray-600 text-xs rounded-full px-2 py-0.5">
-                      {statusCounts[status] || 0}
-                    </span>
-                  </button>
-                ))}
-            </div>
-          )}
+          <button
+            onClick={() => setSelectedStatus("pending")}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-200
+                ${
+                  selectedStatus === "pending"
+                    ? "bg-yellow-500/30 text-yellow-400"
+                    : "bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20"
+                }`}
+          >
+            Pending ({statusCounts.pending || 0})
+          </button>
+          <button
+            onClick={() => setSelectedStatus("reviewing")}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-200
+                ${
+                  selectedStatus === "reviewing"
+                    ? "bg-blue-500/30 text-blue-400"
+                    : "bg-blue-500/10 text-blue-500 hover:bg-blue-500/20"
+                }`}
+          >
+            Reviewing ({statusCounts.reviewing || 0})
+          </button>
+          <button
+            onClick={() => setSelectedStatus("accepted")}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-200
+                ${
+                  selectedStatus === "accepted"
+                    ? "bg-green-500/30 text-green-400"
+                    : "bg-green-500/10 text-green-500 hover:bg-green-500/20"
+                }`}
+          >
+            Accepted ({statusCounts.accepted || 0})
+          </button>
+          <button
+            onClick={() => setSelectedStatus("rejected")}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-200
+                ${
+                  selectedStatus === "rejected"
+                    ? "bg-red-500/30 text-red-400"
+                    : "bg-red-500/10 text-red-500 hover:bg-red-500/20"
+                }`}
+          >
+            Rejected ({statusCounts.rejected || 0})
+          </button>
         </div>
       </div>
 
