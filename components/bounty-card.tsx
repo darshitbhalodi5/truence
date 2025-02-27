@@ -9,9 +9,10 @@ import {
   SortDirection,
 } from "@/types/displayBounty";
 import { getCurrency, formatRewardNumber } from "@/utils/networkCurrency";
-import { ChevronUp, ChevronDown, Filter } from "lucide-react";
+import { ChevronUp, ChevronDown, Filter, Search } from "lucide-react";
 
 export function BountyTable({ bounties }: BountyTableProps) {
+  const [searchQuery, setSearchQuery] = useState("");
   const [sortField, setSortField] = useState<SortField>("startDate");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [statusFilter, setStatusFilter] = useState<DisplayBountyStatus | "ALL">(
@@ -100,6 +101,12 @@ export function BountyTable({ bounties }: BountyTableProps) {
       filtered = filtered.filter((bounty) => bounty.status === statusFilter);
     }
 
+    if (searchQuery.trim()) {
+      filtered = filtered.filter((bounty) =>
+        bounty.networkName.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
     return filtered.sort((a, b) => {
       const direction = sortDirection === "asc" ? 1 : -1;
 
@@ -122,7 +129,7 @@ export function BountyTable({ bounties }: BountyTableProps) {
           return 0;
       }
     });
-  }, [bounties, sortField, sortDirection, statusFilter]);
+  }, [bounties, sortField, sortDirection, statusFilter, searchQuery]);
 
   // Handle sorting part for asending or descending
   const handleSort = (field: SortField) => {
@@ -147,7 +154,19 @@ export function BountyTable({ bounties }: BountyTableProps) {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-end mb-4">
+      <div className="flex justify-between items-center mb-4">
+        <div className="relative flex-grow max-w-md">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Search className="h-5 w-5 text-white" />
+          </div>
+          <input
+            type="text"
+            placeholder="Search by program name..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 pr-4 py-2 w-full bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#99168E] focus:border-transparent"
+          />
+        </div>
         <div className="relative">
           <button
             onClick={() => setIsFilterOpen(!isFilterOpen)}
