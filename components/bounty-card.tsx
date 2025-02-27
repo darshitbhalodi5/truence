@@ -230,7 +230,7 @@ export function BountyTable({ bounties }: BountyTableProps) {
         <div className="scroll-container overflow-y-auto max-h-[600px] scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-700 scrollbar-thumb-rounded-lg">
           <table className="w-full">
             <thead>
-              <tr className="text-left text-gray-400 text-sm">
+              <tr className="text-left text-gray-400 bg-gray-900 text-sm">
                 <th className="py-3 px-4">Description</th>
                 <th
                   className="py-3 px-4 cursor-pointer"
