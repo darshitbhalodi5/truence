@@ -14,7 +14,7 @@ export async function POST(req: Request) {
       mediumReward: body.mediumReward,
       lowReward: body.lowReward,
       additionalDetails: body.additionalDetails,
-      severityDescriptions: body.severityDescriptions, // Explicitly include severityDescriptions
+      severityDescriptions: body.severityDescriptions,
       misUseRange: body.misUseRange,
       initialSeverities: body.initialSeverities,
       finalSeverity: body.finalSeverity,
