@@ -14,6 +14,7 @@ import {
   Loader2,
   X,
 } from "lucide-react";
+import { getCurrency } from "@/utils/networkCurrency";
 
 // Define sorting types
 type SortField = "status" | "createdAt";
@@ -303,80 +304,85 @@ export function Submission({ walletAddress }: { walletAddress?: string }) {
         </button>
       </div>
 
-      <div className="flex flex-col sm:flex-row justify-between gap-4 mb-4">
-        <div className="relative flex-grow max-w-full sm:max-w-md">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="h-5 w-5 text-white" />
-          </div>
-          <input
-            type="text"
-            placeholder="Search by title..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 pr-4 py-2 w-full bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#99168E] focus:border-transparent"
-          />
-        </div>
-
-        <div className="relative">
-          <button
-            onClick={() => setIsFilterOpen(!isFilterOpen)}
-            className="flex items-center gap-2 bg-gray-800 text-white rounded-lg px-4 py-2.5 
-                     hover:bg-gray-700 transition-colors duration-200 border border-gray-700"
-          >
-            <Filter className="w-4 h-4" />
-            <span className="text-sm font-medium">
-              {statusFilter === "ALL"
-                ? "All Statuses"
-                : statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}
-            </span>
-            {statusFilter !== "ALL" && (
-              <span className="md:hidden">
-                <StatusDot status={statusFilter} />
-              </span>
-            )}
-            <ChevronDown
-              className={`w-4 h-4 transition-transform duration-200 
-              ${isFilterOpen ? "rotate-180" : ""}`}
+      {submissions.length > 8 && (
+        <div className="flex flex-col sm:flex-row justify-between gap-4 mb-4">
+          <div className="relative flex-grow max-w-full sm:max-w-md">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-white" />
+            </div>
+            <input
+              type="text"
+              placeholder="Search by title..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 pr-4 py-2 w-full bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#99168E] focus:border-transparent"
             />
-          </button>
+          </div>
 
-          {isFilterOpen && (
-            <div
-              className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-lg 
-                        border border-gray-700 py-1 z-50"
+          <div className="relative">
+            <button
+              onClick={() => setIsFilterOpen(!isFilterOpen)}
+              className="flex items-center gap-2 bg-gray-800 text-white rounded-lg px-4 py-2.5 
+                     hover:bg-gray-700 transition-colors duration-200 border border-gray-700"
             >
-              <button
-                onClick={() => {
-                  setStatusFilter("ALL");
-                  setIsFilterOpen(false);
-                }}
-                className={`w-full px-4 py-2 text-sm text-left flex items-center gap-2 
+              <Filter className="w-4 h-4" />
+              <span className="text-sm font-medium">
+                {statusFilter === "ALL"
+                  ? "All Statuses"
+                  : statusFilter.charAt(0).toUpperCase() +
+                    statusFilter.slice(1)}
+              </span>
+              {statusFilter !== "ALL" && (
+                <span className="md:hidden">
+                  <StatusDot status={statusFilter} />
+                </span>
+              )}
+              <ChevronDown
+                className={`w-4 h-4 transition-transform duration-200 
+              ${isFilterOpen ? "rotate-180" : ""}`}
+              />
+            </button>
+
+            {isFilterOpen && (
+              <div
+                className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-lg 
+                        border border-gray-700 py-1 z-50"
+              >
+                <button
+                  onClick={() => {
+                    setStatusFilter("ALL");
+                    setIsFilterOpen(false);
+                  }}
+                  className={`w-full px-4 py-2 text-sm text-left flex items-center gap-2 
                          hover:bg-gray-700 transition-colors duration-200
                          ${statusFilter === "ALL" ? "bg-gray-700" : ""}`}
-              >
-                All Statuses
-              </button>
-              {Object.entries(statusConfig)
-                .filter(([key]) => key !== "ALL")
-                .map(([status, config]) => (
-                  <button
-                    key={status}
-                    onClick={() => {
-                      setStatusFilter(status as StatusFilter);
-                      setIsFilterOpen(false);
-                    }}
-                    className={`w-full px-4 py-2 text-sm text-left flex items-center gap-2 
+                >
+                  All Statuses
+                </button>
+                {Object.entries(statusConfig)
+                  .filter(([key]) => key !== "ALL")
+                  .map(([status, config]) => (
+                    <button
+                      key={status}
+                      onClick={() => {
+                        setStatusFilter(status as StatusFilter);
+                        setIsFilterOpen(false);
+                      }}
+                      className={`w-full px-4 py-2 text-sm text-left flex items-center gap-2 
                            hover:bg-gray-700 transition-colors duration-200
                            ${statusFilter === status ? "bg-gray-700" : ""}`}
-                  >
-                    <span className={`w-2 h-2 rounded-full ${config.color}`} />
-                    {config.tooltip}
-                  </button>
-                ))}
-            </div>
-          )}
+                    >
+                      <span
+                        className={`w-2 h-2 rounded-full ${config.color}`}
+                      />
+                      {config.tooltip}
+                    </button>
+                  ))}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="overflow-x-auto -mx-4 sm:mx-0">
         <div className="inline-block min-w-full align-middle">
@@ -464,7 +470,11 @@ export function Submission({ walletAddress }: { walletAddress?: string }) {
                       </div>
                     </td>
                     <td className="px-4 py-3 hidden lg:table-cell">
-                      {submission.misUseRange || "-"}
+                      {submission.misUseRange
+                        ? `${submission.misUseRange} ${getCurrency(
+                            submission.programName
+                          )}`
+                        : "-"}
                     </td>
                     <td className="px-4 py-3 hidden md:table-cell">
                       {submission.files?.length || 0} Files
@@ -597,7 +607,11 @@ export function Submission({ walletAddress }: { walletAddress?: string }) {
                   Misuse Amount :
                 </h4>
                 <p className="text-white/90 text-sm whitespace-pre-line text-justify">
-                  {selectedSubmission.misUseRange || "-"}
+                  {selectedSubmission.misUseRange
+                    ? `${selectedSubmission.misUseRange} ${getCurrency(
+                        selectedSubmission.programName
+                      )}`
+                    : "-"}
                 </p>
               </div>
 
