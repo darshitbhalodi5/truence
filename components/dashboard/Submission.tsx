@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
-import { SubmissionData, FileMetadata } from "@/types/submissionData";
+import { SubmissionData } from "@/types/submissionData";
 import { LoadingSpinner } from "@/components/multi-purpose-loader/LoadingSpinner";
 
 export function Submission({ walletAddress }: { walletAddress?: string }) {
@@ -12,9 +12,6 @@ export function Submission({ walletAddress }: { walletAddress?: string }) {
   const [error, setError] = useState<string | null>(null);
   const [selectedSubmission, setSelectedSubmission] =
     useState<SubmissionData | null>(null);
-  const [fileMetadata, setFileMetadata] = useState<
-    Record<string, FileMetadata>
-  >({});
   const [downloadingFiles, setDownloadingFiles] = useState<
     Record<string, boolean>
   >({});
@@ -53,41 +50,23 @@ export function Submission({ walletAddress }: { walletAddress?: string }) {
     fetchSubmissions();
   }, [walletAddress]);
 
-  const fetchFileMetadata = async (fileUrl: string) => {
-    try {
-      const fileId = fileUrl.split("/").pop();
-      if (!fileId) return null;
-
-      const response = await fetch(`/api/files/${fileId}/metadata`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch file metadata");
-      }
-
-      const metadata = await response.json();
-      setFileMetadata((prev) => ({
-        ...prev,
-        [fileUrl]: metadata,
-      }));
-    } catch (error) {
-      console.error("Error fetching file metadata:", error);
-    }
-  };
-
-  useEffect(() => {
-    if (selectedSubmission?.files) {
-      selectedSubmission.files.forEach((fileUrl) => {
-        if (!fileMetadata[fileUrl]) {
-          fetchFileMetadata(fileUrl);
-        }
-      });
-    }
-  }, [selectedSubmission]);
-
   // Function to handle file download
   const handleDownloadFile = async (fileUrl: string) => {
     try {
       // Set downloading state for this file
       setDownloadingFiles((prev) => ({ ...prev, [fileUrl]: true }));
+
+      // Get file ID
+      const fileId = fileUrl.split("/").pop();
+      if (!fileId) throw new Error("Invalid file URL");
+
+      // Fetch metadata inline when needed
+      const fileIndex =
+        selectedSubmission?.files?.findIndex((f) => f === fileUrl) || -1;
+      const fileName =
+        selectedSubmission?.fileNames?.[fileIndex] ||
+        fileUrl.split("/").pop() ||
+        "downloaded-file";
 
       const response = await fetch(fileUrl);
       if (!response.ok) {
@@ -98,16 +77,6 @@ export function Submission({ walletAddress }: { walletAddress?: string }) {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-
-      // Use the original filename from metadata if available
-      const metadata = fileMetadata[fileUrl];
-      const fileIndex = selectedSubmission?.files?.indexOf(fileUrl) || -1;
-      const fileName =
-        selectedSubmission?.fileNames?.[fileIndex] ||
-        metadata?.originalName ||
-        fileUrl.split("/").pop() ||
-        "downloaded-file";
-
       link.download = fileName;
 
       document.body.appendChild(link);
@@ -197,7 +166,9 @@ export function Submission({ walletAddress }: { walletAddress?: string }) {
           You haven't submitted any submissions yet.
         </p>
         <button
-          onClick={() => router.push("/submission?bountyName=Arbitrum%20Watchdog")}
+          onClick={() =>
+            router.push("/submission?bountyName=Arbitrum%20Watchdog")
+          }
           className="mt-4 px-4 py-2 bg-gradient-to-r from-[#990F62] via-[#99168E] to-[#991DB5] hover:from-[#b02579] hover:via-[#a12796] hover:to-[#9e2eb8] text-white rounded-lg transition-colors"
         >
           Submit Evidence
@@ -211,7 +182,9 @@ export function Submission({ walletAddress }: { walletAddress?: string }) {
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-semibold text-white">Your Submissions</h2>
         <button
-          onClick={() => router.push("/submission?bountyName=Arbitrum%20Watchdog")}
+          onClick={() =>
+            router.push("/submission?bountyName=Arbitrum%20Watchdog")
+          }
           className="px-4 py-2 text-white rounded-lg bg-gradient-to-r from-[#990F62] via-[#99168E] to-[#991DB5] hover:from-[#b02579] hover:via-[#a12796] hover:to-[#9e2eb8] transition-colors"
         >
           Submit Evidence
@@ -239,13 +212,13 @@ export function Submission({ walletAddress }: { walletAddress?: string }) {
               >
                 <td className="px-4 py-3">
                   <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 relative flex-shrink-0">
-                        <img
-                          src={submission.bountyLogo}
-                          alt={`${submission.programName} Logo`}
-                          className="w-7 h-7 rounded-full"
-                        />
-                      </div>
+                    <div className="w-8 h-8 relative flex-shrink-0">
+                      <img
+                        src={submission.bountyLogo}
+                        alt={`${submission.programName} Logo`}
+                        className="w-7 h-7 rounded-full"
+                      />
+                    </div>
                     <span className="text-sm text-white truncate">
                       {submission.programName}
                     </span>
@@ -432,11 +405,9 @@ export function Submission({ walletAddress }: { walletAddress?: string }) {
                     </h4>
                     <div className="space-y-2">
                       {selectedSubmission.files.map((fileUrl, index) => {
-                        const metadata = fileMetadata[fileUrl];
                         const isDownloading = downloadingFiles[fileUrl];
                         const fileName =
                           selectedSubmission.fileNames?.[index] ||
-                          metadata?.originalName ||
                           fileUrl.split("/").pop();
                         return (
                           <div
