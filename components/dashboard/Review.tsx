@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, ChevronUp, Filter, Search } from "lucide-react";
+import { ChevronDown, ChevronRight, Filter, Search } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "react-hot-toast";
 import {
@@ -20,6 +20,7 @@ import {
   SeverityFilter,
 } from "@/utils/filterTypes";
 import SortIcon from "@/components/sort-icon/SortIcon";
+import SeverityInfo from "@/components/severity-change/SeverityInfo";
 
 export function Review({ walletAddress }: { walletAddress?: string }) {
   const [reviewData, setReviewData] = useState<ReviewerData | null>(null);
@@ -274,50 +275,6 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
         error instanceof Error ? error.message : "Failed to update status"
       );
     }
-  };
-
-  const renderSeverityInfo = (submission: ReviewSubmission) => {
-    if (
-      submission.reviewerSeverity &&
-      submission.reviewerSeverity !== submission.severityLevel
-    ) {
-      return (
-        <div className="relative group">
-          <button className="ml-2 text-blue-500 hover:text-blue-400">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path
-                fillRule="evenodd"
-                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </button>
-          <div className="absolute z-10 w-64 px-4 py-3 text-sm bg-gray-800 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 -translate-x-1/2 left-1/2 mt-2">
-            <p className="text-gray-300">
-              Report accepted with severity change
-            </p>
-            <p className="mt-1">
-              <span className="text-gray-400">Original: </span>
-              <span className="text-yellow-500">
-                {submission.severityLevel.toUpperCase()}
-              </span>
-            </p>
-            <p className="mt-1">
-              <span className="text-gray-400">New: </span>
-              <span className="text-green-500">
-                {submission.reviewerSeverity.toUpperCase()}
-              </span>
-            </p>
-          </div>
-        </div>
-      );
-    }
-    return null;
   };
 
   const fetchFileMetadata = async (fileId: string) => {
@@ -705,17 +662,20 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
                             className={`px-2 py-1 rounded text-xs font-medium
                         ${
                           submission.severityLevel === "critical"
-                            ? "bg-red-500/20 text-red-500"
+                            ? "bg-red-500/10 text-red-500"
                             : submission.severityLevel === "high"
-                            ? "bg-orange-500/20 text-orange-500"
+                            ? "bg-orange-500/10 text-orange-500"
                             : submission.severityLevel === "medium"
-                            ? "bg-yellow-500/20 text-yellow-500"
-                            : "bg-blue-500/20 text-blue-500"
+                            ? "bg-yellow-500/10 text-yellow-500"
+                            : "bg-blue-500/10 text-blue-500"
                         }`}
                           >
                             {submission.severityLevel.toUpperCase()}
                           </span>
-                          {renderSeverityInfo(submission)}
+                          <SeverityInfo
+                            submitterSeverity={submission.severityLevel}
+                            reviewerSeverity={submission.reviewerSeverity}
+                          />
                         </div>
                       </td>
                       <td className="px-4 py-3 hidden lg:table-cell">
@@ -900,12 +860,12 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
                     className={`px-2 py-1 rounded-full text-xs font-medium
                     ${
                       selectedSubmission.status === "pending"
-                        ? "bg-yellow-500/20 text-yellow-500"
+                        ? "bg-yellow-500/10 text-yellow-500"
                         : selectedSubmission.status === "reviewing"
-                        ? "bg-blue-500/20 text-blue-500"
+                        ? "bg-blue-500/10 text-blue-500"
                         : selectedSubmission.status === "accepted"
-                        ? "bg-green-500/20 text-green-500"
-                        : "bg-red-500/20 text-red-500"
+                        ? "bg-green-500/10 text-green-500"
+                        : "bg-red-500/10 text-red-500"
                     }`}
                   >
                     {selectedSubmission.status.charAt(0).toUpperCase() +
@@ -918,49 +878,35 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
                   </h4>
                   <div className="flex items-center space-x-2">
                     <span
-                      className={`px-2 py-1 rounded text-xs font-medium
+                      className={`px-2 py-1 rounded-full text-xs font-medium
                       ${
                         selectedSubmission.severityLevel === "critical"
-                          ? "bg-red-500/20 text-red-500"
+                          ? "bg-red-500/10 text-red-500"
                           : selectedSubmission.severityLevel === "high"
-                          ? "bg-orange-500/20 text-orange-500"
+                          ? "bg-orange-500/10 text-orange-500"
                           : selectedSubmission.severityLevel === "medium"
-                          ? "bg-yellow-500/20 text-yellow-500"
-                          : "bg-blue-500/20 text-blue-500"
+                          ? "bg-yellow-500/10 text-yellow-500"
+                          : "bg-blue-500/10 text-blue-500"
                       }`}
                     >
                       {selectedSubmission.severityLevel.toUpperCase()}
                     </span>
                     {selectedSubmission.reviewerSeverity &&
-                      selectedSubmission.reviewerSeverity !==
-                        selectedSubmission.severityLevel && (
+                      selectedSubmission.reviewerSeverity.toLowerCase() !==
+                        selectedSubmission.severityLevel.toLowerCase() && (
                         <div className="flex items-center space-x-2">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-4 w-4 text-gray-400"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
+                          <ChevronRight className="w-4 h-4 text-[#FAFCA3]" />
                           <span
-                            className={`px-2 py-1 rounded text-xs font-medium
-                          ${
-                            selectedSubmission.reviewerSeverity.toLowerCase() ===
-                            "critical"
-                              ? "bg-red-500/20 text-red-500"
-                              : selectedSubmission.reviewerSeverity.toLowerCase() ===
-                                "high"
-                              ? "bg-orange-500/20 text-orange-500"
-                              : selectedSubmission.reviewerSeverity.toLowerCase() ===
-                                "medium"
-                              ? "bg-yellow-500/20 text-yellow-500"
-                              : "bg-blue-500/20 text-blue-500"
-                          }`}
+                            className={`px-3 py-1 rounded-full text-xs font-medium
+        ${
+          selectedSubmission.reviewerSeverity.toLowerCase() === "critical"
+            ? "bg-red-500/10 text-red-500"
+            : selectedSubmission.reviewerSeverity.toLowerCase() === "high"
+            ? "bg-orange-500/10 text-orange-500"
+            : selectedSubmission.reviewerSeverity.toLowerCase() === "medium"
+            ? "bg-yellow-500/10 text-yellow-500"
+            : "bg-blue-500/10 text-blue-500"
+        }`}
                           >
                             {selectedSubmission.reviewerSeverity.toUpperCase()}
                           </span>
