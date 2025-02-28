@@ -24,6 +24,7 @@ export interface ReviewSubmission {
   severityLevel: string;
   reviewerSeverity?: string;
   status: string;
+  misUseRange?: string;
   createdAt: string;
   walletAddress: string;
   files?: string[]; // This is an array of file IDs

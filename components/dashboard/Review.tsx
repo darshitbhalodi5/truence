@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, Filter, Search } from "lucide-react";
+import { ChevronDown, ChevronUp, Filter, Search } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "react-hot-toast";
 import {
@@ -10,8 +10,12 @@ import {
   StatusCounts,
 } from "@/types/reviewerData";
 import { LoadingSpinner } from "@/components/multi-purpose-loader/LoadingSpinner";
+import { getCurrency } from "@/utils/networkCurrency";
 
 type StatusFilter = "pending" | "reviewing" | "accepted" | "rejected" | "ALL";
+type SortField = "status" | "createdAt" | "misUseRange";
+type SortDirection = "asc" | "desc";
+type SeverityFilter = "critical" | "high" | "medium" | "low" | "ALL";
 
 export function Review({ walletAddress }: { walletAddress?: string }) {
   const [reviewData, setReviewData] = useState<ReviewerData | null>(null);
@@ -30,7 +34,12 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
     contentType: string;
   } | null>(null);
 
+  const [sortField, setSortField] = useState<SortField>("createdAt");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  const [selectedSeverity, setSelectedSeverity] =
+    useState<SeverityFilter>("ALL");
 
   useEffect(() => {
     const fetchReviewData = async () => {
@@ -89,37 +98,28 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
     fetchReviewData();
   }, [walletAddress]);
 
-  // Status configuration similar to the bounty table
-  const statusConfig = {
-    pending: { color: "bg-yellow-500", tooltip: "Pending" },
-    reviewing: { color: "bg-blue-500", tooltip: "Reviewing" },
-    accepted: { color: "bg-green-500", tooltip: "Accepted" },
-    rejected: { color: "bg-red-500", tooltip: "Rejected" },
-    ALL: { color: "", tooltip: "All Statuses" },
-  };
+  const parseMisUseRange = (range: string | undefined): number => {
+    if (!range) return 0;
 
-  // Status dot component for the filter dropdown
-  const StatusDot = ({ status }: { status: string }) => {
-    if (status === "ALL") return null;
-    return (
-      <div className="relative group">
-        <div
-          className={`w-3 h-3 rounded-full ${
-            statusConfig[status as keyof typeof statusConfig].color
-          }`}
-        />
-        <div className="hidden group-hover:block absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-xs text-white rounded whitespace-nowrap">
-          {statusConfig[status as keyof typeof statusConfig].tooltip}
-        </div>
-      </div>
-    );
+    // Extract the first number from the range
+    const match = range.match(/(\d+)/);
+    if (match && match[1]) {
+      return parseInt(match[1], 10);
+    }
+
+    // If no number found (e.g., just "<" or ">"), use 0 or a large number
+    if (range.startsWith("<")) return 0;
+    if (range.startsWith(">")) return 999999;
+
+    return 0;
   };
 
   // Filter submissions based on search query and status
   const filteredSubmissions = useMemo(() => {
     if (!reviewData?.submissions) return [];
 
-    return reviewData.submissions.filter((submission) => {
+    // First filter the submissions
+    let filtered = reviewData.submissions.filter((submission) => {
       const matchesSearch =
         submission.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         submission.programName
@@ -127,9 +127,35 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
           .includes(searchQuery.toLowerCase());
       const matchesStatus =
         selectedStatus === "ALL" || submission.status === selectedStatus;
-      return matchesSearch && matchesStatus;
+      const matchesSeverity =
+        selectedSeverity === "ALL" ||
+        submission.severityLevel === selectedSeverity;
+
+      return matchesSearch && matchesStatus && matchesSeverity;
     });
-  }, [reviewData?.submissions, searchQuery, selectedStatus]);
+
+    return filtered.sort((a, b) => {
+      if (sortField === "createdAt") {
+        const dateA = new Date(a.createdAt).getTime();
+        const dateB = new Date(b.createdAt).getTime();
+        return sortDirection === "asc" ? dateA - dateB : dateB - dateA;
+      } else if (sortField === "misUseRange") {
+        const valueA = parseMisUseRange(a.misUseRange);
+        const valueB = parseMisUseRange(b.misUseRange);
+        return sortDirection === "asc" ? valueA - valueB : valueB - valueA;
+      }
+
+      // Add other sort fields if needed
+      return 0;
+    });
+  }, [
+    reviewData?.submissions,
+    searchQuery,
+    selectedStatus,
+    sortField,
+    sortDirection,
+    selectedSeverity,
+  ]);
 
   const handleUpdateStatus = async (
     submissionId: string,
@@ -327,6 +353,35 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
     }
   };
 
+  const severityConfig = {
+    ALL: { color: "", tooltip: "All Severities" },
+    critical: { color: "bg-red-500", tooltip: "Critical" },
+    high: { color: "bg-orange-500", tooltip: "High" },
+    medium: { color: "bg-yellow-500", tooltip: "Medium" },
+    low: { color: "bg-blue-500", tooltip: "Low" },
+  };
+
+  // Sort icon component
+  const SortIcon = ({ field }: { field: SortField }) => {
+    if (sortField !== field)
+      return <ChevronUp className="h-4 w-4 text-gray-400" />;
+    return sortDirection === "asc" ? (
+      <ChevronUp className="h-4 w-4 text-[#99168E]" />
+    ) : (
+      <ChevronDown className="h-4 w-4 text-[#99168E]" />
+    );
+  };
+
+  // Handle sorting
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("desc");
+    }
+  };
+
   // Add cleanup for blob URLs
   useEffect(() => {
     return () => {
@@ -401,156 +456,179 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
         </h2>
       </div>
 
+      {/* Search and status based filter */}
       <div className="flex flex-col sm:flex-row justify-between gap-4 mb-4">
+        {/* Searchbar */}
         <div className="relative flex-grow max-w-full sm:max-w-md">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <Search className="h-5 w-5 text-white" />
           </div>
           <input
             type="text"
-            placeholder="Search by title..."
+            placeholder="Search by submission title..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10 pr-4 py-2 w-full bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#99168E] focus:border-transparent"
           />
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        {/* Buttons for status based submission filter */}
+        <div className="flex flex-wrap gap-2 text-[#FAFCA3]">
+          {[
+            { status: "ALL", count: statusCounts.all || 0 },
+            { status: "pending", count: statusCounts.pending || 0 },
+            { status: "reviewing", count: statusCounts.reviewing || 0 },
+            { status: "accepted", count: statusCounts.accepted || 0 },
+            { status: "rejected", count: statusCounts.rejected || 0 },
+          ].map(({ status, count }) => (
+            <button
+              key={status}
+              onClick={() => setSelectedStatus(status as StatusFilter)}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-200 border ${
+                selectedStatus === status
+                  ? "border-[#99168E] bg-[#99168E]" // Active state
+                  : "bg-gray-800 border-transparent hover:border-[#99168E]" // Default & Hover
+              }`}
+            >
+              {status.charAt(0).toUpperCase() + status.slice(1)} ({count})
+            </button>
+          ))}
+        </div>
+
+        <div className="relative">
           <button
-            onClick={() => setSelectedStatus("ALL")}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-200
-                ${
-                  selectedStatus === "ALL"
-                    ? "bg-gray-700 text-white"
-                    : "bg-gray-800 text-gray-300 hover:bg-gray-700"
-                }`}
+            onClick={() => setIsFilterOpen(!isFilterOpen)}
+            className="flex items-center gap-2 bg-gray-800 text-white rounded-lg px-4 py-2.5 
+              hover:bg-gray-700 transition-colors duration-200 border border-gray-700"
           >
-            All ({statusCounts.all || 0})
+            <Filter className="w-4 h-4" />
+            <span className="text-sm font-medium">
+              {selectedSeverity === "ALL"
+                ? "All Severities"
+                : selectedSeverity.charAt(0).toUpperCase() +
+                  selectedSeverity.slice(1)}
+            </span>
+            <ChevronDown
+              className={`w-4 h-4 transition-transform duration-200 
+    ${isFilterOpen ? "rotate-180" : ""}`}
+            />
           </button>
-          <button
-            onClick={() => setSelectedStatus("pending")}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-200
-                ${
-                  selectedStatus === "pending"
-                    ? "bg-yellow-500/30 text-yellow-400"
-                    : "bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20"
-                }`}
-          >
-            Pending ({statusCounts.pending || 0})
-          </button>
-          <button
-            onClick={() => setSelectedStatus("reviewing")}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-200
-                ${
-                  selectedStatus === "reviewing"
-                    ? "bg-blue-500/30 text-blue-400"
-                    : "bg-blue-500/10 text-blue-500 hover:bg-blue-500/20"
-                }`}
-          >
-            Reviewing ({statusCounts.reviewing || 0})
-          </button>
-          <button
-            onClick={() => setSelectedStatus("accepted")}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-200
-                ${
-                  selectedStatus === "accepted"
-                    ? "bg-green-500/30 text-green-400"
-                    : "bg-green-500/10 text-green-500 hover:bg-green-500/20"
-                }`}
-          >
-            Accepted ({statusCounts.accepted || 0})
-          </button>
-          <button
-            onClick={() => setSelectedStatus("rejected")}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-200
-                ${
-                  selectedStatus === "rejected"
-                    ? "bg-red-500/30 text-red-400"
-                    : "bg-red-500/10 text-red-500 hover:bg-red-500/20"
-                }`}
-          >
-            Rejected ({statusCounts.rejected || 0})
-          </button>
+
+          {isFilterOpen && (
+            <div
+              className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-lg 
+              border border-gray-700 py-1 z-50"
+            >
+              <button
+                onClick={() => {
+                  setSelectedSeverity("ALL");
+                  setIsFilterOpen(false);
+                }}
+                className={`w-full px-4 py-2 text-sm text-left flex items-center gap-2 
+                hover:bg-gray-700 transition-colors duration-200
+                ${selectedSeverity === "ALL" ? "bg-gray-700" : ""}`}
+              >
+                All Severities
+              </button>
+              {Object.entries(severityConfig)
+                .filter(([key]) => key !== "ALL")
+                .map(([severity, config]) => (
+                  <button
+                    key={severity}
+                    onClick={() => {
+                      setSelectedSeverity(severity as SeverityFilter);
+                      setIsFilterOpen(false);
+                    }}
+                    className={`w-full px-4 py-2 text-sm text-left flex items-center gap-2 
+                    hover:bg-gray-700 transition-colors duration-200
+                    ${selectedSeverity === severity ? "bg-gray-700" : ""}`}
+                  >
+                    <span className={`w-2 h-2 rounded-full ${config.color}`} />
+                    {config.tooltip}
+                  </button>
+                ))}
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm text-left text-gray-300">
-          <thead className="text-xs uppercase bg-gray-700 text-gray-300">
-            <tr>
-              <th className="px-4 py-3">Bounty</th>
-              <th className="px-4 py-3">Title</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Severity</th>
-              <th className="px-4 py-3">Files</th>
-              <th className="px-4 py-3">Submission Date</th>
-              <th className="px-4 py-3">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredSubmissions.map((submission) => {
-              const bounty = reviewData.bounties.find(
-                (b) => b.networkName === submission.programName
-              );
-              const showSeveritySelection =
-                bounty?.details?.finalSeverity &&
-                submission.status === "reviewing";
+      <div className="overflow-x-auto -mx-4 sm:mx-0">
+        <div className="inline-block min-w-full align-middle">
+          <div className="scroll-container overflow-y-auto max-h-[600px] scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-700 scrollbar-thumb-rounded-lg">
+            <table className="w-full text-sm text-left text-gray-400">
+              <thead className="text-sm text-gray-400 sticky top-0 bg-gray-900 z-10">
+                <tr>
+                  <th className="px-4 py-3 hidden md:table-cell">Program</th>
+                  <th className="px-4 py-3">Title</th>
+                  <th className="px-4 py-3 hidden sm:table-cell">Severity</th>
+                  <th
+                    className="px-4 py-3 hidden lg:table-cell cursor-pointer"
+                    onClick={() => handleSort("misUseRange")}
+                  >
+                    <div className="flex items-center space-x-1">
+                      <span>Misuse Amt.</span>
+                      <SortIcon field="misUseRange" />
+                    </div>
+                  </th>
+                  <th
+                    className="px-4 py-3 hidden sm:table-cell cursor-pointer"
+                    onClick={() => handleSort("createdAt")}
+                  >
+                    <div className="flex items-center space-x-1">
+                      <span>Submission Date</span>
+                      <SortIcon field="createdAt" />
+                    </div>
+                  </th>
+                  <th className="px-4 py-3">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredSubmissions.map((submission) => {
+                  const bounty = reviewData.bounties.find(
+                    (b) => b.networkName === submission.programName
+                  );
+                  const showSeveritySelection =
+                    bounty?.details?.finalSeverity &&
+                    submission.status === "reviewing";
 
-              return (
-                <tr
-                  key={submission._id}
-                  className="bg-gray-800 border-b border-gray-700 hover:bg-gray-700"
-                >
-                  <td className="px-4 py-3">
-                    <div className="flex items-center space-x-3">
-                      {submission.bountyLogo ? (
-                        <div className="w-8 h-8 relative flex-shrink-0">
-                          <img
-                            src={submission.bountyLogo}
-                            alt={`${submission.programName} Logo`}
-                            className="w-8 h-8 rounded-full object-cover"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.src = "/default-bounty-logo.png";
-                            }}
-                          />
-                        </div>
-                      ) : (
-                        <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center flex-shrink-0">
-                          <span className="text-xs text-gray-300">
-                            {submission.programName.charAt(0).toUpperCase()}
+                  return (
+                    <tr
+                      key={submission._id}
+                      className="bg-gray-800 border-b border-gray-700 hover:bg-gray-700"
+                    >
+                      <td className="px-4 py-3">
+                        <div className="flex items-center space-x-3">
+                          {submission.bountyLogo ? (
+                            <div className="w-8 h-8 relative flex-shrink-0">
+                              <img
+                                src={submission.bountyLogo}
+                                alt={`${submission.programName} Logo`}
+                                className="w-8 h-8 rounded-full object-cover"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.src = "/default-bounty-logo.png";
+                                }}
+                              />
+                            </div>
+                          ) : (
+                            <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center flex-shrink-0">
+                              <span className="text-xs text-gray-300">
+                                {submission.programName.charAt(0).toUpperCase()}
+                              </span>
+                            </div>
+                          )}
+                          <span className="text-sm text-gray-300 truncate">
+                            {submission.programName}
                           </span>
                         </div>
-                      )}
-                      <span className="text-sm text-gray-300 truncate">
-                        {submission.programName}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 font-medium text-white">
-                    {submission.title}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium
-                      ${
-                        submission.status === "pending"
-                          ? "bg-yellow-500/20 text-yellow-500"
-                          : submission.status === "reviewing"
-                          ? "bg-blue-500/20 text-blue-500"
-                          : submission.status === "accepted"
-                          ? "bg-green-500/20 text-green-500"
-                          : "bg-red-500/20 text-red-500"
-                      }`}
-                    >
-                      {submission.status.charAt(0).toUpperCase() +
-                        submission.status.slice(1)}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center space-x-2">
-                      <span
-                        className={`px-2 py-1 rounded text-xs font-medium
+                      </td>
+                      <td className="px-4 py-3 font-medium text-white">
+                        {submission.title}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center space-x-2">
+                          <span
+                            className={`px-2 py-1 rounded text-xs font-medium
                         ${
                           submission.severityLevel === "critical"
                             ? "bg-red-500/20 text-red-500"
@@ -560,97 +638,112 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
                             ? "bg-yellow-500/20 text-yellow-500"
                             : "bg-blue-500/20 text-blue-500"
                         }`}
-                      >
-                        {submission.severityLevel.toUpperCase()}
-                      </span>
-                      {renderSeverityInfo(submission)}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    {submission.files?.length || 0} file(s)
-                  </td>
-                  <td className="px-4 py-3 text-gray-400">
-                    {new Date(submission.createdAt).toLocaleDateString()}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center space-x-2">
-                      <button
-                        onClick={() => setSelectedSubmission(submission)}
-                        className="text-blue-500 hover:text-blue-400"
-                      >
-                        View
-                      </button>
-                      {submission.status === "pending" && (
-                        <button
-                          onClick={() =>
-                            handleUpdateStatus(submission._id, "reviewing")
-                          }
-                          className="text-yellow-500 hover:text-yellow-400 ml-2"
-                        >
-                          Review
-                        </button>
-                      )}
-                      {submission.status === "reviewing" && (
-                        <>
-                          {showSeveritySelection ? (
-                            <div className="flex items-center space-x-2">
-                              <select
-                                className="px-2 py-1 bg-gray-700 text-white rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                onChange={(e) =>
-                                  handleUpdateStatus(
-                                    submission._id,
-                                    "accepted",
-                                    e.target.value
-                                  )
-                                }
-                              >
-                                <option value="">Select Severity</option>
-                                {bounty?.details?.initialSeverities?.map(
-                                  (severity) => (
-                                    <option key={severity} value={severity}>
-                                      {severity}
-                                    </option>
-                                  )
-                                )}
-                              </select>
-                              <button
-                                onClick={() =>
-                                  handleUpdateStatus(submission._id, "rejected")
-                                }
-                                className="px-3 py-1 bg-red-500/20 text-red-500 rounded hover:bg-red-500/30"
-                              >
-                                Reject
-                              </button>
-                            </div>
-                          ) : (
+                          >
+                            {submission.severityLevel.toUpperCase()}
+                          </span>
+                          {renderSeverityInfo(submission)}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 hidden lg:table-cell">
+                        {submission.misUseRange
+                          ? `${submission.misUseRange} ${getCurrency(
+                              submission.programName
+                            )}`
+                          : "-"}
+                      </td>
+                      <td className="px-4 py-3 text-gray-400">
+                        {new Date(submission.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center space-x-2">
+                          <button
+                            onClick={() => setSelectedSubmission(submission)}
+                            className="text-blue-500 hover:text-blue-400"
+                          >
+                            View
+                          </button>
+                          {submission.status === "pending" && (
+                            <button
+                              onClick={() =>
+                                handleUpdateStatus(submission._id, "reviewing")
+                              }
+                              className="text-yellow-500 hover:text-yellow-400 ml-2"
+                            >
+                              Review
+                            </button>
+                          )}
+                          {submission.status === "reviewing" && (
                             <>
-                              <button
-                                onClick={() =>
-                                  handleUpdateStatus(submission._id, "accepted")
-                                }
-                                className="px-3 py-1 bg-green-500/20 text-green-500 rounded hover:bg-green-500/30"
-                              >
-                                Accept
-                              </button>
-                              <button
-                                onClick={() =>
-                                  handleUpdateStatus(submission._id, "rejected")
-                                }
-                                className="px-3 py-1 bg-red-500/20 text-red-500 rounded hover:bg-red-500/30"
-                              >
-                                Reject
-                              </button>
+                              {showSeveritySelection ? (
+                                <div className="flex items-center space-x-2">
+                                  <select
+                                    className="px-2 py-1 bg-gray-700 text-white rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    onChange={(e) =>
+                                      handleUpdateStatus(
+                                        submission._id,
+                                        "accepted",
+                                        e.target.value
+                                      )
+                                    }
+                                  >
+                                    <option value="">Select Severity</option>
+                                    {bounty?.details?.initialSeverities?.map(
+                                      (severity) => (
+                                        <option key={severity} value={severity}>
+                                          {severity}
+                                        </option>
+                                      )
+                                    )}
+                                  </select>
+                                  <button
+                                    onClick={() =>
+                                      handleUpdateStatus(
+                                        submission._id,
+                                        "rejected"
+                                      )
+                                    }
+                                    className="px-3 py-1 bg-red-500/20 text-red-500 rounded hover:bg-red-500/30"
+                                  >
+                                    Reject
+                                  </button>
+                                </div>
+                              ) : (
+                                <>
+                                  <button
+                                    onClick={() =>
+                                      handleUpdateStatus(
+                                        submission._id,
+                                        "accepted"
+                                      )
+                                    }
+                                    className="px-3 py-1 bg-green-500/20 text-green-500 rounded hover:bg-green-500/30"
+                                  >
+                                    Accept
+                                  </button>
+                                  <button
+                                    onClick={() =>
+                                      handleUpdateStatus(
+                                        submission._id,
+                                        "rejected"
+                                      )
+                                    }
+                                    className="px-3 py-1 bg-red-500/20 text-red-500 rounded hover:bg-red-500/30"
+                                  >
+                                    Reject
+                                  </button>
+                                </>
+                              )}
                             </>
                           )}
-                        </>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
       {selectedSubmission && (
