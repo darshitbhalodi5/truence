@@ -9,6 +9,7 @@ import {
   FileData,
   StatusCounts,
 } from "@/types/reviewerData";
+import { parseMisUseRange } from "@/utils/parseMisuseRange";
 import { LoadingSpinner } from "@/components/multi-purpose-loader/LoadingSpinner";
 import { getCurrency } from "@/utils/networkCurrency";
 
@@ -37,6 +38,11 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
   const [sortField, setSortField] = useState<SortField>("createdAt");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [bookmarkedSubmissions, setBookmarkedSubmissions] = useState<string[]>(
+    []
+  );
+
+  const bookmarkKey = walletAddress ? `reviewBookmarks_${walletAddress}` : null;
 
   const [selectedSeverity, setSelectedSeverity] =
     useState<SeverityFilter>("ALL");
@@ -98,23 +104,64 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
     fetchReviewData();
   }, [walletAddress]);
 
-  const parseMisUseRange = (range: string | undefined): number => {
-    if (!range) return 0;
-
-    // Extract the first number from the range
-    const match = range.match(/(\d+)/);
-    if (match && match[1]) {
-      return parseInt(match[1], 10);
+  useEffect(() => {
+    if (!bookmarkKey) {
+      setBookmarkedSubmissions([]);
+      return;
     }
 
-    // If no number found (e.g., just "<" or ">"), use 0 or a large number
-    if (range.startsWith("<")) return 0;
-    if (range.startsWith(">")) return 999999;
+    const savedBookmarks = localStorage.getItem(bookmarkKey);
+    if (savedBookmarks) {
+      try {
+        const parsedBookmarks = JSON.parse(savedBookmarks);
+        if (Array.isArray(parsedBookmarks)) {
+          setBookmarkedSubmissions(parsedBookmarks);
+        } else {
+          console.error("Stored bookmarks are not an array:", parsedBookmarks);
+          setBookmarkedSubmissions([]);
+        }
+      } catch (e) {
+        console.error("Error parsing bookmarks from localStorage:", e);
+        setBookmarkedSubmissions([]);
+      }
+    } else {
+      // Initialize as empty array if nothing is stored
+      setBookmarkedSubmissions([]);
+    }
+  }, [bookmarkKey]);
 
-    return 0;
-  };
+  useEffect(() => {
+    if (bookmarkKey && bookmarkedSubmissions.length > 0) {
+      localStorage.setItem(bookmarkKey, JSON.stringify(bookmarkedSubmissions));
+    } else if (bookmarkKey && bookmarkedSubmissions.length === 0) {
+      // Optionally clear the key when no bookmarks exist
+      localStorage.removeItem(bookmarkKey);
+    }
+  }, [bookmarkedSubmissions, bookmarkKey]);
 
-  // Filter submissions based on search query and status
+  // Load bookmarks from localStorage on component mount
+  useEffect(() => {
+    const savedBookmarks = localStorage.getItem("reviewBookmarks");
+    if (savedBookmarks) {
+      try {
+        setBookmarkedSubmissions(JSON.parse(savedBookmarks));
+      } catch (e) {
+        console.error("Error loading bookmarks from localStorage:", e);
+      }
+    }
+  }, []);
+
+  // Save bookmarks to localStorage when changed
+  useEffect(() => {
+    localStorage.setItem(
+      "reviewBookmarks",
+      JSON.stringify(bookmarkedSubmissions)
+    );
+  }, [bookmarkedSubmissions]);
+
+
+
+  // Filter submissions data based on requirement
   const filteredSubmissions = useMemo(() => {
     if (!reviewData?.submissions) return [];
 
@@ -134,7 +181,16 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
       return matchesSearch && matchesStatus && matchesSeverity;
     });
 
-    return filtered.sort((a, b) => {
+    // Sort submissions
+    filtered = filtered.sort((a, b) => {
+      // First by bookmark status
+      const aBookmarked = bookmarkedSubmissions.includes(a._id);
+      const bBookmarked = bookmarkedSubmissions.includes(b._id);
+
+      if (aBookmarked && !bBookmarked) return -1;
+      if (!aBookmarked && bBookmarked) return 1;
+
+      // Then by the selected sort field
       if (sortField === "createdAt") {
         const dateA = new Date(a.createdAt).getTime();
         const dateB = new Date(b.createdAt).getTime();
@@ -148,6 +204,8 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
       // Add other sort fields if needed
       return 0;
     });
+
+    return filtered;
   }, [
     reviewData?.submissions,
     searchQuery,
@@ -155,6 +213,7 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
     sortField,
     sortDirection,
     selectedSeverity,
+    bookmarkedSubmissions,
   ]);
 
   const handleUpdateStatus = async (
@@ -382,6 +441,14 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
     }
   };
 
+  const toggleBookmark = (submissionId: string) => {
+    setBookmarkedSubmissions((prev) =>
+      prev.includes(submissionId)
+        ? prev.filter((id) => id !== submissionId)
+        : [...prev, submissionId]
+    );
+  };
+
   // Add cleanup for blob URLs
   useEffect(() => {
     return () => {
@@ -440,6 +507,7 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
     );
   }
 
+  // Submission count for each status (Accepted, Rejected, Pending, Reviewing)
   const statusCounts: StatusCounts = reviewData?.submissions?.reduce(
     (counts: StatusCounts, submission) => {
       counts[submission.status] = (counts[submission.status] || 0) + 1;
@@ -560,6 +628,7 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
                 <tr>
                   <th className="px-4 py-3 hidden md:table-cell">Program</th>
                   <th className="px-4 py-3">Title</th>
+                  <th className="px-4 py-3">Submission Address</th>
                   <th className="px-4 py-3 hidden sm:table-cell">Severity</th>
                   <th
                     className="px-4 py-3 hidden lg:table-cell cursor-pointer"
@@ -579,6 +648,7 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
                       <SortIcon field="createdAt" />
                     </div>
                   </th>
+                  <th className="px-2 py-3 w-10">Bookmark</th>
                   <th className="px-4 py-3">Actions</th>
                 </tr>
               </thead>
@@ -625,6 +695,12 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
                       <td className="px-4 py-3 font-medium text-white">
                         {submission.title}
                       </td>
+                      <td className="px-4 py-3 font-medium text-white">
+                        {`${submission.walletAddress.slice(
+                          0,
+                          8
+                        )}...${submission.walletAddress.slice(-6)}`}
+                      </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center space-x-2">
                           <span
@@ -653,6 +729,40 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
                       </td>
                       <td className="px-4 py-3 text-gray-400">
                         {new Date(submission.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-2 py-3 text-center">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleBookmark(submission._id);
+                          }}
+                          className="focus:outline-none"
+                        >
+                          {bookmarkedSubmissions.includes(submission._id) ? (
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-5 w-5 text-yellow-500 fill-current"
+                              viewBox="0 0 20 20"
+                            >
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                          ) : (
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-5 w-5 text-gray-400 hover:text-yellow-500"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                              />
+                            </svg>
+                          )}
+                        </button>
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center space-x-2">
