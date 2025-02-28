@@ -12,11 +12,14 @@ import {
 import { parseMisUseRange } from "@/utils/parseMisuseRange";
 import { LoadingSpinner } from "@/components/multi-purpose-loader/LoadingSpinner";
 import { getCurrency } from "@/utils/networkCurrency";
-
-type StatusFilter = "pending" | "reviewing" | "accepted" | "rejected" | "ALL";
-type SortField = "status" | "createdAt" | "misUseRange";
-type SortDirection = "asc" | "desc";
-type SeverityFilter = "critical" | "high" | "medium" | "low" | "ALL";
+import { formatFileSize } from "@/utils/fileSizeFormat";
+import {
+  StatusFilter,
+  SortDirection,
+  SortField,
+  SeverityFilter,
+} from "@/utils/filterTypes";
+import SortIcon from "@/components/sort-icon/SortIcon";
 
 export function Review({ walletAddress }: { walletAddress?: string }) {
   const [reviewData, setReviewData] = useState<ReviewerData | null>(null);
@@ -158,8 +161,6 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
       JSON.stringify(bookmarkedSubmissions)
     );
   }, [bookmarkedSubmissions]);
-
-
 
   // Filter submissions data based on requirement
   const filteredSubmissions = useMemo(() => {
@@ -420,17 +421,6 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
     low: { color: "bg-blue-500", tooltip: "Low" },
   };
 
-  // Sort icon component
-  const SortIcon = ({ field }: { field: SortField }) => {
-    if (sortField !== field)
-      return <ChevronUp className="h-4 w-4 text-gray-400" />;
-    return sortDirection === "asc" ? (
-      <ChevronUp className="h-4 w-4 text-[#99168E]" />
-    ) : (
-      <ChevronDown className="h-4 w-4 text-[#99168E]" />
-    );
-  };
-
   // Handle sorting
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -636,7 +626,11 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
                   >
                     <div className="flex items-center space-x-1">
                       <span>Misuse Amt.</span>
-                      <SortIcon field="misUseRange" />
+                      <SortIcon
+                        field="misUseRange"
+                        sortField={sortField}
+                        sortDirection={sortDirection}
+                      />
                     </div>
                   </th>
                   <th
@@ -645,7 +639,11 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
                   >
                     <div className="flex items-center space-x-1">
                       <span>Submission Date</span>
-                      <SortIcon field="createdAt" />
+                      <SortIcon
+                        field="createdAt"
+                        sortField={sortField}
+                        sortDirection={sortDirection}
+                      />
                     </div>
                   </th>
                   <th className="px-2 py-3 w-10">Bookmark</th>
@@ -1157,13 +1155,4 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
       )}
     </div>
   );
-}
-
-// Utility function to format file size
-function formatFileSize(bytes: number): string {
-  if (bytes === 0) return "0 Bytes";
-  const k = 1024;
-  const sizes = ["Bytes", "KB", "MB", "GB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 }

@@ -15,11 +15,8 @@ import {
   X,
 } from "lucide-react";
 import { getCurrency } from "@/utils/networkCurrency";
-
-// Define sorting types
-type SortField = "status" | "createdAt";
-type SortDirection = "asc" | "desc";
-type StatusFilter = "pending" | "reviewing" | "accepted" | "rejected" | "ALL";
+import { SortField, SortDirection, StatusFilter } from "@/utils/filterTypes";
+import SortIcon from "@/components/sort-icon/SortIcon";
 
 export function Submission({ walletAddress }: { walletAddress?: string }) {
   const [submissions, setSubmissions] = useState<SubmissionData[]>([]);
@@ -143,17 +140,6 @@ export function Submission({ walletAddress }: { walletAddress?: string }) {
       setSortField(field);
       setSortDirection("desc");
     }
-  };
-
-  // Sort icon component
-  const SortIcon = ({ field }: { field: SortField }) => {
-    if (sortField !== field)
-      return <ChevronUp className="h-4 w-4 text-gray-400" />;
-    return sortDirection === "asc" ? (
-      <ChevronUp className="h-4 w-4 text-[#99168E]" />
-    ) : (
-      <ChevronDown className="h-4 w-4 text-[#99168E]" />
-    );
   };
 
   // Function to handle file download
@@ -404,7 +390,11 @@ export function Submission({ walletAddress }: { walletAddress?: string }) {
                   >
                     <div className="flex items-center space-x-1">
                       <span>Submission Date</span>
-                      <SortIcon field="createdAt" />
+                      <SortIcon
+                        field="createdAt"
+                        sortField={sortField}
+                        sortDirection={sortDirection}
+                      />
                     </div>
                   </th>
                 </tr>

@@ -9,7 +9,8 @@ import {
   SortDirection,
 } from "@/types/displayBounty";
 import { getCurrency, formatRewardNumber } from "@/utils/networkCurrency";
-import { ChevronUp, ChevronDown, Filter, Search } from "lucide-react";
+import { ChevronDown, Filter, Search } from "lucide-react";
+import SortIcon from "@/components/sort-icon/SortIcon";
 
 export function BountyTable({ bounties }: BountyTableProps) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -141,17 +142,6 @@ export function BountyTable({ bounties }: BountyTableProps) {
     }
   };
 
-  // Sort icon or arrow
-  const SortIcon = ({ field }: { field: SortField }) => {
-    if (sortField !== field)
-      return <ChevronUp className="h-4 w-4 text-gray-400" />;
-    return sortDirection === "asc" ? (
-      <ChevronUp className="h-4 w-4 text-[#99168E]" />
-    ) : (
-      <ChevronDown className="h-4 w-4 text-[#99168E]" />
-    );
-  };
-
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center mb-4">
@@ -238,7 +228,8 @@ export function BountyTable({ bounties }: BountyTableProps) {
                 >
                   <div className="flex items-center space-x-1">
                     <span>Max Rewards</span>
-                    <SortIcon field="rewards" />
+                    <SortIcon field="rewards" sortField={sortField}
+                        sortDirection={sortDirection}/>
                   </div>
                 </th>
                 <th
@@ -247,7 +238,8 @@ export function BountyTable({ bounties }: BountyTableProps) {
                 >
                   <div className="flex items-center space-x-1">
                     <span>Start Date</span>
-                    <SortIcon field="startDate" />
+                    <SortIcon field="startDate" sortField={sortField}
+                        sortDirection={sortDirection}/>
                   </div>
                 </th>
                 <th
@@ -256,7 +248,8 @@ export function BountyTable({ bounties }: BountyTableProps) {
                 >
                   <div className="flex items-center space-x-1">
                     <span>End Date</span>
-                    <SortIcon field="endDate" />
+                    <SortIcon field="endDate" sortField={sortField}
+                        sortDirection={sortDirection}/>
                   </div>
                 </th>
                 <th className="py-3 px-4 text-center md:text-left">Status</th>
