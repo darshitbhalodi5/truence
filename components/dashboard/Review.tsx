@@ -46,7 +46,9 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
     []
   );
 
-  const bookmarkKey = walletAddress ? `reviewBookmarks_${walletAddress}` : null;
+  const bookmarkKey = walletAddress
+    ? `reviewBookmarks_${walletAddress}`
+    : "reviewBookmarks";
 
   const [selectedSeverity, setSelectedSeverity] =
     useState<SeverityFilter>("ALL");
@@ -108,13 +110,10 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
     fetchReviewData();
   }, [walletAddress]);
 
+  // Load bookmarks from localStorage on component mount/when wallet changes
   useEffect(() => {
-    if (!bookmarkKey) {
-      setBookmarkedSubmissions([]);
-      return;
-    }
-
     const savedBookmarks = localStorage.getItem(bookmarkKey);
+
     if (savedBookmarks) {
       try {
         const parsedBookmarks = JSON.parse(savedBookmarks);
@@ -129,39 +128,27 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
         setBookmarkedSubmissions([]);
       }
     } else {
-      // Initialize as empty array if nothing is stored
       setBookmarkedSubmissions([]);
     }
   }, [bookmarkKey]);
 
+  // Save bookmarks to localStorage when they change
   useEffect(() => {
-    if (bookmarkKey && bookmarkedSubmissions.length > 0) {
+    if (bookmarkedSubmissions.length > 0) {
       localStorage.setItem(bookmarkKey, JSON.stringify(bookmarkedSubmissions));
-    } else if (bookmarkKey && bookmarkedSubmissions.length === 0) {
-      // Optionally clear the key when no bookmarks exist
-      localStorage.removeItem(bookmarkKey);
     }
   }, [bookmarkedSubmissions, bookmarkKey]);
 
-  // Load bookmarks from localStorage on component mount
-  useEffect(() => {
-    const savedBookmarks = localStorage.getItem("reviewBookmarks");
-    if (savedBookmarks) {
-      try {
-        setBookmarkedSubmissions(JSON.parse(savedBookmarks));
-      } catch (e) {
-        console.error("Error loading bookmarks from localStorage:", e);
+  // Function to toggle bookmark status
+  const toggleBookmark = (submissionId: string) => {
+    setBookmarkedSubmissions((prev) => {
+      if (prev.includes(submissionId)) {
+        return prev.filter((id) => id !== submissionId);
+      } else {
+        return [...prev, submissionId];
       }
-    }
-  }, []);
-
-  // Save bookmarks to localStorage when changed
-  useEffect(() => {
-    localStorage.setItem(
-      "reviewBookmarks",
-      JSON.stringify(bookmarkedSubmissions)
-    );
-  }, [bookmarkedSubmissions]);
+    });
+  };
 
   // Filter submissions data based on requirement
   const filteredSubmissions = useMemo(() => {
@@ -386,14 +373,6 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
       setSortField(field);
       setSortDirection("desc");
     }
-  };
-
-  const toggleBookmark = (submissionId: string) => {
-    setBookmarkedSubmissions((prev) =>
-      prev.includes(submissionId)
-        ? prev.filter((id) => id !== submissionId)
-        : [...prev, submissionId]
-    );
   };
 
   // Add cleanup for blob URLs
