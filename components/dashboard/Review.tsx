@@ -1,6 +1,14 @@
 "use client";
 
-import { ChevronDown, ChevronRight, Filter, Search } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronRight,
+  Filter,
+  Search,
+  EllipsisVertical,
+  X,
+  Eye,
+} from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "react-hot-toast";
 import {
@@ -596,32 +604,17 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
                     submission.status === "reviewing";
 
                   return (
-                    <tr
-                      key={submission._id}
-                      className="bg-gray-800 border-b border-gray-700 hover:bg-gray-700"
-                    >
-                      <td className="px-4 py-3">
+                    <tr key={submission._id} className="hover:bg-gray-800/50">
+                      <td className="px-4 py-3 hidden md:table-cell">
                         <div className="flex items-center space-x-3">
-                          {submission.bountyLogo ? (
-                            <div className="w-8 h-8 relative flex-shrink-0">
-                              <img
-                                src={submission.bountyLogo}
-                                alt={`${submission.programName} Logo`}
-                                className="w-8 h-8 rounded-full object-cover"
-                                onError={(e) => {
-                                  const target = e.target as HTMLImageElement;
-                                  target.src = "/default-bounty-logo.png";
-                                }}
-                              />
-                            </div>
-                          ) : (
-                            <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center flex-shrink-0">
-                              <span className="text-xs text-gray-300">
-                                {submission.programName.charAt(0).toUpperCase()}
-                              </span>
-                            </div>
-                          )}
-                          <span className="text-sm text-gray-300 truncate">
+                          <div className="w-8 h-8 relative flex-shrink-0">
+                            <img
+                              src={submission.bountyLogo}
+                              alt={`${submission.programName} Logo`}
+                              className="w-7 h-7 rounded-full"
+                            />
+                          </div>
+                          <span className="text-sm text-white truncate">
                             {submission.programName}
                           </span>
                         </div>
@@ -638,7 +631,7 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
                       <td className="px-4 py-3">
                         <div className="flex items-center space-x-2">
                           <span
-                            className={`px-2 py-1 rounded text-xs font-medium
+                            className={`px-2 py-1 rounded-full text-xs font-medium
                         ${
                           submission.severityLevel === "critical"
                             ? "bg-red-500/10 text-red-500"
@@ -705,26 +698,33 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
                         <div className="flex items-center space-x-2">
                           <button
                             onClick={() => setSelectedSubmission(submission)}
-                            className="text-blue-500 hover:text-blue-400"
+                            className="text-[#FAFCA3] hover:text-[#99168E]"
                           >
-                            View
+                            Details
                           </button>
                           {submission.status === "pending" && (
-                            <button
-                              onClick={() =>
-                                handleUpdateStatus(submission._id, "reviewing")
-                              }
-                              className="text-yellow-500 hover:text-yellow-400 ml-2"
-                            >
-                              Review
-                            </button>
+                            <>
+                              <EllipsisVertical className="w-5 h-5 text-orange-500" />
+                              <button
+                                onClick={() =>
+                                  handleUpdateStatus(
+                                    submission._id,
+                                    "reviewing"
+                                  )
+                                }
+                                className="text-[#FAFCA3] hover:text-[#99168E] ml-2"
+                              >
+                                Review
+                              </button>
+                            </>
                           )}
                           {submission.status === "reviewing" && (
                             <>
+                              <EllipsisVertical className="w-5 h-5 text-orange-500" />
                               {showSeveritySelection ? (
                                 <div className="flex items-center space-x-2">
                                   <select
-                                    className="px-2 py-1 bg-gray-700 text-white rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="px-2 py-1 bg-gray-800 border border-gray-700 rounded-full text-white focus:outline-none focus:ring-2 focus:ring-[#99168E] focus:border-transparent"
                                     onChange={(e) =>
                                       handleUpdateStatus(
                                         submission._id,
@@ -733,7 +733,7 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
                                       )
                                     }
                                   >
-                                    <option value="">Select Severity</option>
+                                    <option value="">Accept</option>
                                     {bounty?.details?.initialSeverities?.map(
                                       (severity) => (
                                         <option key={severity} value={severity}>
@@ -749,7 +749,7 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
                                         "rejected"
                                       )
                                     }
-                                    className="px-3 py-1 bg-red-500/20 text-red-500 rounded hover:bg-red-500/30"
+                                    className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full hover:bg-red-500/30"
                                   >
                                     Reject
                                   </button>
@@ -763,7 +763,7 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
                                         "accepted"
                                       )
                                     }
-                                    className="px-3 py-1 bg-green-500/20 text-green-500 rounded hover:bg-green-500/30"
+                                    className="px-3 py-1 bg-green-500/20 text-green-500 rounded-full hover:bg-green-500/30"
                                   >
                                     Accept
                                   </button>
@@ -774,7 +774,7 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
                                         "rejected"
                                       )
                                     }
-                                    className="px-3 py-1 bg-red-500/20 text-red-500 rounded hover:bg-red-500/30"
+                                    className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full hover:bg-red-500/30"
                                   >
                                     Reject
                                   </button>
@@ -794,49 +794,36 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
       </div>
 
       {selectedSubmission && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-gray-800 rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-start mb-6">
-              <h3 className="text-xl font-semibold text-white">
-                {selectedSubmission.title}
-              </h3>
-              <button
-                onClick={() => setSelectedSubmission(null)}
-                className="text-gray-400 hover:text-white"
-              >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-2 sm:p-4 z-50 backdrop-blur-sm overflow-y-auto">
+          <div className="bg-[#00041B] rounded-xl p-3 sm:p-6 max-w-2xl w-full max-h-[90vh] border border-[#99168E] shadow-xl my-4">
+            <div className="scroll-container overflow-y-auto max-h-[600px] scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-700 scrollbar-thumb-rounded-lg">
+              <div className="flex flex-wrap justify-between gap-4 bg-[#00041B] p-4 rounded-lg sticky top-0 z-10">
+                <h3 className="text-xl sm:text-2xl font-semibold text-[#FAFCA3] mb-1 mt-1 animate-pulse">
+                  {selectedSubmission.title}
+                </h3>
+                <button
+                  onClick={() => setSelectedSubmission(null)}
+                  className="hover:bg-[#99168E] p-1 rounded-xl transition-colors"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <h4 className="text-sm font-medium text-gray-400 mb-1">
-                  Description
-                </h4>
-                <p className="text-white whitespace-pre-wrap">
-                  {selectedSubmission.description}
-                </p>
+                  <X className="w-6 h-6 text-[#FAFCA3]" />
+                </button>
               </div>
 
-              <div className="flex space-x-4">
-                <div>
-                  <h4 className="text-sm font-medium text-gray-400 mb-1">
-                    Status
-                  </h4>
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium
+              <div className="flex flex-wrap gap-2 sm:gap-4 bg-[#00041B] p-2 sm:p-4 rounded-lg">
+                <h4 className="text-sm font-medium text-white/80 mb-1">
+                  Description:
+                </h4>
+                <div className="flex items-center space-x-2">
+                  {selectedSubmission.description}
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-2 sm:gap-4 bg-[#00041B] p-2 sm:p-4 rounded-lg">
+                <h4 className="text-sm font-medium text-white/80 mb-1">
+                  Status :{" "}
+                </h4>
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-medium inline-flex items-center
                     ${
                       selectedSubmission.status === "pending"
                         ? "bg-yellow-500/10 text-yellow-500"
@@ -846,18 +833,19 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
                         ? "bg-green-500/10 text-green-500"
                         : "bg-red-500/10 text-red-500"
                     }`}
-                  >
-                    {selectedSubmission.status.charAt(0).toUpperCase() +
-                      selectedSubmission.status.slice(1)}
-                  </span>
-                </div>
-                <div>
-                  <h4 className="text-sm font-medium text-gray-400 mb-1">
-                    Severity
-                  </h4>
-                  <div className="flex items-center space-x-2">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium
+                >
+                  {selectedSubmission.status.charAt(0).toUpperCase() +
+                    selectedSubmission.status.slice(1)}
+                </span>
+              </div>
+
+              <div className="flex flex-wrap gap-2 sm:gap-4 bg-[#00041B] p-2 sm:p-4 rounded-lg">
+                <h4 className="text-sm font-medium text-white/80 mb-1">
+                  Severity :
+                </h4>
+                <div className="flex items-center space-x-2">
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-medium
                       ${
                         selectedSubmission.severityLevel === "critical"
                           ? "bg-red-500/10 text-red-500"
@@ -867,16 +855,16 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
                           ? "bg-yellow-500/10 text-yellow-500"
                           : "bg-blue-500/10 text-blue-500"
                       }`}
-                    >
-                      {selectedSubmission.severityLevel.toUpperCase()}
-                    </span>
-                    {selectedSubmission.reviewerSeverity &&
-                      selectedSubmission.reviewerSeverity.toLowerCase() !==
-                        selectedSubmission.severityLevel.toLowerCase() && (
-                        <div className="flex items-center space-x-2">
-                          <ChevronRight className="w-4 h-4 text-[#FAFCA3]" />
-                          <span
-                            className={`px-3 py-1 rounded-full text-xs font-medium
+                  >
+                    {selectedSubmission.severityLevel.toUpperCase()}
+                  </span>
+                  {selectedSubmission.reviewerSeverity &&
+                    selectedSubmission.reviewerSeverity.toLowerCase() !==
+                      selectedSubmission.severityLevel.toLowerCase() && (
+                      <div className="flex items-center space-x-2">
+                        <ChevronRight className="h-4 w-4 text-[#FAFCA3]" />
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-medium
         ${
           selectedSubmission.reviewerSeverity.toLowerCase() === "critical"
             ? "bg-red-500/10 text-red-500"
@@ -886,19 +874,31 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
             ? "bg-yellow-500/10 text-yellow-500"
             : "bg-blue-500/10 text-blue-500"
         }`}
-                          >
-                            {selectedSubmission.reviewerSeverity.toUpperCase()}
-                          </span>
-                        </div>
-                      )}
-                  </div>
+                        >
+                          {selectedSubmission.reviewerSeverity.toUpperCase()}
+                        </span>
+                      </div>
+                    )}
                 </div>
+              </div>
+
+              <div className="flex flex-wrap gap-2 sm:gap-4 bg-[#00041B] p-2 sm:p-4 rounded-lg">
+                <h4 className="text-sm font-medium text-white/80 mb-3">
+                  Misuse Amount :
+                </h4>
+                <p className="text-white/90 text-sm whitespace-pre-line text-justify">
+                  {selectedSubmission.misUseRange
+                    ? `${selectedSubmission.misUseRange} ${getCurrency(
+                        selectedSubmission.programName
+                      )}`
+                    : "-"}
+                </p>
               </div>
 
               {selectedSubmission?.files &&
                 selectedSubmission.files.length > 0 && (
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-400 mb-2">
+                  <div className="gap-2 sm:gap-4 bg-[#00041B] p-2 sm:p-4 rounded-lg">
+                    <h4 className="text-sm font-medium text-white/80 mb-3">
                       Attachments
                     </h4>
                     <div className="space-y-2">
@@ -907,29 +907,21 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
                         return (
                           <div
                             key={fileId}
-                            className="flex items-center justify-between bg-gray-700 p-3 rounded"
+                            className="flex items-center justify-between bg-gray-700/50 p-3 rounded-lg hover:bg-gray-700/80 transition-colors"
                           >
                             <div className="flex-1 mr-4">
-                              <div className="text-sm text-white font-medium truncate">
+                              <div className="text-sm text-white/80 font-medium truncate">
                                 {metadata
                                   ? metadata.originalName || metadata.filename
                                   : "Loading..."}
                               </div>
-                              {metadata && (
-                                <div className="text-xs text-gray-400 mt-1">
-                                  {metadata.contentType} •{" "}
-                                  {formatFileSize(metadata.size)}
-                                </div>
-                              )}
                             </div>
-                            {metadata && (
-                              <button
-                                onClick={() => handleViewFile(fileId, metadata)}
-                                className="px-3 py-1.5 bg-blue-500/20 text-blue-400 rounded hover:bg-blue-500/30 transition-colors"
-                              >
-                                View File
-                              </button>
-                            )}
+                            <button
+                              onClick={() => handleViewFile(fileId, metadata)}
+                              className="px-3 py-1.5 text-sm bg-[#FAFCA3] text-white rounded-md transition-colors"
+                            >
+                              <Eye className="w-5 h-5 text-[#99168E]" />
+                            </button>
                           </div>
                         );
                       })}
@@ -944,7 +936,7 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
                       handleUpdateStatus(selectedSubmission._id, "rejected");
                       setSelectedSubmission(null);
                     }}
-                    className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                    className="px-4 py-2 bg-red-600 text-white rounded-lg"
                   >
                     Reject
                   </button>
@@ -954,9 +946,9 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
                     );
                     if (bounty?.details?.finalSeverity) {
                       return (
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-2 pr-2">
                           <select
-                            className="px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#99168E]"
                             onChange={(e) => {
                               if (e.target.value) {
                                 handleUpdateStatus(
@@ -992,7 +984,7 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
                           );
                           setSelectedSubmission(null);
                         }}
-                        className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                        className="px-4 py-2 bg-green-600 text-white rounded-lg"
                       >
                         Accept
                       </button>
@@ -1007,7 +999,7 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
                       handleUpdateStatus(selectedSubmission._id, "reviewing");
                       setSelectedSubmission(null);
                     }}
-                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                    className="px-4 py-2 bg-[#FAFCA3] text-[#99168E] rounded-lg"
                   >
                     Start Review
                   </button>
@@ -1020,10 +1012,10 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
 
       {/* File viewer modal */}
       {viewingFile && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-gray-800 rounded-lg w-full max-w-5xl max-h-[90vh] flex flex-col">
-            <div className="flex items-center justify-between p-4 border-b border-gray-700">
-              <h3 className="text-lg font-medium text-white truncate">
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-2 sm:p-4 z-50 backdrop-blur-sm overflow-y-auto">
+          <div className="bg-[#00041B] rounded-xl p-3 sm:p-6 max-w-2xl w-full max-h-[90vh] border border-[#99168E] shadow-xl my-4">
+            <div className="flex items-center justify-between p-4 border-b border-[#99168E]">
+              <h3 className="text-lg font-medium text-white/80 truncate">
                 {viewingFile.name}
               </h3>
               <button
@@ -1031,21 +1023,9 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
                   URL.revokeObjectURL(viewingFile.url);
                   setViewingFile(null);
                 }}
-                className="text-gray-400 hover:text-white"
+                className="hover:bg-[#99168E] p-1 rounded-xl transition-colors"
               >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
+                <X className="w-6 h-6 text-[#FAFCA3]" />
               </button>
             </div>
             <div className="flex-1 overflow-auto p-4">
@@ -1058,14 +1038,16 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
               ) : viewingFile.contentType === "application/pdf" ? (
                 <iframe
                   src={viewingFile.url}
-                  className="w-full h-full min-h-[500px] rounded border border-gray-700"
+                  className="w-full h-full min-h-[700px] rounded border border-[#FAFCA3] bg-[#99168E]"
                   title={viewingFile.name}
                 />
               ) : viewingFile.contentType === "text/plain" ||
                 viewingFile.contentType === "text/markdown" ? (
-                <pre className="bg-gray-900 p-4 rounded text-gray-300 whitespace-pre-wrap">
-                  <code>{viewingFile.url}</code>
-                </pre>
+                <iframe
+                  src={viewingFile.url}
+                  className="w-full h-full min-h-[700px] rounded border border-[#FAFCA3] bg-[#99168E]"
+                  title={viewingFile.name}
+                />
               ) : (
                 <div className="bg-gray-900 p-4 rounded">
                   <p className="text-gray-300">
