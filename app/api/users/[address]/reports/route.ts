@@ -135,7 +135,8 @@ export async function GET(
       },
       manager: {
         isManager: user.managerTeam.length > 0,
-        bounties: managerBounties
+        bounties: managerBounties,
+        submissions: reviewerSubmissions,
       }
     });
   } catch (error) {
