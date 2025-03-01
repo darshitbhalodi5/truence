@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
-import { MessageCircle, X, ChevronUp, ChevronDown } from 'lucide-react';
+import { MessageCircle, X, ChevronUp, ChevronDown, MessageSquare } from 'lucide-react';
 
 interface Message {
   id: string;
@@ -104,37 +104,37 @@ export default function Chat({
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 right-4 rounded-full p-3 bg-blue-500 hover:bg-blue-600 text-white shadow-lg transition-colors"
+        className="fixed bottom-4 right-4 rounded-full p-3 bg-[#FAFCA3] text-white"
       >
-        <MessageCircle className="h-6 w-6" />
+        <MessageSquare className="h-6 w-6 text-[#99168E]" />
       </button>
     );
   }
 
   return (
-    <div className={`fixed right-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg transition-all duration-200 rounded-lg ${
+    <div className={`fixed right-4 bg-[#000625] border border-gray-500 shadow-lg transition-all duration-200 rounded-lg ${
       isMinimized ? 'h-12 bottom-4' : 'h-[500px] bottom-4'
     } w-[350px]`}>
-      <div className="flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-700">
-        <h3 className="font-semibold text-gray-900 dark:text-gray-100">
+      <div className="flex items-center justify-between p-3 border-b border-gray-500">
+        <h3 className="font-semibold text-[#FAFCA3]">
           {bountyId && reportId ? 'Chat' : 'Select a Chat'}
         </h3>
         <div className="flex items-center gap-2">
           <button
-            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+            className="p-1 hover:bg-[#99168E] rounded-lg transition-colors"
             onClick={() => setIsMinimized(!isMinimized)}
           >
             {isMinimized ? (
-              <ChevronUp className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+              <ChevronUp className="h-4 w-4 text-[#FAFCA3]" />
             ) : (
-              <ChevronDown className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+              <ChevronDown className="h-4 w-4 text-[#FAFCA3]" />
             )}
           </button>
           <button
-            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+            className="p-1 hover:bg-[#99168E] rounded-lg transition-colors"
             onClick={() => setIsOpen(false)}
           >
-            <X className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+            <X className="h-4 w-4 text-[#FAFCA3]" />
           </button>
         </div>
       </div>
@@ -149,13 +149,13 @@ export default function Chat({
                   return (
                     <button
                       key={chatKey}
-                      className="w-full p-3 text-left border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                      className="w-full p-3 text-left border border-[#99168E] rounded-lg hover:bg-black/60 transition-colors"
                       onClick={() => onSelectChat(chat.bountyId, chat.reportId)}
                     >
                       <div className="truncate">
-                        <div className="font-medium text-gray-900 dark:text-gray-100">{chat.bountyName}</div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
-                          {chat.reportTitle}
+                        <div className="font-medium text-[#FAFCA3]">{chat.bountyName}</div>
+                        <div className="text-sm text-[#FAFCA3] truncate">
+                          Submission: {chat.reportTitle}
                         </div>
                       </div>
                     </button>
