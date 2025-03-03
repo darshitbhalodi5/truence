@@ -213,62 +213,127 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
     bookmarkedSubmissions,
   ]);
 
+  // const handleUpdateStatus = async (
+  //   submissionId: string,
+  //   newStatus: string,
+  //   reviewerSeverity?: string
+  // ) => {
+  //   try {
+  //     // Debug log for status update
+  //     console.log("Updating submission status:", {
+  //       submissionId,
+  //       newStatus,
+  //       reviewerSeverity,
+  //       submission: reviewData?.submissions.find((s) => s._id === submissionId),
+  //       bounty: reviewData?.bounties.find(
+  //         (b) =>
+  //           b.networkName ===
+  //           reviewData?.submissions.find((s) => s._id === submissionId)
+  //             ?.programName
+  //       ),
+  //     });
+
+  //     const response = await fetch(`/api/submissions/${submissionId}/status`, {
+  //       method: "PUT",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({ status: newStatus, reviewerSeverity }),
+  //     });
+
+  //     const data = await response.json();
+
+  //     if (!response.ok) {
+  //       throw new Error(data.error || "Failed to update status");
+  //     }
+
+  //     // Update the submission in the list
+  //     if (reviewData) {
+  //       const updatedSubmissions = reviewData.submissions.map((sub) =>
+  //         sub._id === submissionId
+  //           ? { ...sub, status: newStatus, reviewerSeverity }
+  //           : sub
+  //       );
+  //       setReviewData({ ...reviewData, submissions: updatedSubmissions });
+
+  //       // Debug log for updated submission
+  //       console.log("Updated submission:", {
+  //         before: reviewData.submissions.find((s) => s._id === submissionId),
+  //         after: updatedSubmissions.find((s) => s._id === submissionId),
+  //       });
+  //     }
+
+  //     toast.success(`Status updated to ${newStatus}`);
+  //   } catch (error) {
+  //     console.error("Error updating status:", error);
+  //     toast.error(
+  //       error instanceof Error ? error.message : "Failed to update status"
+  //     );
+  //   }
+  // };
+
   const handleUpdateStatus = async (
     submissionId: string,
-    newStatus: string,
-    reviewerSeverity?: string
+    vote: "accepted" | "rejected",
+    severity?: string,
+    comment?: string
   ) => {
     try {
-      // Debug log for status update
-      console.log("Updating submission status:", {
+      // Get current reviewer's wallet address from your auth system
+      const reviewerAddress = walletAddress; // Replace with your actual auth method
+
+      console.log("Reviewer voting on submission:", {
         submissionId,
-        newStatus,
-        reviewerSeverity,
-        submission: reviewData?.submissions.find((s) => s._id === submissionId),
-        bounty: reviewData?.bounties.find(
-          (b) =>
-            b.networkName ===
-            reviewData?.submissions.find((s) => s._id === submissionId)
-              ?.programName
-        ),
+        vote,
+        severity,
+        reviewerAddress,
       });
 
-      const response = await fetch(`/api/submissions/${submissionId}/status`, {
-        method: "PUT",
+      const response = await fetch(`/api/submissions/${submissionId}/vote`, {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ status: newStatus, reviewerSeverity }),
+        body: JSON.stringify({
+          reviewerAddress,
+          vote,
+          severity: vote === "accepted" ? severity : undefined,
+          comment,
+        }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to update status");
+        throw new Error(data.error || "Failed to submit reviewer vote");
       }
 
       // Update the submission in the list
       if (reviewData) {
         const updatedSubmissions = reviewData.submissions.map((sub) =>
-          sub._id === submissionId
-            ? { ...sub, status: newStatus, reviewerSeverity }
-            : sub
+          sub._id === submissionId ? data.submission : sub
         );
         setReviewData({ ...reviewData, submissions: updatedSubmissions });
-
-        // Debug log for updated submission
-        console.log("Updated submission:", {
-          before: reviewData.submissions.find((s) => s._id === submissionId),
-          after: updatedSubmissions.find((s) => s._id === submissionId),
-        });
       }
 
-      toast.success(`Status updated to ${newStatus}`);
+      // Show appropriate message based on voting status
+      if (data.quorumReached) {
+        toast.success(
+          `Vote recorded. Quorum reached! Waiting for manager's final decision.`
+        );
+      } else {
+        toast.success(
+          `Vote recorded. ${data.voteSummary.totalVotes} votes so far.`
+        );
+      }
+
+      return data;
     } catch (error) {
-      console.error("Error updating status:", error);
+      console.error("Error submitting reviewer vote:", error);
       toast.error(
-        error instanceof Error ? error.message : "Failed to update status"
+        error instanceof Error ? error.message : "Failed to submit vote"
       );
+      return null;
     }
   };
 
@@ -599,9 +664,9 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
                   const bounty = reviewData.bounties.find(
                     (b) => b.networkName === submission.programName
                   );
-                  const showSeveritySelection =
-                    bounty?.details?.finalSeverity &&
-                    submission.status === "reviewing";
+                  // const showSeveritySelection =
+                  //   bounty?.details?.finalSeverity &&
+                  //   submission.status === "reviewing";
 
                   return (
                     <tr key={submission._id} className="hover:bg-gray-800/50">
@@ -702,86 +767,47 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
                           >
                             Details
                           </button>
-                          {submission.status === "pending" && (
-                            <>
-                              <EllipsisVertical className="w-5 h-5 text-orange-500" />
-                              <button
-                                onClick={() =>
+                          <EllipsisVertical className="w-5 h-5 text-orange-500" />
+                          <div className="flex items-center space-x-2">
+                            {bounty?.details?.finalSeverity ? (
+                              <select
+                                className="px-2 py-1 bg-gray-800 border border-gray-700 rounded-full text-white focus:outline-none focus:ring-2 focus:ring-[#99168E] focus:border-transparent"
+                                onChange={(e) =>
                                   handleUpdateStatus(
                                     submission._id,
-                                    "reviewing"
+                                    "accepted",
+                                    e.target.value
                                   )
                                 }
-                                className="text-[#FAFCA3] hover:text-[#99168E] ml-2"
                               >
-                                Review
+                                <option value="">Accept</option>
+                                {bounty?.details?.initialSeverities?.map(
+                                  (severity) => (
+                                    <option key={severity} value={severity}>
+                                      {severity}
+                                    </option>
+                                  )
+                                )}
+                              </select>
+                            ) : (
+                              <button
+                                onClick={() =>
+                                  handleUpdateStatus(submission._id, "accepted")
+                                }
+                                className="px-3 py-1 bg-green-500/20 text-green-500 rounded-full hover:bg-green-500/30"
+                              >
+                                Accept
                               </button>
-                            </>
-                          )}
-                          {submission.status === "reviewing" && (
-                            <>
-                              <EllipsisVertical className="w-5 h-5 text-orange-500" />
-                              {showSeveritySelection ? (
-                                <div className="flex items-center space-x-2">
-                                  <select
-                                    className="px-2 py-1 bg-gray-800 border border-gray-700 rounded-full text-white focus:outline-none focus:ring-2 focus:ring-[#99168E] focus:border-transparent"
-                                    onChange={(e) =>
-                                      handleUpdateStatus(
-                                        submission._id,
-                                        "accepted",
-                                        e.target.value
-                                      )
-                                    }
-                                  >
-                                    <option value="">Accept</option>
-                                    {bounty?.details?.initialSeverities?.map(
-                                      (severity) => (
-                                        <option key={severity} value={severity}>
-                                          {severity}
-                                        </option>
-                                      )
-                                    )}
-                                  </select>
-                                  <button
-                                    onClick={() =>
-                                      handleUpdateStatus(
-                                        submission._id,
-                                        "rejected"
-                                      )
-                                    }
-                                    className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full hover:bg-red-500/30"
-                                  >
-                                    Reject
-                                  </button>
-                                </div>
-                              ) : (
-                                <>
-                                  <button
-                                    onClick={() =>
-                                      handleUpdateStatus(
-                                        submission._id,
-                                        "accepted"
-                                      )
-                                    }
-                                    className="px-3 py-1 bg-green-500/20 text-green-500 rounded-full hover:bg-green-500/30"
-                                  >
-                                    Accept
-                                  </button>
-                                  <button
-                                    onClick={() =>
-                                      handleUpdateStatus(
-                                        submission._id,
-                                        "rejected"
-                                      )
-                                    }
-                                    className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full hover:bg-red-500/30"
-                                  >
-                                    Reject
-                                  </button>
-                                </>
-                              )}
-                            </>
-                          )}
+                            )}
+                            <button
+                              onClick={() =>
+                                handleUpdateStatus(submission._id, "rejected")
+                              }
+                              className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full hover:bg-red-500/30"
+                            >
+                              Reject
+                            </button>
+                          </div>
                         </div>
                       </td>
                     </tr>
@@ -994,7 +1020,7 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
               )}
               {selectedSubmission.status === "pending" && (
                 <div className="flex justify-end mt-6">
-                  <button
+                  {/* <button
                     onClick={() => {
                       handleUpdateStatus(selectedSubmission._id, "reviewing");
                       setSelectedSubmission(null);
@@ -1002,7 +1028,7 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
                     className="px-4 py-2 bg-[#FAFCA3] text-[#99168E] rounded-lg"
                   >
                     Start Review
-                  </button>
+                  </button> */}
                 </div>
               )}
             </div>
