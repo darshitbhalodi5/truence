@@ -27,7 +27,7 @@ import {
 } from "@/utils/filterTypes";
 import SortIcon from "@/components/sort-icon/SortIcon";
 import SeverityInfo from "@/components/severity-change/SeverityInfo";
-import StateHandler from "@/components/handle-info-render/StateHandler";
+import StateHandler from "@/components/state-handle/StateHandler";
 
 // Define ManagerData interface (similar to ReviewerData but for managers)
 interface ManagerData {

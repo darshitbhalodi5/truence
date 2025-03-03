@@ -27,7 +27,7 @@ import {
 } from "@/utils/filterTypes";
 import SortIcon from "@/components/sort-icon/SortIcon";
 import SeverityInfo from "@/components/severity-change/SeverityInfo";
-import StateHandler from "@/components/handle-info-render/StateHandler";
+import StateHandler from "@/components/state-handle/StateHandler";
 
 export function Review({ walletAddress }: { walletAddress?: string }) {
   const [reviewData, setReviewData] = useState<ReviewerData | null>(null);
