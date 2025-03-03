@@ -18,9 +18,7 @@ import {
   StatusCounts,
 } from "@/types/reviewerData";
 import { parseMisUseRange } from "@/utils/parseMisuseRange";
-import { LoadingSpinner } from "@/components/multi-purpose-loader/LoadingSpinner";
 import { getCurrency } from "@/utils/networkCurrency";
-import { formatFileSize } from "@/utils/fileSizeFormat";
 import {
   StatusFilter,
   SortDirection,
@@ -29,6 +27,7 @@ import {
 } from "@/utils/filterTypes";
 import SortIcon from "@/components/sort-icon/SortIcon";
 import SeverityInfo from "@/components/severity-change/SeverityInfo";
+import StateHandler from "@/components/handle-info-render/StateHandler";
 
 export function Review({ walletAddress }: { walletAddress?: string }) {
   const [reviewData, setReviewData] = useState<ReviewerData | null>(null);
@@ -212,65 +211,6 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
     selectedSeverity,
     bookmarkedSubmissions,
   ]);
-
-  // const handleUpdateStatus = async (
-  //   submissionId: string,
-  //   newStatus: string,
-  //   reviewerSeverity?: string
-  // ) => {
-  //   try {
-  //     // Debug log for status update
-  //     console.log("Updating submission status:", {
-  //       submissionId,
-  //       newStatus,
-  //       reviewerSeverity,
-  //       submission: reviewData?.submissions.find((s) => s._id === submissionId),
-  //       bounty: reviewData?.bounties.find(
-  //         (b) =>
-  //           b.networkName ===
-  //           reviewData?.submissions.find((s) => s._id === submissionId)
-  //             ?.programName
-  //       ),
-  //     });
-
-  //     const response = await fetch(`/api/submissions/${submissionId}/status`, {
-  //       method: "PUT",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({ status: newStatus, reviewerSeverity }),
-  //     });
-
-  //     const data = await response.json();
-
-  //     if (!response.ok) {
-  //       throw new Error(data.error || "Failed to update status");
-  //     }
-
-  //     // Update the submission in the list
-  //     if (reviewData) {
-  //       const updatedSubmissions = reviewData.submissions.map((sub) =>
-  //         sub._id === submissionId
-  //           ? { ...sub, status: newStatus, reviewerSeverity }
-  //           : sub
-  //       );
-  //       setReviewData({ ...reviewData, submissions: updatedSubmissions });
-
-  //       // Debug log for updated submission
-  //       console.log("Updated submission:", {
-  //         before: reviewData.submissions.find((s) => s._id === submissionId),
-  //         after: updatedSubmissions.find((s) => s._id === submissionId),
-  //       });
-  //     }
-
-  //     toast.success(`Status updated to ${newStatus}`);
-  //   } catch (error) {
-  //     console.error("Error updating status:", error);
-  //     toast.error(
-  //       error instanceof Error ? error.message : "Failed to update status"
-  //     );
-  //   }
-  // };
 
   const handleUpdateStatus = async (
     submissionId: string,
@@ -457,55 +397,6 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
     };
   }, [viewingFile]);
 
-  // Show loader
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[200px]">
-        <LoadingSpinner text="Fetching latest submissions for review" />
-      </div>
-    );
-  }
-
-  // Show errors
-  if (error) {
-    return (
-      <div className="text-center py-12">
-        <h3 className="text-xl font-semibold text-[#AC350D] mb-2">
-          Error Loading Review Data
-        </h3>
-        <p className="text-[#FAFCA3] text-lg">{error}</p>
-      </div>
-    );
-  }
-
-  // If user is not a reviewer
-  if (!reviewData?.isReviewer) {
-    return (
-      <div className="text-center py-12">
-        <h3 className="text-xl font-semibold text-[#FAFCA3] mb-2">
-          Not a Reviewer!
-        </h3>
-        <p className="text-white/80">
-          You are not assigned as a reviewer for any programs.
-        </p>
-      </div>
-    );
-  }
-
-  // If user is reviewer but submission is not there for review
-  if (!reviewData.submissions || reviewData.submissions.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <h3 className="text-xl font-semibold text-[#FAFCA3] mb-2">
-          No submissions to Review
-        </h3>
-        <p className="text-white/80">
-          There are no submissions to review at this time.
-        </p>
-      </div>
-    );
-  }
-
   // Submission count for each status (Accepted, Rejected, Pending, Reviewing)
   const statusCounts: StatusCounts = reviewData?.submissions?.reduce(
     (counts: StatusCounts, submission) => {
@@ -513,190 +404,214 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
       return counts;
     },
     { all: reviewData?.submissions?.length || 0 }
-  );
+  ) || { all: 0 };
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl sm:text-2xl font-semibold text-white">
-          Review Submissions
-        </h2>
-      </div>
-
-      {/* Search and status based filter */}
-      <div className="flex flex-col sm:flex-row justify-between gap-4 mb-4">
-        {/* Searchbar */}
-        <div className="relative flex-grow max-w-full sm:max-w-md">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="h-5 w-5 text-white" />
+    <>
+      <StateHandler
+        isLoading={loading}
+        loadingText="Fetching latest submissions for review"
+        error={error}
+        errorTitle="Error Loading Review Data"
+        notAuthorized={!reviewData?.isReviewer}
+        notAuthorizedTitle="Not a Reviewer!"
+        notAuthorizedMessage="You are not assigned as a reviewer for any programs."
+        isEmpty={
+          !reviewData?.submissions || reviewData.submissions.length === 0
+        }
+        emptyTitle="No submissions to Review"
+        emptyMessage="There are no submissions to review at this time."
+      >
+        <div className="space-y-4">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl sm:text-2xl font-semibold text-white">
+              Review Submissions
+            </h2>
           </div>
-          <input
-            type="text"
-            placeholder="Search by submission title..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 pr-4 py-2 w-full bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#99168E] focus:border-transparent"
-          />
-        </div>
 
-        {/* Buttons for status based submission filter */}
-        <div className="flex flex-wrap gap-2 text-[#FAFCA3]">
-          {[
-            { status: "ALL", count: statusCounts.all || 0 },
-            { status: "pending", count: statusCounts.pending || 0 },
-            { status: "reviewing", count: statusCounts.reviewing || 0 },
-            { status: "accepted", count: statusCounts.accepted || 0 },
-            { status: "rejected", count: statusCounts.rejected || 0 },
-          ].map(({ status, count }) => (
-            <button
-              key={status}
-              onClick={() => setSelectedStatus(status as StatusFilter)}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-200 border ${
-                selectedStatus === status
-                  ? "border-[#99168E] bg-[#99168E]" // Active state
-                  : "bg-gray-800 border-transparent hover:border-[#99168E]" // Default & Hover
-              }`}
-            >
-              {status.charAt(0).toUpperCase() + status.slice(1)} ({count})
-            </button>
-          ))}
-        </div>
+          {/* Search and status based filter */}
+          <div className="flex flex-col sm:flex-row justify-between gap-4 mb-4">
+            {/* Searchbar */}
+            <div className="relative flex-grow max-w-full sm:max-w-md">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-5 w-5 text-white" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search by submission title..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 pr-4 py-2 w-full bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#99168E] focus:border-transparent"
+              />
+            </div>
 
-        <div className="relative">
-          <button
-            onClick={() => setIsFilterOpen(!isFilterOpen)}
-            className="flex items-center gap-2 bg-gray-800 text-white rounded-lg px-4 py-2.5 
-              hover:bg-gray-700 transition-colors duration-200 border border-gray-700"
-          >
-            <Filter className="w-4 h-4" />
-            <span className="text-sm font-medium">
-              {selectedSeverity === "ALL"
-                ? "All Severities"
-                : selectedSeverity.charAt(0).toUpperCase() +
-                  selectedSeverity.slice(1)}
-            </span>
-            <ChevronDown
-              className={`w-4 h-4 transition-transform duration-200 
-    ${isFilterOpen ? "rotate-180" : ""}`}
-            />
-          </button>
+            {/* Buttons for status based submission filter */}
+            <div className="flex flex-wrap gap-2 text-[#FAFCA3]">
+              {[
+                { status: "ALL", count: statusCounts.all || 0 },
+                { status: "pending", count: statusCounts.pending || 0 },
+                { status: "reviewing", count: statusCounts.reviewing || 0 },
+                { status: "accepted", count: statusCounts.accepted || 0 },
+                { status: "rejected", count: statusCounts.rejected || 0 },
+              ].map(({ status, count }) => (
+                <button
+                  key={status}
+                  onClick={() => setSelectedStatus(status as StatusFilter)}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-200 border ${
+                    selectedStatus === status
+                      ? "border-[#99168E] bg-[#99168E]" // Active state
+                      : "bg-gray-800 border-transparent hover:border-[#99168E]" // Default & Hover
+                  }`}
+                >
+                  {status.charAt(0).toUpperCase() + status.slice(1)} ({count})
+                </button>
+              ))}
+            </div>
 
-          {isFilterOpen && (
-            <div
-              className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-lg 
-              border border-gray-700 py-1 z-50"
-            >
+            <div className="relative">
               <button
-                onClick={() => {
-                  setSelectedSeverity("ALL");
-                  setIsFilterOpen(false);
-                }}
-                className={`w-full px-4 py-2 text-sm text-left flex items-center gap-2 
-                hover:bg-gray-700 transition-colors duration-200
-                ${selectedSeverity === "ALL" ? "bg-gray-700" : ""}`}
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
+                className="flex items-center gap-2 bg-gray-800 text-white rounded-lg px-4 py-2.5 
+              hover:bg-gray-700 transition-colors duration-200 border border-gray-700"
               >
-                All Severities
+                <Filter className="w-4 h-4" />
+                <span className="text-sm font-medium">
+                  {selectedSeverity === "ALL"
+                    ? "All Severities"
+                    : selectedSeverity.charAt(0).toUpperCase() +
+                      selectedSeverity.slice(1)}
+                </span>
+                <ChevronDown
+                  className={`w-4 h-4 transition-transform duration-200 
+    ${isFilterOpen ? "rotate-180" : ""}`}
+                />
               </button>
-              {Object.entries(severityConfig)
-                .filter(([key]) => key !== "ALL")
-                .map(([severity, config]) => (
+
+              {isFilterOpen && (
+                <div
+                  className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-lg 
+              border border-gray-700 py-1 z-50"
+                >
                   <button
-                    key={severity}
                     onClick={() => {
-                      setSelectedSeverity(severity as SeverityFilter);
+                      setSelectedSeverity("ALL");
                       setIsFilterOpen(false);
                     }}
                     className={`w-full px-4 py-2 text-sm text-left flex items-center gap-2 
+                hover:bg-gray-700 transition-colors duration-200
+                ${selectedSeverity === "ALL" ? "bg-gray-700" : ""}`}
+                  >
+                    All Severities
+                  </button>
+                  {Object.entries(severityConfig)
+                    .filter(([key]) => key !== "ALL")
+                    .map(([severity, config]) => (
+                      <button
+                        key={severity}
+                        onClick={() => {
+                          setSelectedSeverity(severity as SeverityFilter);
+                          setIsFilterOpen(false);
+                        }}
+                        className={`w-full px-4 py-2 text-sm text-left flex items-center gap-2 
                     hover:bg-gray-700 transition-colors duration-200
                     ${selectedSeverity === severity ? "bg-gray-700" : ""}`}
-                  >
-                    <span className={`w-2 h-2 rounded-full ${config.color}`} />
-                    {config.tooltip}
-                  </button>
-                ))}
+                      >
+                        <span
+                          className={`w-2 h-2 rounded-full ${config.color}`}
+                        />
+                        {config.tooltip}
+                      </button>
+                    ))}
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      </div>
+          </div>
 
-      <div className="overflow-x-auto -mx-4 sm:mx-0">
-        <div className="inline-block min-w-full align-middle">
-          <div className="scroll-container overflow-y-auto max-h-[600px] scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-700 scrollbar-thumb-rounded-lg">
-            <table className="w-full text-sm text-left text-gray-400">
-              <thead className="text-sm text-gray-400 sticky top-0 bg-gray-900 z-10">
-                <tr>
-                  <th className="px-4 py-3 hidden md:table-cell">Program</th>
-                  <th className="px-4 py-3">Title</th>
-                  <th className="px-4 py-3">Submission Address</th>
-                  <th className="px-4 py-3 hidden sm:table-cell">Severity</th>
-                  <th
-                    className="px-4 py-3 hidden lg:table-cell cursor-pointer"
-                    onClick={() => handleSort("misUseRange")}
-                  >
-                    <div className="flex items-center space-x-1">
-                      <span>Misuse Amt.</span>
-                      <SortIcon
-                        field="misUseRange"
-                        sortField={sortField}
-                        sortDirection={sortDirection}
-                      />
-                    </div>
-                  </th>
-                  <th
-                    className="px-4 py-3 hidden sm:table-cell cursor-pointer"
-                    onClick={() => handleSort("createdAt")}
-                  >
-                    <div className="flex items-center space-x-1">
-                      <span>Submission Date</span>
-                      <SortIcon
-                        field="createdAt"
-                        sortField={sortField}
-                        sortDirection={sortDirection}
-                      />
-                    </div>
-                  </th>
-                  <th className="px-2 py-3 w-10">Bookmark</th>
-                  <th className="px-4 py-3">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredSubmissions.map((submission) => {
-                  const bounty = reviewData.bounties.find(
-                    (b) => b.networkName === submission.programName
-                  );
-                  // const showSeveritySelection =
-                  //   bounty?.details?.finalSeverity &&
-                  //   submission.status === "reviewing";
-
-                  return (
-                    <tr key={submission._id} className="hover:bg-gray-800/50">
-                      <td className="px-4 py-3 hidden md:table-cell">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-8 h-8 relative flex-shrink-0">
-                            <img
-                              src={submission.bountyLogo}
-                              alt={`${submission.programName} Logo`}
-                              className="w-7 h-7 rounded-full"
-                            />
-                          </div>
-                          <span className="text-sm text-white truncate">
-                            {submission.programName}
-                          </span>
+          <div className="overflow-x-auto -mx-4 sm:mx-0">
+            <div className="inline-block min-w-full align-middle">
+              <div className="scroll-container overflow-y-auto max-h-[600px] scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-700 scrollbar-thumb-rounded-lg">
+                <table className="w-full text-sm text-left text-gray-400">
+                  <thead className="text-sm text-gray-400 sticky top-0 bg-gray-900 z-10">
+                    <tr>
+                      <th className="px-4 py-3 hidden md:table-cell">
+                        Program
+                      </th>
+                      <th className="px-4 py-3">Title</th>
+                      <th className="px-4 py-3">Submission Address</th>
+                      <th className="px-4 py-3 hidden sm:table-cell">
+                        Severity
+                      </th>
+                      <th
+                        className="px-4 py-3 hidden lg:table-cell cursor-pointer"
+                        onClick={() => handleSort("misUseRange")}
+                      >
+                        <div className="flex items-center space-x-1">
+                          <span>Misuse Amt.</span>
+                          <SortIcon
+                            field="misUseRange"
+                            sortField={sortField}
+                            sortDirection={sortDirection}
+                          />
                         </div>
-                      </td>
-                      <td className="px-4 py-3 font-medium text-white">
-                        {submission.title}
-                      </td>
-                      <td className="px-4 py-3 font-medium text-white">
-                        {`${submission.walletAddress.slice(
-                          0,
-                          8
-                        )}...${submission.walletAddress.slice(-6)}`}
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center space-x-2">
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs font-medium
+                      </th>
+                      <th
+                        className="px-4 py-3 hidden sm:table-cell cursor-pointer"
+                        onClick={() => handleSort("createdAt")}
+                      >
+                        <div className="flex items-center space-x-1">
+                          <span>Submission Date</span>
+                          <SortIcon
+                            field="createdAt"
+                            sortField={sortField}
+                            sortDirection={sortDirection}
+                          />
+                        </div>
+                      </th>
+                      <th className="px-2 py-3 w-10">Bookmark</th>
+                      <th className="px-4 py-3">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredSubmissions.map((submission) => {
+                      const bounty = reviewData?.bounties.find(
+                        (b) => b.networkName === submission.programName
+                      );
+                      // const showSeveritySelection =
+                      //   bounty?.details?.finalSeverity &&
+                      //   submission.status === "reviewing";
+
+                      return (
+                        <tr
+                          key={submission._id}
+                          className="hover:bg-gray-800/50"
+                        >
+                          <td className="px-4 py-3 hidden md:table-cell">
+                            <div className="flex items-center space-x-3">
+                              <div className="w-8 h-8 relative flex-shrink-0">
+                                <img
+                                  src={submission.bountyLogo}
+                                  alt={`${submission.programName} Logo`}
+                                  className="w-7 h-7 rounded-full"
+                                />
+                              </div>
+                              <span className="text-sm text-white truncate">
+                                {submission.programName}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 font-medium text-white">
+                            {submission.title}
+                          </td>
+                          <td className="px-4 py-3 font-medium text-white">
+                            {`${submission.walletAddress.slice(
+                              0,
+                              8
+                            )}...${submission.walletAddress.slice(-6)}`}
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center space-x-2">
+                              <span
+                                className={`px-2 py-1 rounded-full text-xs font-medium
                         ${
                           submission.severityLevel === "critical"
                             ? "bg-red-500/10 text-red-500"
@@ -706,150 +621,162 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
                             ? "bg-yellow-500/10 text-yellow-500"
                             : "bg-blue-500/10 text-blue-500"
                         }`}
-                          >
-                            {submission.severityLevel.toUpperCase()}
-                          </span>
-                          <SeverityInfo
-                            submitterSeverity={submission.severityLevel}
-                            reviewerSeverity={submission.reviewerSeverity}
-                          />
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 hidden lg:table-cell">
-                        {submission.misUseRange
-                          ? `${submission.misUseRange} ${getCurrency(
-                              submission.programName
-                            )}`
-                          : "-"}
-                      </td>
-                      <td className="px-4 py-3 text-gray-400">
-                        {new Date(submission.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="px-2 py-3 text-center">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleBookmark(submission._id);
-                          }}
-                          className="focus:outline-none"
-                        >
-                          {bookmarkedSubmissions.includes(submission._id) ? (
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="h-5 w-5 text-yellow-500 fill-current"
-                              viewBox="0 0 20 20"
-                            >
-                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                            </svg>
-                          ) : (
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="h-5 w-5 text-gray-400 hover:text-yellow-500"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
-                              />
-                            </svg>
-                          )}
-                        </button>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center space-x-2">
-                          <button
-                            onClick={() => setSelectedSubmission(submission)}
-                            className="text-[#FAFCA3] hover:text-[#99168E]"
-                          >
-                            Details
-                          </button>
-                          <EllipsisVertical className="w-5 h-5 text-orange-500" />
-                          <div className="flex items-center space-x-2">
-                            {bounty?.details?.finalSeverity ? (
-                              <select
-                                className="px-2 py-1 bg-gray-800 border border-gray-700 rounded-full text-white focus:outline-none focus:ring-2 focus:ring-[#99168E] focus:border-transparent"
-                                onChange={(e) =>
-                                  handleUpdateStatus(
-                                    submission._id,
-                                    "accepted",
-                                    e.target.value
-                                  )
-                                }
                               >
-                                <option value="">Accept</option>
-                                {bounty?.details?.initialSeverities?.map(
-                                  (severity) => (
-                                    <option key={severity} value={severity}>
-                                      {severity}
-                                    </option>
-                                  )
-                                )}
-                              </select>
-                            ) : (
+                                {submission.severityLevel.toUpperCase()}
+                              </span>
+                              <SeverityInfo
+                                submitterSeverity={submission.severityLevel}
+                                reviewerSeverity={submission.reviewerSeverity}
+                              />
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 hidden lg:table-cell">
+                            {submission.misUseRange
+                              ? `${submission.misUseRange} ${getCurrency(
+                                  submission.programName
+                                )}`
+                              : "-"}
+                          </td>
+                          <td className="px-4 py-3 text-gray-400">
+                            {new Date(
+                              submission.createdAt
+                            ).toLocaleDateString()}
+                          </td>
+                          <td className="px-2 py-3 text-center">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleBookmark(submission._id);
+                              }}
+                              className="focus:outline-none"
+                            >
+                              {bookmarkedSubmissions.includes(
+                                submission._id
+                              ) ? (
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="h-5 w-5 text-yellow-500 fill-current"
+                                  viewBox="0 0 20 20"
+                                >
+                                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                </svg>
+                              ) : (
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="h-5 w-5 text-gray-400 hover:text-yellow-500"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                                  />
+                                </svg>
+                              )}
+                            </button>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center space-x-2">
                               <button
                                 onClick={() =>
-                                  handleUpdateStatus(submission._id, "accepted")
+                                  setSelectedSubmission(submission)
                                 }
-                                className="px-3 py-1 bg-green-500/20 text-green-500 rounded-full hover:bg-green-500/30"
+                                className="text-[#FAFCA3] hover:text-[#99168E]"
                               >
-                                Accept
+                                Details
                               </button>
-                            )}
-                            <button
-                              onClick={() =>
-                                handleUpdateStatus(submission._id, "rejected")
-                              }
-                              className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full hover:bg-red-500/30"
-                            >
-                              Reject
-                            </button>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                              <EllipsisVertical className="w-5 h-5 text-orange-500" />
+                              <div className="flex items-center space-x-2">
+                                {bounty?.details?.finalSeverity ? (
+                                  <select
+                                    className="px-2 py-1 bg-gray-800 border border-gray-700 rounded-full text-white focus:outline-none focus:ring-2 focus:ring-[#99168E] focus:border-transparent"
+                                    onChange={(e) =>
+                                      handleUpdateStatus(
+                                        submission._id,
+                                        "accepted",
+                                        e.target.value
+                                      )
+                                    }
+                                  >
+                                    <option value="">Accept</option>
+                                    {bounty?.details?.initialSeverities?.map(
+                                      (severity) => (
+                                        <option key={severity} value={severity}>
+                                          {severity}
+                                        </option>
+                                      )
+                                    )}
+                                  </select>
+                                ) : (
+                                  <button
+                                    onClick={() =>
+                                      handleUpdateStatus(
+                                        submission._id,
+                                        "accepted"
+                                      )
+                                    }
+                                    className="px-3 py-1 bg-green-500/20 text-green-500 rounded-full hover:bg-green-500/30"
+                                  >
+                                    Accept
+                                  </button>
+                                )}
+                                <button
+                                  onClick={() =>
+                                    handleUpdateStatus(
+                                      submission._id,
+                                      "rejected"
+                                    )
+                                  }
+                                  className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full hover:bg-red-500/30"
+                                >
+                                  Reject
+                                </button>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
 
-      {selectedSubmission && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-2 sm:p-4 z-50 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-[#00041B] rounded-xl p-3 sm:p-6 max-w-2xl w-full max-h-[90vh] border border-[#99168E] shadow-xl my-4">
-            <div className="scroll-container overflow-y-auto max-h-[600px] scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-700 scrollbar-thumb-rounded-lg">
-              <div className="flex flex-wrap justify-between gap-4 bg-[#00041B] p-4 rounded-lg sticky top-0 z-10">
-                <h3 className="text-xl sm:text-2xl font-semibold text-[#FAFCA3] mb-1 mt-1 animate-pulse">
-                  {selectedSubmission.title}
-                </h3>
-                <button
-                  onClick={() => setSelectedSubmission(null)}
-                  className="hover:bg-[#99168E] p-1 rounded-xl transition-colors"
-                >
-                  <X className="w-6 h-6 text-[#FAFCA3]" />
-                </button>
-              </div>
+          {selectedSubmission && (
+            <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-2 sm:p-4 z-50 backdrop-blur-sm overflow-y-auto">
+              <div className="bg-[#00041B] rounded-xl p-3 sm:p-6 max-w-2xl w-full max-h-[90vh] border border-[#99168E] shadow-xl my-4">
+                <div className="scroll-container overflow-y-auto max-h-[600px] scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-700 scrollbar-thumb-rounded-lg">
+                  <div className="flex flex-wrap justify-between gap-4 bg-[#00041B] p-4 rounded-lg sticky top-0 z-10">
+                    <h3 className="text-xl sm:text-2xl font-semibold text-[#FAFCA3] mb-1 mt-1 animate-pulse">
+                      {selectedSubmission.title}
+                    </h3>
+                    <button
+                      onClick={() => setSelectedSubmission(null)}
+                      className="hover:bg-[#99168E] p-1 rounded-xl transition-colors"
+                    >
+                      <X className="w-6 h-6 text-[#FAFCA3]" />
+                    </button>
+                  </div>
 
-              <div className="flex flex-wrap gap-2 sm:gap-4 bg-[#00041B] p-2 sm:p-4 rounded-lg">
-                <h4 className="text-sm font-medium text-white/80 mb-1">
-                  Description:
-                </h4>
-                <div className="flex items-center space-x-2">
-                  {selectedSubmission.description}
-                </div>
-              </div>
+                  <div className="flex flex-wrap gap-2 sm:gap-4 bg-[#00041B] p-2 sm:p-4 rounded-lg">
+                    <h4 className="text-sm font-medium text-white/80 mb-1">
+                      Description:
+                    </h4>
+                    <div className="flex items-center space-x-2">
+                      {selectedSubmission.description}
+                    </div>
+                  </div>
 
-              <div className="flex flex-wrap gap-2 sm:gap-4 bg-[#00041B] p-2 sm:p-4 rounded-lg">
-                <h4 className="text-sm font-medium text-white/80 mb-1">
-                  Status :{" "}
-                </h4>
-                <span
-                  className={`px-3 py-1 rounded-full text-xs font-medium inline-flex items-center
+                  <div className="flex flex-wrap gap-2 sm:gap-4 bg-[#00041B] p-2 sm:p-4 rounded-lg">
+                    <h4 className="text-sm font-medium text-white/80 mb-1">
+                      Status :{" "}
+                    </h4>
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-medium inline-flex items-center
                     ${
                       selectedSubmission.status === "pending"
                         ? "bg-yellow-500/10 text-yellow-500"
@@ -859,19 +786,19 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
                         ? "bg-green-500/10 text-green-500"
                         : "bg-red-500/10 text-red-500"
                     }`}
-                >
-                  {selectedSubmission.status.charAt(0).toUpperCase() +
-                    selectedSubmission.status.slice(1)}
-                </span>
-              </div>
+                    >
+                      {selectedSubmission.status.charAt(0).toUpperCase() +
+                        selectedSubmission.status.slice(1)}
+                    </span>
+                  </div>
 
-              <div className="flex flex-wrap gap-2 sm:gap-4 bg-[#00041B] p-2 sm:p-4 rounded-lg">
-                <h4 className="text-sm font-medium text-white/80 mb-1">
-                  Severity :
-                </h4>
-                <div className="flex items-center space-x-2">
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-medium
+                  <div className="flex flex-wrap gap-2 sm:gap-4 bg-[#00041B] p-2 sm:p-4 rounded-lg">
+                    <h4 className="text-sm font-medium text-white/80 mb-1">
+                      Severity :
+                    </h4>
+                    <div className="flex items-center space-x-2">
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-medium
                       ${
                         selectedSubmission.severityLevel === "critical"
                           ? "bg-red-500/10 text-red-500"
@@ -881,16 +808,16 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
                           ? "bg-yellow-500/10 text-yellow-500"
                           : "bg-blue-500/10 text-blue-500"
                       }`}
-                  >
-                    {selectedSubmission.severityLevel.toUpperCase()}
-                  </span>
-                  {selectedSubmission.reviewerSeverity &&
-                    selectedSubmission.reviewerSeverity.toLowerCase() !==
-                      selectedSubmission.severityLevel.toLowerCase() && (
-                      <div className="flex items-center space-x-2">
-                        <ChevronRight className="h-4 w-4 text-[#FAFCA3]" />
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-medium
+                      >
+                        {selectedSubmission.severityLevel.toUpperCase()}
+                      </span>
+                      {selectedSubmission.reviewerSeverity &&
+                        selectedSubmission.reviewerSeverity.toLowerCase() !==
+                          selectedSubmission.severityLevel.toLowerCase() && (
+                          <div className="flex items-center space-x-2">
+                            <ChevronRight className="h-4 w-4 text-[#FAFCA3]" />
+                            <span
+                              className={`px-3 py-1 rounded-full text-xs font-medium
         ${
           selectedSubmission.reviewerSeverity.toLowerCase() === "critical"
             ? "bg-red-500/10 text-red-500"
@@ -900,127 +827,134 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
             ? "bg-yellow-500/10 text-yellow-500"
             : "bg-blue-500/10 text-blue-500"
         }`}
-                        >
-                          {selectedSubmission.reviewerSeverity.toUpperCase()}
-                        </span>
-                      </div>
-                    )}
-                </div>
-              </div>
-
-              <div className="flex flex-wrap gap-2 sm:gap-4 bg-[#00041B] p-2 sm:p-4 rounded-lg">
-                <h4 className="text-sm font-medium text-white/80 mb-3">
-                  Misuse Amount :
-                </h4>
-                <p className="text-white/90 text-sm whitespace-pre-line text-justify">
-                  {selectedSubmission.misUseRange
-                    ? `${selectedSubmission.misUseRange} ${getCurrency(
-                        selectedSubmission.programName
-                      )}`
-                    : "-"}
-                </p>
-              </div>
-
-              {selectedSubmission?.files &&
-                selectedSubmission.files.length > 0 && (
-                  <div className="gap-2 sm:gap-4 bg-[#00041B] p-2 sm:p-4 rounded-lg">
-                    <h4 className="text-sm font-medium text-white/80 mb-3">
-                      Attachments
-                    </h4>
-                    <div className="space-y-2">
-                      {selectedSubmission.files.map((fileId) => {
-                        const metadata = fileMetadata[fileId];
-                        return (
-                          <div
-                            key={fileId}
-                            className="flex items-center justify-between bg-gray-700/50 p-3 rounded-lg hover:bg-gray-700/80 transition-colors"
-                          >
-                            <div className="flex-1 mr-4">
-                              <div className="text-sm text-white/80 font-medium truncate">
-                                {metadata
-                                  ? metadata.originalName || metadata.filename
-                                  : "Loading..."}
-                              </div>
-                            </div>
-                            <button
-                              onClick={() => handleViewFile(fileId, metadata)}
-                              className="px-3 py-1.5 text-sm bg-[#FAFCA3] text-white rounded-md transition-colors"
                             >
-                              <Eye className="w-5 h-5 text-[#99168E]" />
-                            </button>
+                              {selectedSubmission.reviewerSeverity.toUpperCase()}
+                            </span>
                           </div>
-                        );
-                      })}
+                        )}
                     </div>
                   </div>
-                )}
 
-              {selectedSubmission.status === "reviewing" && (
-                <div className="flex justify-end space-x-4 mt-6">
-                  <button
-                    onClick={() => {
-                      handleUpdateStatus(selectedSubmission._id, "rejected");
-                      setSelectedSubmission(null);
-                    }}
-                    className="px-4 py-2 bg-red-600 text-white rounded-lg"
-                  >
-                    Reject
-                  </button>
-                  {(() => {
-                    const bounty = reviewData?.bounties.find(
-                      (b) => b.networkName === selectedSubmission.programName
-                    );
-                    if (bounty?.details?.finalSeverity) {
-                      return (
-                        <div className="flex items-center space-x-2 pr-2">
-                          <select
-                            className="px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#99168E]"
-                            onChange={(e) => {
-                              if (e.target.value) {
-                                handleUpdateStatus(
-                                  selectedSubmission._id,
-                                  "accepted",
-                                  e.target.value
-                                );
-                                setSelectedSubmission(null);
-                              }
-                            }}
-                            defaultValue=""
-                          >
-                            <option value="" disabled>
-                              Select Severity
-                            </option>
-                            {bounty.details.initialSeverities?.map(
-                              (severity) => (
-                                <option key={severity} value={severity}>
-                                  {severity}
-                                </option>
-                              )
-                            )}
-                          </select>
+                  <div className="flex flex-wrap gap-2 sm:gap-4 bg-[#00041B] p-2 sm:p-4 rounded-lg">
+                    <h4 className="text-sm font-medium text-white/80 mb-3">
+                      Misuse Amount :
+                    </h4>
+                    <p className="text-white/90 text-sm whitespace-pre-line text-justify">
+                      {selectedSubmission.misUseRange
+                        ? `${selectedSubmission.misUseRange} ${getCurrency(
+                            selectedSubmission.programName
+                          )}`
+                        : "-"}
+                    </p>
+                  </div>
+
+                  {selectedSubmission?.files &&
+                    selectedSubmission.files.length > 0 && (
+                      <div className="gap-2 sm:gap-4 bg-[#00041B] p-2 sm:p-4 rounded-lg">
+                        <h4 className="text-sm font-medium text-white/80 mb-3">
+                          Attachments
+                        </h4>
+                        <div className="space-y-2">
+                          {selectedSubmission.files.map((fileId) => {
+                            const metadata = fileMetadata[fileId];
+                            return (
+                              <div
+                                key={fileId}
+                                className="flex items-center justify-between bg-gray-700/50 p-3 rounded-lg hover:bg-gray-700/80 transition-colors"
+                              >
+                                <div className="flex-1 mr-4">
+                                  <div className="text-sm text-white/80 font-medium truncate">
+                                    {metadata
+                                      ? metadata.originalName ||
+                                        metadata.filename
+                                      : "Loading..."}
+                                  </div>
+                                </div>
+                                <button
+                                  onClick={() =>
+                                    handleViewFile(fileId, metadata)
+                                  }
+                                  className="px-3 py-1.5 text-sm bg-[#FAFCA3] text-white rounded-md transition-colors"
+                                >
+                                  <Eye className="w-5 h-5 text-[#99168E]" />
+                                </button>
+                              </div>
+                            );
+                          })}
                         </div>
-                      );
-                    }
-                    return (
+                      </div>
+                    )}
+
+                  {selectedSubmission.status === "reviewing" && (
+                    <div className="flex justify-end space-x-4 mt-6">
                       <button
                         onClick={() => {
                           handleUpdateStatus(
                             selectedSubmission._id,
-                            "accepted"
+                            "rejected"
                           );
                           setSelectedSubmission(null);
                         }}
-                        className="px-4 py-2 bg-green-600 text-white rounded-lg"
+                        className="px-4 py-2 bg-red-600 text-white rounded-lg"
                       >
-                        Accept
+                        Reject
                       </button>
-                    );
-                  })()}
-                </div>
-              )}
-              {selectedSubmission.status === "pending" && (
-                <div className="flex justify-end mt-6">
-                  {/* <button
+                      {(() => {
+                        const bounty = reviewData?.bounties.find(
+                          (b) =>
+                            b.networkName === selectedSubmission.programName
+                        );
+                        if (bounty?.details?.finalSeverity) {
+                          return (
+                            <div className="flex items-center space-x-2 pr-2">
+                              <select
+                                className="px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#99168E]"
+                                onChange={(e) => {
+                                  if (e.target.value) {
+                                    handleUpdateStatus(
+                                      selectedSubmission._id,
+                                      "accepted",
+                                      e.target.value
+                                    );
+                                    setSelectedSubmission(null);
+                                  }
+                                }}
+                                defaultValue=""
+                              >
+                                <option value="" disabled>
+                                  Select Severity
+                                </option>
+                                {bounty.details.initialSeverities?.map(
+                                  (severity) => (
+                                    <option key={severity} value={severity}>
+                                      {severity}
+                                    </option>
+                                  )
+                                )}
+                              </select>
+                            </div>
+                          );
+                        }
+                        return (
+                          <button
+                            onClick={() => {
+                              handleUpdateStatus(
+                                selectedSubmission._id,
+                                "accepted"
+                              );
+                              setSelectedSubmission(null);
+                            }}
+                            className="px-4 py-2 bg-green-600 text-white rounded-lg"
+                          >
+                            Accept
+                          </button>
+                        );
+                      })()}
+                    </div>
+                  )}
+                  {selectedSubmission.status === "pending" && (
+                    <div className="flex justify-end mt-6">
+                      {/* <button
                     onClick={() => {
                       handleUpdateStatus(selectedSubmission._id, "reviewing");
                       setSelectedSubmission(null);
@@ -1029,63 +963,65 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
                   >
                     Start Review
                   </button> */}
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          )}
 
-      {/* File viewer modal */}
-      {viewingFile && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-2 sm:p-4 z-50 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-[#00041B] rounded-xl p-3 sm:p-6 max-w-2xl w-full max-h-[90vh] border border-[#99168E] shadow-xl my-4">
-            <div className="flex items-center justify-between p-4 border-b border-[#99168E]">
-              <h3 className="text-lg font-medium text-white/80 truncate">
-                {viewingFile.name}
-              </h3>
-              <button
-                onClick={() => {
-                  URL.revokeObjectURL(viewingFile.url);
-                  setViewingFile(null);
-                }}
-                className="hover:bg-[#99168E] p-1 rounded-xl transition-colors"
-              >
-                <X className="w-6 h-6 text-[#FAFCA3]" />
-              </button>
-            </div>
-            <div className="flex-1 overflow-auto p-4">
-              {viewingFile.contentType.startsWith("image/") ? (
-                <img
-                  src={viewingFile.url}
-                  alt={viewingFile.name}
-                  className="max-w-full h-auto mx-auto"
-                />
-              ) : viewingFile.contentType === "application/pdf" ? (
-                <iframe
-                  src={viewingFile.url}
-                  className="w-full h-full min-h-[700px] rounded border border-[#FAFCA3] bg-[#99168E]"
-                  title={viewingFile.name}
-                />
-              ) : viewingFile.contentType === "text/plain" ||
-                viewingFile.contentType === "text/markdown" ? (
-                <iframe
-                  src={viewingFile.url}
-                  className="w-full h-full min-h-[700px] rounded border border-[#FAFCA3] bg-[#99168E]"
-                  title={viewingFile.name}
-                />
-              ) : (
-                <div className="bg-gray-900 p-4 rounded">
-                  <p className="text-gray-300">
-                    This file type ({viewingFile.contentType}) cannot be
-                    previewed directly.
-                  </p>
+          {/* File viewer modal */}
+          {viewingFile && (
+            <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-2 sm:p-4 z-50 backdrop-blur-sm overflow-y-auto">
+              <div className="bg-[#00041B] rounded-xl p-3 sm:p-6 max-w-2xl w-full max-h-[90vh] border border-[#99168E] shadow-xl my-4">
+                <div className="flex items-center justify-between p-4 border-b border-[#99168E]">
+                  <h3 className="text-lg font-medium text-white/80 truncate">
+                    {viewingFile.name}
+                  </h3>
+                  <button
+                    onClick={() => {
+                      URL.revokeObjectURL(viewingFile.url);
+                      setViewingFile(null);
+                    }}
+                    className="hover:bg-[#99168E] p-1 rounded-xl transition-colors"
+                  >
+                    <X className="w-6 h-6 text-[#FAFCA3]" />
+                  </button>
                 </div>
-              )}
+                <div className="flex-1 overflow-auto p-4">
+                  {viewingFile.contentType.startsWith("image/") ? (
+                    <img
+                      src={viewingFile.url}
+                      alt={viewingFile.name}
+                      className="max-w-full h-auto mx-auto"
+                    />
+                  ) : viewingFile.contentType === "application/pdf" ? (
+                    <iframe
+                      src={viewingFile.url}
+                      className="w-full h-full min-h-[700px] rounded border border-[#FAFCA3] bg-[#99168E]"
+                      title={viewingFile.name}
+                    />
+                  ) : viewingFile.contentType === "text/plain" ||
+                    viewingFile.contentType === "text/markdown" ? (
+                    <iframe
+                      src={viewingFile.url}
+                      className="w-full h-full min-h-[700px] rounded border border-[#FAFCA3] bg-[#99168E]"
+                      title={viewingFile.name}
+                    />
+                  ) : (
+                    <div className="bg-gray-900 p-4 rounded">
+                      <p className="text-gray-300">
+                        This file type ({viewingFile.contentType}) cannot be
+                        previewed directly.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
-          </div>
+          )}
         </div>
-      )}
-    </div>
+      </StateHandler>
+    </>
   );
 }
