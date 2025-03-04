@@ -11,10 +11,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "react-hot-toast";
-import {
-  ReviewSubmission,
-  FileData,
-} from "@/types/reviewerData";
+import { ReviewSubmission, FileData } from "@/types/reviewerData";
 import { StatusCounts } from "@/types/statusCounter";
 import { parseMisUseRange } from "@/utils/parseMisuseRange";
 import { getCurrency } from "@/utils/networkCurrency";
@@ -41,22 +38,18 @@ interface CombinedBounty {
   _id: string;
   networkName: string;
   logoUrl: string;
-  description: string;
-  maxRewards: number;
-  totalPaid: number;
-  startDate: Date | null;
-  endDate: Date | null;
-  lastUpdated: Date;
-  status: string;
-  createdAt: Date;
-  updatedAt: Date;
-  details?: {
-    finalSeverity: boolean;
-    initialSeverities: string[];
-  };
+  reviewerAddresses: string[];
+  finalSeverity: boolean;
+  initialSeverities: string[];
 }
 
-export function Management({ walletAddress, isManager }: { walletAddress?: string, isManager: boolean }) {
+export function Management({
+  walletAddress,
+  isManager,
+}: {
+  walletAddress?: string;
+  isManager: boolean;
+}) {
   const [managerData, setManagerData] = useState<ManagerData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -95,13 +88,33 @@ export function Management({ walletAddress, isManager }: { walletAddress?: strin
       }
 
       try {
-        const response = await fetch(`/api/users/${walletAddress}/reports`);
-        if (!response.ok) throw new Error("Failed to fetch manager data");
-        const data = await response.json();
+        const submissionsResponse = await fetch(
+          `/api/manager-data?address=${walletAddress}`
+        );
+        const submissionsData = await submissionsResponse.json();
+
+        if (!submissionsResponse.ok) {
+          throw new Error(
+            submissionsData.error || "Failed to fetch review submissions"
+          );
+        }
+
+        // const response = await fetch(`/api/users/${walletAddress}/reports`);
+        // if (!response.ok) throw new Error("Failed to fetch manager data");
+        // const data = await response.json();
+        console.log("submission data for manager", submissionsData);
+        console.log(
+          "submission data for manager submission",
+          submissionsData.manager.submissions
+        );
+        console.log(
+          "submission data for manager bounties",
+          submissionsData.manager.bounties
+        );
         setManagerData({
           isManager,
-          submissions: data.manager.submissions || [],
-          bounties: data.manager.bounties || [],
+          submissions: submissionsData.manager.submissions || [],
+          bounties: submissionsData.manager.bounties || [],
         });
       } catch (error) {
         console.error("Error fetching manager data:", error);
@@ -346,7 +359,12 @@ export function Management({ walletAddress, isManager }: { walletAddress?: strin
           </div>
 
           <ProgramSummary
-            bounties={managerData?.bounties.map((bounty) => ({ networkName: bounty.networkName, logoUrl: bounty.logoUrl })) || []}
+            bounties={
+              managerData?.bounties.map((bounty) => ({
+                networkName: bounty.networkName,
+                logoUrl: bounty.logoUrl,
+              })) || []
+            }
             statusCounts={statusCounts}
           />
 
@@ -493,7 +511,7 @@ export function Management({ walletAddress, isManager }: { walletAddress?: strin
                         (b) => b.networkName === submission.programName
                       );
                       const showSeveritySelection =
-                        bounty?.details?.finalSeverity &&
+                        bounty?.finalSeverity &&
                         submission.status === "reviewing";
 
                       return (
@@ -603,89 +621,71 @@ export function Management({ walletAddress, isManager }: { walletAddress?: strin
                               >
                                 Details
                               </button>
-                              {submission.status === "pending" && (
-                                <>
-                                  <EllipsisVertical className="w-5 h-5 text-orange-500" />
-                                  <button
-                                    onClick={() =>
-                                      handleUpdateStatus(
-                                        submission._id,
-                                        "reviewing"
-                                      )
-                                    }
-                                    className="text-[#FAFCA3] hover:text-[#99168E] ml-2"
-                                  >
-                                    Review
-                                  </button>
-                                </>
-                              )}
-                              {submission.status === "reviewing" && (
-                                <>
-                                  <EllipsisVertical className="w-5 h-5 text-orange-500" />
-                                  {showSeveritySelection ? (
-                                    <div className="flex items-center space-x-2">
-                                      <select
-                                        className="px-2 py-1 bg-gray-800 border border-gray-700 rounded-full text-white focus:outline-none focus:ring-2 focus:ring-[#99168E] focus:border-transparent"
-                                        onChange={(e) =>
-                                          handleUpdateStatus(
-                                            submission._id,
-                                            "accepted",
-                                            e.target.value
-                                          )
-                                        }
-                                      >
-                                        <option value="">Accept</option>
-                                        {bounty?.details?.initialSeverities?.map(
-                                          (severity) => (
-                                            <option
-                                              key={severity}
-                                              value={severity}
-                                            >
-                                              {severity}
-                                            </option>
-                                          )
-                                        )}
-                                      </select>
-                                      <button
-                                        onClick={() =>
-                                          handleUpdateStatus(
-                                            submission._id,
-                                            "rejected"
-                                          )
-                                        }
-                                        className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full hover:bg-red-500/30"
-                                      >
-                                        Reject
-                                      </button>
-                                    </div>
-                                  ) : (
-                                    <>
-                                      <button
-                                        onClick={() =>
-                                          handleUpdateStatus(
-                                            submission._id,
-                                            "accepted"
-                                          )
-                                        }
-                                        className="px-3 py-1 bg-green-500/20 text-green-500 rounded-full hover:bg-green-500/30"
-                                      >
-                                        Accept
-                                      </button>
-                                      <button
-                                        onClick={() =>
-                                          handleUpdateStatus(
-                                            submission._id,
-                                            "rejected"
-                                          )
-                                        }
-                                        className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full hover:bg-red-500/30"
-                                      >
-                                        Reject
-                                      </button>
-                                    </>
-                                  )}
-                                </>
-                              )}
+                              <>
+                                <EllipsisVertical className="w-5 h-5 text-orange-500" />
+                                {bounty?.finalSeverity ? (
+                                  <div className="flex items-center space-x-2">
+                                    <select
+                                      className="px-2 py-1 bg-gray-800 border border-gray-700 rounded-full text-white focus:outline-none focus:ring-2 focus:ring-[#99168E] focus:border-transparent"
+                                      onChange={(e) =>
+                                        handleUpdateStatus(
+                                          submission._id,
+                                          "accepted",
+                                          e.target.value
+                                        )
+                                      }
+                                    >
+                                      <option value="">Accept</option>
+                                      {bounty?.initialSeverities?.map(
+                                        (severity) => (
+                                          <option
+                                            key={severity}
+                                            value={severity}
+                                          >
+                                            {severity}
+                                          </option>
+                                        )
+                                      )}
+                                    </select>
+                                    <button
+                                      onClick={() =>
+                                        handleUpdateStatus(
+                                          submission._id,
+                                          "rejected"
+                                        )
+                                      }
+                                      className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full hover:bg-red-500/30"
+                                    >
+                                      Reject
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <>
+                                    <button
+                                      onClick={() =>
+                                        handleUpdateStatus(
+                                          submission._id,
+                                          "accepted"
+                                        )
+                                      }
+                                      className="px-3 py-1 bg-green-500/20 text-green-500 rounded-full hover:bg-green-500/30"
+                                    >
+                                      Accept
+                                    </button>
+                                    <button
+                                      onClick={() =>
+                                        handleUpdateStatus(
+                                          submission._id,
+                                          "rejected"
+                                        )
+                                      }
+                                      className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full hover:bg-red-500/30"
+                                    >
+                                      Reject
+                                    </button>
+                                  </>
+                                )}
+                              </>
                             </div>
                           </td>
                         </tr>
@@ -856,7 +856,7 @@ export function Management({ walletAddress, isManager }: { walletAddress?: strin
                           (b) =>
                             b.networkName === selectedSubmission.programName
                         );
-                        if (bounty?.details?.finalSeverity) {
+                        if (bounty?.finalSeverity) {
                           return (
                             <div className="flex items-center space-x-2 pr-2">
                               <select
@@ -876,7 +876,7 @@ export function Management({ walletAddress, isManager }: { walletAddress?: strin
                                 <option value="" disabled>
                                   Select Severity
                                 </option>
-                                {bounty.details.initialSeverities?.map(
+                                {bounty.initialSeverities?.map(
                                   (severity) => (
                                     <option key={severity} value={severity}>
                                       {severity}

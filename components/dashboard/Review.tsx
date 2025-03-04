@@ -673,7 +673,6 @@ export function Review({
                               </button>
                               <EllipsisVertical className="w-5 h-5 text-orange-500" />
                               <div className="flex items-center space-x-2">
-                                <h1>{bounty?.finalSeverity}</h1>
                                 {bounty?.finalSeverity ? (
                                   <select
                                     className="px-2 py-1 bg-gray-800 border border-gray-700 rounded-full text-white focus:outline-none focus:ring-2 focus:ring-[#99168E] focus:border-transparent"
