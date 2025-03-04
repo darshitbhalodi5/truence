@@ -33,6 +33,7 @@ export interface ReviewerData {
   bounties: Array<{
     networkName: string;
     logoUrl: string;
-    details?: BountyDetails;
+    finalSeverity?: boolean;
+    initialSeverities?: string[];
   }>;
 }

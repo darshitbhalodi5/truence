@@ -11,11 +11,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "react-hot-toast";
-import {
-  ReviewSubmission,
-  ReviewerData,
-  FileData,
-} from "@/types/reviewerData";
+import { ReviewSubmission, ReviewerData, FileData } from "@/types/reviewerData";
 import { StatusCounts } from "@/types/statusCounter";
 import { parseMisUseRange } from "@/utils/parseMisuseRange";
 import { getCurrency } from "@/utils/networkCurrency";
@@ -29,7 +25,13 @@ import SortIcon from "@/components/sort-icon/SortIcon";
 import SeverityInfo from "@/components/severity-change/SeverityInfo";
 import StateHandler from "@/components/state-handle/StateHandler";
 
-export function Review({ walletAddress, isReviewer }: { walletAddress?: string, isReviewer: boolean }) {
+export function Review({
+  walletAddress,
+  isReviewer,
+}: {
+  walletAddress?: string;
+  isReviewer: boolean;
+}) {
   const [reviewData, setReviewData] = useState<ReviewerData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -80,29 +82,10 @@ export function Review({ walletAddress, isReviewer }: { walletAddress?: string, 
           );
         }
 
-        // Fetch user role data to get bounties information
-        const userDataResponse = await fetch(
-          `/api/users/${walletAddress}/reports`
-        );
-        const userData = await userDataResponse.json();
-
-        if (!userDataResponse.ok) {
-          throw new Error(userData.error || "Failed to fetch reviewer data");
-        }
-
-        // Debug log for bounty data
-        console.log("Fetched review data:", {
-          bounties: userData.reviewer.bounties.map((b: any) => ({
-            networkName: b.networkName,
-            finalSeverity: b.details?.finalSeverity,
-            initialSeverities: b.details?.initialSeverities,
-          })),
-        });
-
         setReviewData({
           isReviewer,
-          submissions: submissionsData.submissions || [],
-          bounties: userData.reviewer.bounties || [],
+          submissions: submissionsData.reviewer.submissions || [],
+          bounties: submissionsData.reviewer.bounties || [],
         });
       } catch (error) {
         console.error("Error fetching review data:", error);
@@ -589,7 +572,7 @@ export function Review({ walletAddress, isReviewer }: { walletAddress?: string, 
                             <div className="flex items-center space-x-3">
                               <div className="w-8 h-8 relative flex-shrink-0">
                                 <img
-                                  src={submission.bountyLogo}
+                                  src={bounty?.logoUrl}
                                   alt={`${submission.programName} Logo`}
                                   className="w-7 h-7 rounded-full"
                                 />
@@ -690,7 +673,8 @@ export function Review({ walletAddress, isReviewer }: { walletAddress?: string, 
                               </button>
                               <EllipsisVertical className="w-5 h-5 text-orange-500" />
                               <div className="flex items-center space-x-2">
-                                {bounty?.details?.finalSeverity ? (
+                                <h1>{bounty?.finalSeverity}</h1>
+                                {bounty?.finalSeverity ? (
                                   <select
                                     className="px-2 py-1 bg-gray-800 border border-gray-700 rounded-full text-white focus:outline-none focus:ring-2 focus:ring-[#99168E] focus:border-transparent"
                                     onChange={(e) =>
@@ -702,7 +686,7 @@ export function Review({ walletAddress, isReviewer }: { walletAddress?: string, 
                                     }
                                   >
                                     <option value="">Accept</option>
-                                    {bounty?.details?.initialSeverities?.map(
+                                    {bounty?.initialSeverities?.map(
                                       (severity) => (
                                         <option key={severity} value={severity}>
                                           {severity}
@@ -904,7 +888,7 @@ export function Review({ walletAddress, isReviewer }: { walletAddress?: string, 
                           (b) =>
                             b.networkName === selectedSubmission.programName
                         );
-                        if (bounty?.details?.finalSeverity) {
+                        if (bounty?.finalSeverity) {
                           return (
                             <div className="flex items-center space-x-2 pr-2">
                               <select
@@ -924,7 +908,7 @@ export function Review({ walletAddress, isReviewer }: { walletAddress?: string, 
                                 <option value="" disabled>
                                   Select Severity
                                 </option>
-                                {bounty.details.initialSeverities?.map(
+                                {bounty.initialSeverities?.map(
                                   (severity) => (
                                     <option key={severity} value={severity}>
                                       {severity}
