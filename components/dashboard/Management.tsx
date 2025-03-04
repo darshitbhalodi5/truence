@@ -363,6 +363,7 @@ export function Management({
               managerData?.bounties.map((bounty) => ({
                 networkName: bounty.networkName,
                 logoUrl: bounty.logoUrl,
+                reviewerAddresses: bounty.reviewerAddresses,
               })) || []
             }
             statusCounts={statusCounts}
