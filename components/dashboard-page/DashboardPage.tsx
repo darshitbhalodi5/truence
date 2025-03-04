@@ -231,10 +231,10 @@ export default function DashboardPage() {
             <Submission walletAddress={user.wallet.address} />
           )}
           {activeTab === "Review Submission" && (
-            <Review walletAddress={user.wallet.address} />
+            <Review walletAddress={user.wallet.address} isReviewer={true} />
           )}
           {activeTab === "Manage Bounties" && (
-            <Management walletAddress={user.wallet.address} />
+            <Management walletAddress={user.wallet.address} isManager={true} />
           )}
         </div>
 

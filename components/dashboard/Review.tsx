@@ -15,8 +15,8 @@ import {
   ReviewSubmission,
   ReviewerData,
   FileData,
-  StatusCounts,
 } from "@/types/reviewerData";
+import { StatusCounts } from "@/types/statusCounter";
 import { parseMisUseRange } from "@/utils/parseMisuseRange";
 import { getCurrency } from "@/utils/networkCurrency";
 import {
@@ -29,7 +29,7 @@ import SortIcon from "@/components/sort-icon/SortIcon";
 import SeverityInfo from "@/components/severity-change/SeverityInfo";
 import StateHandler from "@/components/state-handle/StateHandler";
 
-export function Review({ walletAddress }: { walletAddress?: string }) {
+export function Review({ walletAddress, isReviewer }: { walletAddress?: string, isReviewer: boolean }) {
   const [reviewData, setReviewData] = useState<ReviewerData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -100,7 +100,7 @@ export function Review({ walletAddress }: { walletAddress?: string }) {
         });
 
         setReviewData({
-          isReviewer: userData.reviewer.isReviewer,
+          isReviewer,
           submissions: submissionsData.submissions || [],
           bounties: userData.reviewer.bounties || [],
         });

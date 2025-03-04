@@ -13,10 +13,9 @@ import { useState, useEffect, useMemo } from "react";
 import { toast } from "react-hot-toast";
 import {
   ReviewSubmission,
-  ReviewerData,
   FileData,
-  StatusCounts,
 } from "@/types/reviewerData";
+import { StatusCounts } from "@/types/statusCounter";
 import { parseMisUseRange } from "@/utils/parseMisuseRange";
 import { getCurrency } from "@/utils/networkCurrency";
 import {
@@ -28,6 +27,7 @@ import {
 import SortIcon from "@/components/sort-icon/SortIcon";
 import SeverityInfo from "@/components/severity-change/SeverityInfo";
 import StateHandler from "@/components/state-handle/StateHandler";
+import ProgramSummary from "@/components/program-summary/ProgramSummary";
 
 // Define ManagerData interface (similar to ReviewerData but for managers)
 interface ManagerData {
@@ -56,7 +56,7 @@ interface CombinedBounty {
   };
 }
 
-export function Management({ walletAddress }: { walletAddress?: string }) {
+export function Management({ walletAddress, isManager }: { walletAddress?: string, isManager: boolean }) {
   const [managerData, setManagerData] = useState<ManagerData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -99,7 +99,7 @@ export function Management({ walletAddress }: { walletAddress?: string }) {
         if (!response.ok) throw new Error("Failed to fetch manager data");
         const data = await response.json();
         setManagerData({
-          isManager: data.manager.isManager,
+          isManager,
           submissions: data.manager.submissions || [],
           bounties: data.manager.bounties || [],
         });
@@ -345,6 +345,11 @@ export function Management({ walletAddress }: { walletAddress?: string }) {
             </h2>
           </div>
 
+          <ProgramSummary
+            bounties={managerData?.bounties.map((bounty) => ({ networkName: bounty.networkName, logoUrl: bounty.logoUrl })) || []}
+            statusCounts={statusCounts}
+          />
+
           {/* Search and Filters */}
           <div className="flex flex-col sm:flex-row justify-between gap-4 mb-4">
             <div className="relative flex-grow max-w-full sm:max-w-md">
@@ -500,7 +505,7 @@ export function Management({ walletAddress }: { walletAddress?: string }) {
                             <div className="flex items-center space-x-3">
                               <div className="w-8 h-8 relative flex-shrink-0">
                                 <img
-                                  src={submission.bountyLogo}
+                                  src={bounty?.logoUrl}
                                   alt={`${submission.programName} Logo`}
                                   className="w-7 h-7 rounded-full"
                                 />

@@ -7,15 +7,6 @@ export interface FileData {
   uploadDate: string;
 }
 
-export interface StatusCounts {
-  all: number;
-  pending?: number;
-  reviewing?: number;
-  accepted?: number;
-  rejected?: number;
-  [key: string]: number | undefined;
-}
-
 export interface ReviewSubmission {
   _id: string;
   programName: string;
