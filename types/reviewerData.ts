@@ -18,8 +18,16 @@ export interface ReviewSubmission {
   misUseRange?: string;
   createdAt: string;
   walletAddress: string;
+  reviewVotes?: {
+    reviewerAddress: string;
+    vote: "accepted" | "rejected";
+    severity?: string;
+    votedAt?: Date;
+    comment?: string;
+  }[];
   files?: string[]; // This is an array of file IDs
   bountyLogo?: string;
+  tempComment?: string;
 }
 
 export interface BountyDetails {
