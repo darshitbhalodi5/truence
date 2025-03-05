@@ -30,6 +30,7 @@ import SeverityInfo from "@/components/severity-change/SeverityInfo";
 import StateHandler from "@/components/state-handle/StateHandler";
 import ProgramSummary from "@/components/program-summary/ProgramSummary";
 import { Tooltip } from "@/components/tooltip/Tooltip";
+import { VoteModal } from "@/components/vote-modal/VoteModal";
 
 // Define ManagerData interface (similar to ReviewerData but for managers)
 interface ManagerData {
@@ -252,6 +253,15 @@ export function Management({
     } catch (error) {
       console.error("Error submitting vote:", error);
     }
+  };
+
+  // Close the vote modal and reset state
+  const handleCloseVoteModal = () => {
+    setIsVoteModalOpen(false);
+    setVotingSubmission(null);
+    setVoteComment("");
+    setSelectedVote("");
+    setSelectedVoteSeverity("");
   };
 
   // Update submission status
@@ -682,132 +692,19 @@ export function Management({
 
           {/* Voting Modal */}
           {isVoteModalOpen && votingSubmission && (
-            <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-2 sm:p-4 z-50 backdrop-blur-sm overflow-y-auto">
-              <div className="bg-[#00041B] rounded-xl p-3 sm:p-6 max-w-md w-full border border-[#99168E] shadow-xl">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-semibold text-[#FAFCA3]">
-                    Vote on Submission
-                  </h3>
-                  <button
-                    onClick={() => {
-                      setIsVoteModalOpen(false);
-                      setVotingSubmission(null);
-                      setVoteComment("");
-                      setSelectedVote("");
-                      setSelectedVoteSeverity("");
-                    }}
-                    className="hover:bg-[#99168E] p-1 rounded-xl transition-colors"
-                  >
-                    <X className="w-6 h-6 text-[#FAFCA3]" />
-                  </button>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium text-white/80 block mb-2">
-                      Vote
-                    </label>
-                    <div className="flex space-x-4">
-                      <button
-                        onClick={() => setSelectedVote("accepted")}
-                        className={`px-4 py-2 rounded-lg flex-1 ${
-                          selectedVote === "accepted"
-                            ? "bg-green-600 text-white"
-                            : "bg-gray-800 text-white hover:bg-gray-700"
-                        }`}
-                      >
-                        Accept
-                      </button>
-                      <button
-                        onClick={() => setSelectedVote("rejected")}
-                        className={`px-4 py-2 rounded-lg flex-1 ${
-                          selectedVote === "rejected"
-                            ? "bg-red-600 text-white"
-                            : "bg-gray-800 text-white hover:bg-gray-700"
-                        }`}
-                      >
-                        Reject
-                      </button>
-                    </div>
-                  </div>
-
-                  {selectedVote === "accepted" &&
-                    (() => {
-                      const bounty = managerData?.bounties.find(
-                        (b) => b.networkName === votingSubmission.programName
-                      );
-                      if (bounty?.finalSeverity) {
-                        return (
-                          <div>
-                            <label className="text-sm font-medium text-white/80 block mb-2">
-                              Severity
-                            </label>
-                            <select
-                              value={selectedVoteSeverity}
-                              onChange={(e) =>
-                                setSelectedVoteSeverity(e.target.value)
-                              }
-                              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#99168E]"
-                            >
-                              <option value="">Select Severity</option>
-                              {bounty.initialSeverities?.map((severity) => (
-                                <option key={severity} value={severity}>
-                                  {severity}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                        );
-                      }
-                      return null;
-                    })()}
-
-                  <div>
-                    <label className="text-sm font-medium text-white/80 block mb-2">
-                      Comment
-                    </label>
-                    <textarea
-                      value={voteComment}
-                      onChange={(e) => setVoteComment(e.target.value)}
-                      className="w-full h-24 p-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#99168E]"
-                      placeholder="Add your comments here..."
-                    />
-                  </div>
-
-                  <div className="flex justify-end space-x-2">
-                    <button
-                      onClick={() => {
-                        setIsVoteModalOpen(false);
-                        setVotingSubmission(null);
-                        setVoteComment("");
-                        setSelectedVote("");
-                        setSelectedVoteSeverity("");
-                      }}
-                      className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={handleSubmitVote}
-                      disabled={
-                        !selectedVote ||
-                        (selectedVote === "accepted" &&
-                          votingSubmission.programName &&
-                          managerData?.bounties.find(
-                            (b) =>
-                              b.networkName === votingSubmission.programName
-                          )?.finalSeverity &&
-                          !selectedVoteSeverity) ||
-                        undefined
-                      }
-                      className="px-4 py-2 bg-[#99168E] text-[#FAFCA3] rounded-lg hover:bg-[#7A126F] disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Submit Vote
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <VoteModal
+              isOpen={isVoteModalOpen}
+              onClose={handleCloseVoteModal}
+              votingSubmission={votingSubmission}
+              voteComment={voteComment}
+              setVoteComment={setVoteComment}
+              selectedVote={selectedVote}
+              setSelectedVote={setSelectedVote}
+              selectedVoteSeverity={selectedVoteSeverity}
+              setSelectedVoteSeverity={setSelectedVoteSeverity}
+              handleSubmitVote={handleSubmitVote}
+              bountiesData={managerData}
+            />
           )}
 
           {/* Details Modal */}
