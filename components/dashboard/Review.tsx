@@ -30,6 +30,7 @@ import SeverityInfo from "@/components/severity-change/SeverityInfo";
 import StateHandler from "@/components/state-handle/StateHandler";
 import { Tooltip } from "@/components/tooltip/Tooltip";
 import { VoteModal } from "@/components/vote-modal/VoteModal";
+import ReviewerProgramSummary from "@/components/reviewer-program-summary/ReviewerProgramSummary";
 
 export function Review({
   walletAddress,
@@ -441,6 +442,26 @@ export function Review({
     { all: reviewData?.submissions?.length || 0 }
   ) || { all: 0 };
 
+  // After calculating statusCounts
+  const bountyStatusCounts = useMemo(() => {
+    if (!reviewData?.submissions || !reviewData?.bounties) return {};
+
+    return reviewData.bounties.reduce((acc, bounty) => {
+      const bountySubmissions = reviewData.submissions.filter(
+        (submission) => submission.programName === bounty.networkName
+      );
+      const counts = bountySubmissions.reduce(
+        (counts: StatusCounts, submission) => {
+          counts[submission.status] = (counts[submission.status] || 0) + 1;
+          return counts;
+        },
+        { all: bountySubmissions.length }
+      );
+      acc[bounty.networkName] = counts;
+      return acc;
+    }, {} as Record<string, StatusCounts>);
+  }, [reviewData?.submissions, reviewData?.bounties]);
+
   return (
     <>
       <StateHandler
@@ -463,6 +484,18 @@ export function Review({
               Review Submissions
             </h2>
           </div>
+
+          <ReviewerProgramSummary
+            bounties={
+              reviewData?.bounties.map((bounty) => ({
+                networkName: bounty.networkName,
+                logoUrl: bounty.logoUrl,
+                statusCounts: bountyStatusCounts[bounty.networkName] || {
+                  all: 0,
+                },
+              })) || []
+            }
+          />
 
           {/* Search and status based filter */}
           <div className="flex flex-col sm:flex-row justify-between gap-4 mb-4">

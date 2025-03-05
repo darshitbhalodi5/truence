@@ -28,7 +28,7 @@ import {
 import SortIcon from "@/components/sort-icon/SortIcon";
 import SeverityInfo from "@/components/severity-change/SeverityInfo";
 import StateHandler from "@/components/state-handle/StateHandler";
-import ProgramSummary from "@/components/program-summary/ProgramSummary";
+import ManagerProgramSummary from "@/components/manager-program-summary/ManagerProgramSummary";
 import { Tooltip } from "@/components/tooltip/Tooltip";
 import { VoteModal } from "@/components/vote-modal/VoteModal";
 
@@ -381,6 +381,25 @@ export function Management({
     { all: managerData?.submissions?.length || 0 }
   ) || { all: 0 };
 
+  const bountyStatusCounts = useMemo(() => {
+    if (!managerData?.submissions || !managerData?.bounties) return {};
+
+    return managerData.bounties.reduce((acc, bounty) => {
+      const bountySubmissions = managerData.submissions.filter(
+        (submission) => submission.programName === bounty.networkName
+      );
+      const counts = bountySubmissions.reduce(
+        (counts: StatusCounts, submission) => {
+          counts[submission.status] = (counts[submission.status] || 0) + 1;
+          return counts;
+        },
+        { all: bountySubmissions.length }
+      );
+      acc[bounty.networkName] = counts;
+      return acc;
+    }, {} as Record<string, StatusCounts>);
+  }, [managerData?.submissions, managerData?.bounties]);
+
   // Main render
   return (
     <>
@@ -405,12 +424,15 @@ export function Management({
             </h2>
           </div>
 
-          <ProgramSummary
+          <ManagerProgramSummary
             bounties={
               managerData?.bounties.map((bounty) => ({
                 networkName: bounty.networkName,
                 logoUrl: bounty.logoUrl,
                 reviewerAddresses: bounty.reviewerAddresses,
+                statusCounts: bountyStatusCounts[bounty.networkName] || {
+                  all: 0,
+                },
               })) || []
             }
             statusCounts={statusCounts}
