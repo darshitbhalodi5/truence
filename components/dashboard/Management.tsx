@@ -8,6 +8,10 @@ import {
   EllipsisVertical,
   X,
   Eye,
+  Pin,
+  ClipboardList,
+  Check,
+  Vote,
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "react-hot-toast";
@@ -25,6 +29,7 @@ import SortIcon from "@/components/sort-icon/SortIcon";
 import SeverityInfo from "@/components/severity-change/SeverityInfo";
 import StateHandler from "@/components/state-handle/StateHandler";
 import ProgramSummary from "@/components/program-summary/ProgramSummary";
+import { Tooltip } from "@/components/tooltip/Tooltip";
 
 // Define ManagerData interface (similar to ReviewerData but for managers)
 interface ManagerData {
@@ -73,6 +78,15 @@ export function Management({
   );
   const [selectedSeverity, setSelectedSeverity] =
     useState<SeverityFilter>("ALL");
+
+  const [isVoteModalOpen, setIsVoteModalOpen] = useState(false);
+  const [votingSubmission, setVotingSubmission] =
+    useState<ReviewSubmission | null>(null);
+  const [voteComment, setVoteComment] = useState("");
+  const [selectedVote, setSelectedVote] = useState<
+    "accepted" | "rejected" | ""
+  >("");
+  const [selectedVoteSeverity, setSelectedVoteSeverity] = useState("");
 
   const bookmarkKey = walletAddress
     ? `managementBookmarks_${walletAddress}`
@@ -216,17 +230,42 @@ export function Management({
     bookmarkedSubmissions,
   ]);
 
+  const hasManagerVoted = (submission: ReviewSubmission): boolean => {
+    return !!submission?.managerVote;
+  };
+
+  const handleSubmitVote = async () => {
+    if (!votingSubmission || !selectedVote) return;
+
+    try {
+      await handleUpdateStatus(
+        votingSubmission._id,
+        selectedVote,
+        selectedVoteSeverity || undefined,
+        voteComment
+      );
+      setIsVoteModalOpen(false);
+      setVotingSubmission(null);
+      setVoteComment("");
+      setSelectedVote("");
+      setSelectedVoteSeverity("");
+    } catch (error) {
+      console.error("Error submitting vote:", error);
+    }
+  };
+
   // Update submission status
   const handleUpdateStatus = async (
     submissionId: string,
     newStatus: string,
-    reviewerSeverity?: string
+    reviewerSeverity?: string,
+    comment?: string
   ) => {
     try {
       const response = await fetch(`/api/submissions/${submissionId}/status`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus, reviewerSeverity }),
+        body: JSON.stringify({ status: newStatus, reviewerSeverity, comment }),
       });
 
       const data = await response.json();
@@ -235,9 +274,7 @@ export function Management({
 
       if (managerData) {
         const updatedSubmissions = managerData.submissions.map((sub) =>
-          sub._id === submissionId
-            ? { ...sub, status: newStatus, reviewerSeverity }
-            : sub
+          sub._id === submissionId ? { ...sub, ...data.submission } : sub
         );
         setManagerData({ ...managerData, submissions: updatedSubmissions });
       }
@@ -502,8 +539,8 @@ export function Management({
                           />
                         </div>
                       </th>
-                      <th className="px-2 py-3 w-10">Bookmark</th>
-                      <th className="px-4 py-3">Actions</th>
+                      <th className="px-2 py-3">Pin Submission</th>
+                      <th className="px-4 py-3">Details | Vote</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -511,9 +548,7 @@ export function Management({
                       const bounty = managerData?.bounties.find(
                         (b) => b.networkName === submission.programName
                       );
-                      const showSeveritySelection =
-                        bounty?.finalSeverity &&
-                        submission.status === "reviewing";
+                      const hasVoted = hasManagerVoted(submission);
 
                       return (
                         <tr
@@ -587,106 +622,53 @@ export function Management({
                               {bookmarkedSubmissions.includes(
                                 submission._id
                               ) ? (
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  className="h-5 w-5 text-yellow-500 fill-current"
-                                  viewBox="0 0 20 20"
-                                >
-                                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                </svg>
+                                <Pin
+                                  className="w-5 h-5 text-[#FAFCA3]"
+                                  fill="#FAFCA3"
+                                />
                               ) : (
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  className="h-5 w-5 text-gray-400 hover:text-yellow-500"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke="currentColor"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
-                                  />
-                                </svg>
+                                <Pin className="w-5 h-5" />
                               )}
                             </button>
                           </td>
                           <td className="px-4 py-3">
                             <div className="flex items-center space-x-2">
+                              <Tooltip text="Check submission details for review">
+                                <button
+                                  onClick={() =>
+                                    setSelectedSubmission(submission)
+                                  }
+                                  className="text-[#FAFCA3] hover:text-[#99168E]"
+                                >
+                                  <ClipboardList className="w-5 h-5" />
+                                </button>
+                              </Tooltip>
+                              <EllipsisVertical className="w-5 h-5 text-orange-500" />
+
                               <button
-                                onClick={() =>
-                                  setSelectedSubmission(submission)
-                                }
-                                className="text-[#FAFCA3] hover:text-[#99168E]"
+                                onClick={() => {
+                                  if (!hasVoted) {
+                                    setVotingSubmission(submission);
+                                    setIsVoteModalOpen(true);
+                                  }
+                                }}
+                                disabled={hasVoted}
+                                className={`px-3 py-1 text-[#FAFCA3] rounded-full ${
+                                  hasVoted
+                                    ? "opacity-50 cursor-not-allowed"
+                                    : "hover:text-[#99168E]"
+                                }`}
                               >
-                                Details
-                              </button>
-                              <>
-                                <EllipsisVertical className="w-5 h-5 text-orange-500" />
-                                {bounty?.finalSeverity ? (
-                                  <div className="flex items-center space-x-2">
-                                    <select
-                                      className="px-2 py-1 bg-gray-800 border border-gray-700 rounded-full text-white focus:outline-none focus:ring-2 focus:ring-[#99168E] focus:border-transparent"
-                                      onChange={(e) =>
-                                        handleUpdateStatus(
-                                          submission._id,
-                                          "accepted",
-                                          e.target.value
-                                        )
-                                      }
-                                    >
-                                      <option value="">Accept</option>
-                                      {bounty?.initialSeverities?.map(
-                                        (severity) => (
-                                          <option
-                                            key={severity}
-                                            value={severity}
-                                          >
-                                            {severity}
-                                          </option>
-                                        )
-                                      )}
-                                    </select>
-                                    <button
-                                      onClick={() =>
-                                        handleUpdateStatus(
-                                          submission._id,
-                                          "rejected"
-                                        )
-                                      }
-                                      className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full hover:bg-red-500/30"
-                                    >
-                                      Reject
-                                    </button>
-                                  </div>
+                                {hasVoted ? (
+                                  <Tooltip text="Already voted!">
+                                    <Check className="w-4 h-4" />
+                                  </Tooltip>
                                 ) : (
-                                  <>
-                                    <button
-                                      onClick={() =>
-                                        handleUpdateStatus(
-                                          submission._id,
-                                          "accepted"
-                                        )
-                                      }
-                                      className="px-3 py-1 bg-green-500/20 text-green-500 rounded-full hover:bg-green-500/30"
-                                    >
-                                      Accept
-                                    </button>
-                                    <button
-                                      onClick={() =>
-                                        handleUpdateStatus(
-                                          submission._id,
-                                          "rejected"
-                                        )
-                                      }
-                                      className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full hover:bg-red-500/30"
-                                    >
-                                      Reject
-                                    </button>
-                                  </>
+                                  <Tooltip text="Give final vote">
+                                    <Vote className="w-5 h-5" />
+                                  </Tooltip>
                                 )}
-                              </>
+                              </button>
                             </div>
                           </td>
                         </tr>
@@ -697,6 +679,136 @@ export function Management({
               </div>
             </div>
           </div>
+
+          {/* Voting Modal */}
+          {isVoteModalOpen && votingSubmission && (
+            <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-2 sm:p-4 z-50 backdrop-blur-sm overflow-y-auto">
+              <div className="bg-[#00041B] rounded-xl p-3 sm:p-6 max-w-md w-full border border-[#99168E] shadow-xl">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold text-[#FAFCA3]">
+                    Vote on Submission
+                  </h3>
+                  <button
+                    onClick={() => {
+                      setIsVoteModalOpen(false);
+                      setVotingSubmission(null);
+                      setVoteComment("");
+                      setSelectedVote("");
+                      setSelectedVoteSeverity("");
+                    }}
+                    className="hover:bg-[#99168E] p-1 rounded-xl transition-colors"
+                  >
+                    <X className="w-6 h-6 text-[#FAFCA3]" />
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium text-white/80 block mb-2">
+                      Vote
+                    </label>
+                    <div className="flex space-x-4">
+                      <button
+                        onClick={() => setSelectedVote("accepted")}
+                        className={`px-4 py-2 rounded-lg flex-1 ${
+                          selectedVote === "accepted"
+                            ? "bg-green-600 text-white"
+                            : "bg-gray-800 text-white hover:bg-gray-700"
+                        }`}
+                      >
+                        Accept
+                      </button>
+                      <button
+                        onClick={() => setSelectedVote("rejected")}
+                        className={`px-4 py-2 rounded-lg flex-1 ${
+                          selectedVote === "rejected"
+                            ? "bg-red-600 text-white"
+                            : "bg-gray-800 text-white hover:bg-gray-700"
+                        }`}
+                      >
+                        Reject
+                      </button>
+                    </div>
+                  </div>
+
+                  {selectedVote === "accepted" &&
+                    (() => {
+                      const bounty = managerData?.bounties.find(
+                        (b) => b.networkName === votingSubmission.programName
+                      );
+                      if (bounty?.finalSeverity) {
+                        return (
+                          <div>
+                            <label className="text-sm font-medium text-white/80 block mb-2">
+                              Severity
+                            </label>
+                            <select
+                              value={selectedVoteSeverity}
+                              onChange={(e) =>
+                                setSelectedVoteSeverity(e.target.value)
+                              }
+                              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#99168E]"
+                            >
+                              <option value="">Select Severity</option>
+                              {bounty.initialSeverities?.map((severity) => (
+                                <option key={severity} value={severity}>
+                                  {severity}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
+
+                  <div>
+                    <label className="text-sm font-medium text-white/80 block mb-2">
+                      Comment
+                    </label>
+                    <textarea
+                      value={voteComment}
+                      onChange={(e) => setVoteComment(e.target.value)}
+                      className="w-full h-24 p-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#99168E]"
+                      placeholder="Add your comments here..."
+                    />
+                  </div>
+
+                  <div className="flex justify-end space-x-2">
+                    <button
+                      onClick={() => {
+                        setIsVoteModalOpen(false);
+                        setVotingSubmission(null);
+                        setVoteComment("");
+                        setSelectedVote("");
+                        setSelectedVoteSeverity("");
+                      }}
+                      className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleSubmitVote}
+                      disabled={
+                        !selectedVote ||
+                        (selectedVote === "accepted" &&
+                          votingSubmission.programName &&
+                          managerData?.bounties.find(
+                            (b) =>
+                              b.networkName === votingSubmission.programName
+                          )?.finalSeverity &&
+                          !selectedVoteSeverity) ||
+                        undefined
+                      }
+                      className="px-4 py-2 bg-[#99168E] text-[#FAFCA3] rounded-lg hover:bg-[#7A126F] disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Submit Vote
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Details Modal */}
           {selectedSubmission && (
@@ -837,90 +949,6 @@ export function Management({
                         </div>
                       </div>
                     )}
-
-                  {selectedSubmission.status === "reviewing" && (
-                    <div className="flex justify-end space-x-4 mt-6">
-                      <button
-                        onClick={() => {
-                          handleUpdateStatus(
-                            selectedSubmission._id,
-                            "rejected"
-                          );
-                          setSelectedSubmission(null);
-                        }}
-                        className="px-4 py-2 bg-red-600 text-white rounded-lg"
-                      >
-                        Reject
-                      </button>
-                      {(() => {
-                        const bounty = managerData?.bounties.find(
-                          (b) =>
-                            b.networkName === selectedSubmission.programName
-                        );
-                        if (bounty?.finalSeverity) {
-                          return (
-                            <div className="flex items-center space-x-2 pr-2">
-                              <select
-                                className="px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#99168E]"
-                                onChange={(e) => {
-                                  if (e.target.value) {
-                                    handleUpdateStatus(
-                                      selectedSubmission._id,
-                                      "accepted",
-                                      e.target.value
-                                    );
-                                    setSelectedSubmission(null);
-                                  }
-                                }}
-                                defaultValue=""
-                              >
-                                <option value="" disabled>
-                                  Select Severity
-                                </option>
-                                {bounty.initialSeverities?.map(
-                                  (severity) => (
-                                    <option key={severity} value={severity}>
-                                      {severity}
-                                    </option>
-                                  )
-                                )}
-                              </select>
-                            </div>
-                          );
-                        }
-                        return (
-                          <button
-                            onClick={() => {
-                              handleUpdateStatus(
-                                selectedSubmission._id,
-                                "accepted"
-                              );
-                              setSelectedSubmission(null);
-                            }}
-                            className="px-4 py-2 bg-green-600 text-white rounded-lg"
-                          >
-                            Accept
-                          </button>
-                        );
-                      })()}
-                    </div>
-                  )}
-                  {selectedSubmission.status === "pending" && (
-                    <div className="flex justify-end mt-6">
-                      <button
-                        onClick={() => {
-                          handleUpdateStatus(
-                            selectedSubmission._id,
-                            "reviewing"
-                          );
-                          setSelectedSubmission(null);
-                        }}
-                        className="px-4 py-2 bg-[#FAFCA3] text-[#99168E] rounded-lg"
-                      >
-                        Start Review
-                      </button>
-                    </div>
-                  )}
                 </div>
               </div>
             </div>

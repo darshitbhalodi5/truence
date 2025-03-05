@@ -25,6 +25,11 @@ export interface ReviewSubmission {
     votedAt?: Date;
     comment?: string;
   }[];
+  managerVote?: {
+    vote: "accepted" | "rejected";
+    severity?: "Medium" | "High" | "Critical" | "Low";
+    comment?: string;
+  };
   files?: string[]; // This is an array of file IDs
   bountyLogo?: string;
   tempComment?: string;
