@@ -31,6 +31,7 @@ import ReviewerProgramSummary from "@/components/reviewer-program-summary/Review
 import { SubmissionDetails } from "@/components/submission-details/SubmissionDetails";
 import { FileViewer } from "@/components/view-file/FileViewer";
 import { usePin } from "@/hooks/usePin";
+import Chat from "@/components/dashboard/Chat";
 
 export function Review({
   walletAddress,
@@ -53,6 +54,18 @@ export function Review({
     url: string;
     name: string;
     contentType: string;
+  } | null>(null);
+
+  const [availableChats, setAvailableChats] = useState<
+    Array<{
+      reportId: string;
+      bountyName: string;
+      reportTitle: string;
+    }>
+  >([]);
+
+  const [selectedChat, setSelectedChat] = useState<{
+    reportId: string;
   } | null>(null);
 
   const [sortField, setSortField] = useState<SortField>("createdAt");
@@ -94,6 +107,17 @@ export function Review({
             submissionsData.error || "Failed to fetch review submissions"
           );
         }
+
+        const chats: typeof availableChats = [];
+
+        submissionsData.reviewer.submissions.forEach((submission: any) => {
+          chats.push({
+            reportId: submission._id,
+            bountyName: submission.programName,
+            reportTitle: submission.title,
+          });
+        });
+        setAvailableChats(chats);
 
         setReviewData({
           isReviewer,
@@ -779,6 +803,13 @@ export function Review({
               }}
             />
           )}
+          <div className="mt-4 md:mt-6">
+            <Chat
+              reportId={selectedChat?.reportId}
+              onSelectChat={(reportId) => setSelectedChat({ reportId })}
+              availableChats={availableChats}
+            />
+          </div>
         </div>
       </StateHandler>
     </>

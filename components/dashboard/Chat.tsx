@@ -1,6 +1,12 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { usePrivy } from '@privy-io/react-auth';
-import { MessageCircle, X, ChevronUp, ChevronDown, MessageSquare } from 'lucide-react';
+import React, { useEffect, useRef, useState } from "react";
+import { usePrivy } from "@privy-io/react-auth";
+import {
+  MessageCircle,
+  X,
+  ChevronUp,
+  ChevronDown,
+  MessageSquare,
+} from "lucide-react";
 
 interface Message {
   id: string;
@@ -14,9 +20,8 @@ interface Message {
 interface ChatProps {
   bountyId?: string;
   reportId?: string;
-  onSelectChat: (bountyId: string, reportId: string) => void;
+  onSelectChat: (reportId: string) => void;
   availableChats: Array<{
-    bountyId: string;
     reportId: string;
     bountyName: string;
     reportTitle: string;
@@ -27,13 +32,13 @@ export default function Chat({
   bountyId,
   reportId,
   onSelectChat,
-  availableChats
+  availableChats,
 }: ChatProps) {
   const { user } = usePrivy();
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [newMessage, setNewMessage] = useState('');
+  const [newMessage, setNewMessage] = useState("");
   const [ws, setWs] = useState<WebSocket | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -42,33 +47,35 @@ export default function Chat({
   useEffect(() => {
     if (!isOpen || !bountyId || !reportId || !userAddress) return;
 
-    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:4000';
+    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:4000";
     const socket = new WebSocket(wsUrl);
 
     socket.onopen = () => {
-      socket.send(JSON.stringify({
-        type: 'join',
-        user: {
-          walletAddress: userAddress,
-          bountyId,
-          reportId
-        }
-      }));
+      socket.send(
+        JSON.stringify({
+          type: "join",
+          user: {
+            walletAddress: userAddress,
+            bountyId,
+            reportId,
+          },
+        })
+      );
     };
 
     socket.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      if (data.type === 'message') {
+      if (data.type === "message") {
         if (Array.isArray(data.messages)) {
           setMessages(data.messages);
         } else if (data.message) {
-          setMessages(prev => [...prev, data.message]);
+          setMessages((prev) => [...prev, data.message]);
         }
       }
     };
 
     socket.onclose = () => {
-      console.log('WebSocket connection closed');
+      console.log("WebSocket connection closed");
     };
 
     setWs(socket);
@@ -81,23 +88,25 @@ export default function Chat({
   }, [isOpen, bountyId, reportId, userAddress]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const sendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!ws || !newMessage.trim() || !bountyId || !reportId) return;
 
-    ws.send(JSON.stringify({
-      type: 'message',
-      message: {
-        content: newMessage.trim(),
-        bountyId,
-        reportId
-      }
-    }));
+    ws.send(
+      JSON.stringify({
+        type: "message",
+        message: {
+          content: newMessage.trim(),
+          bountyId,
+          reportId,
+        },
+      })
+    );
 
-    setNewMessage('');
+    setNewMessage("");
   };
 
   if (!isOpen) {
@@ -112,12 +121,14 @@ export default function Chat({
   }
 
   return (
-    <div className={`fixed right-4 bg-[#000625] border border-gray-500 shadow-lg transition-all duration-200 rounded-lg ${
-      isMinimized ? 'h-12 bottom-4' : 'h-[500px] bottom-4'
-    } w-[350px]`}>
+    <div
+      className={`fixed right-4 bg-[#000625] border border-gray-500 shadow-lg transition-all duration-200 rounded-lg ${
+        isMinimized ? "h-12 bottom-4" : "h-[500px] bottom-4"
+      } w-[350px]`}
+    >
       <div className="flex items-center justify-between p-3 border-b border-gray-500">
         <h3 className="font-semibold text-[#FAFCA3]">
-          {bountyId && reportId ? 'Chat' : 'Select a Chat'}
+          {bountyId && reportId ? "Chat" : "Select a Chat"}
         </h3>
         <div className="flex items-center gap-2">
           <button
@@ -145,15 +156,17 @@ export default function Chat({
             <div className="h-[452px] p-4 overflow-y-auto">
               <div className="space-y-2">
                 {availableChats.map((chat) => {
-                  const chatKey = `${chat.bountyId}-${chat.reportId}`;
+                  const chatKey = `${chat.reportId}`;
                   return (
                     <button
                       key={chatKey}
                       className="w-full p-3 text-left border border-[#99168E] rounded-lg hover:bg-black/60 transition-colors"
-                      onClick={() => onSelectChat(chat.bountyId, chat.reportId)}
+                      onClick={() => onSelectChat(chat.reportId)}
                     >
                       <div className="truncate">
-                        <div className="font-medium text-[#FAFCA3]">{chat.bountyName}</div>
+                        <div className="font-medium text-[#FAFCA3]">
+                          {chat.bountyName}
+                        </div>
                         <div className="text-sm text-[#FAFCA3] truncate">
                           Submission: {chat.reportTitle}
                         </div>
@@ -171,24 +184,27 @@ export default function Chat({
               >
                 <div className="space-y-4">
                   {messages.map((message) => {
-                    const messageKey = message.id || `${message.from}-${message.timestamp}`;
+                    const messageKey =
+                      message.id || `${message.from}-${message.timestamp}`;
                     return (
                       <div
                         key={messageKey}
                         className={`flex ${
                           message.from === userAddress
-                            ? 'justify-end'
-                            : 'justify-start'
+                            ? "justify-end"
+                            : "justify-start"
                         }`}
                       >
                         <div
                           className={`max-w-[70%] rounded-lg px-4 py-2 ${
                             message.from === userAddress
-                              ? 'bg-blue-500 text-white'
-                              : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
+                              ? "bg-blue-500 text-white"
+                              : "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                           }`}
                         >
-                          <p className="text-sm break-words">{message.content}</p>
+                          <p className="text-sm break-words">
+                            {message.content}
+                          </p>
                           <span className="text-xs opacity-70">
                             {new Date(message.timestamp).toLocaleTimeString()}
                           </span>
@@ -199,7 +215,10 @@ export default function Chat({
                   <div ref={messagesEndRef} />
                 </div>
               </div>
-              <form onSubmit={sendMessage} className="p-4 border-t border-gray-200 dark:border-gray-700">
+              <form
+                onSubmit={sendMessage}
+                className="p-4 border-t border-gray-200 dark:border-gray-700"
+              >
                 <div className="flex gap-2">
                   <input
                     type="text"
@@ -223,4 +242,4 @@ export default function Chat({
       )}
     </div>
   );
-} 
+}

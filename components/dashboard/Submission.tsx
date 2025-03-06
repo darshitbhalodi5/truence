@@ -18,6 +18,7 @@ import { getCurrency } from "@/utils/networkCurrency";
 import { SortField, SortDirection, StatusFilter } from "@/utils/filterTypes";
 import SortIcon from "@/components/sort-icon/SortIcon";
 import SeverityInfo from "@/components/severity-change/SeverityInfo";
+import Chat from "@/components/dashboard/Chat";
 
 export function Submission({ walletAddress }: { walletAddress?: string }) {
   const [submissions, setSubmissions] = useState<SubmissionData[]>([]);
@@ -36,6 +37,18 @@ export function Submission({ walletAddress }: { walletAddress?: string }) {
   const [searchQuery, setSearchQuery] = useState("");
 
   const router = useRouter();
+
+  const [availableChats, setAvailableChats] = useState<
+    Array<{
+      reportId: string;
+      bountyName: string;
+      reportTitle: string;
+    }>
+  >([]);
+
+  const [selectedChat, setSelectedChat] = useState<{
+    reportId: string;
+  } | null>(null);
 
   // Status configuration similar to the bounty table
   const statusConfig = {
@@ -82,6 +95,16 @@ export function Submission({ walletAddress }: { walletAddress?: string }) {
           throw new Error(data.error || "Failed to fetch submissions");
         }
 
+        const chats: typeof availableChats = [];
+
+        data.submissions.forEach((submission: any) => {
+          chats.push({
+            reportId: submission._id,
+            bountyName: submission.programName,
+            reportTitle: submission.title,
+          });
+        });
+        setAvailableChats(chats);
         setSubmissions(data.submissions || []);
       } catch (error) {
         console.error("Error fetching submissions:", error);
@@ -614,6 +637,14 @@ export function Submission({ walletAddress }: { walletAddress?: string }) {
           </div>
         </div>
       )}
+
+      <div className="mt-4 md:mt-6">
+        <Chat
+          reportId={selectedChat?.reportId}
+          onSelectChat={(reportId) => setSelectedChat({ reportId })}
+          availableChats={availableChats}
+        />
+      </div>
     </div>
   );
 }

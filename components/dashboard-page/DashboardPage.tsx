@@ -6,7 +6,6 @@ import { useState, useEffect } from "react";
 import { Submission } from "@/components/dashboard/Submission";
 import { Review } from "@/components/dashboard/Review";
 import { Management } from "@/components/dashboard/Management";
-import Chat from "@/components/dashboard/Chat";
 import { ArrowLeftIcon, MenuIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { showCustomToast } from "@/components/custom-toast/CustomToast";
@@ -23,14 +22,6 @@ export default function DashboardPage() {
     isReviewer: false,
     isManager: false,
   });
-  const [availableChats, setAvailableChats] = useState<
-    Array<{
-      bountyId: string;
-      reportId: string;
-      bountyName: string;
-      reportTitle: string;
-    }>
-  >([]);
   const [selectedChat, setSelectedChat] = useState<{
     bountyId: string;
     reportId: string;
@@ -49,73 +40,49 @@ export default function DashboardPage() {
     // Simulate loading time for dashboard preparation
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 1500);
+    }, 1000);
 
     return () => clearTimeout(timer);
   }, [ready, user, router]);
 
   useEffect(() => {
-    if (!user?.wallet?.address) return;
+    const UserRoleData = async () => {
+      if (!user?.wallet?.address) return;
 
-    // Fetch available chats for the user
-    fetch(`/api/users/${user.wallet.address}/reports`)
-      .then((res) => res.json())
-      .then((data) => {
-        const chats: typeof availableChats = [];
-        let hasReviewerRole = false;
-        let hasManagerRole = false;
+      try {
+        const roleResponse = await fetch(
+          `/api/check-role?walletAddress=${user?.wallet?.address}`
+        );
 
-        // Add submitter's reports
-        if (data.submitter.submissions) {
-          data.submitter.submissions.forEach((submission: any) => {
-            chats.push({
-              bountyId: submission.bountyId,
-              reportId: submission._id,
-              bountyName: submission.programName,
-              reportTitle: submission.title,
-            });
-          });
+        const roleData = await roleResponse.json();
+
+        if (roleData.error) {
+          console.error("Failed to fetch user role data:", roleData.error);
+          return;
         }
 
-        // Add reviewer's reports
-        if (data.reviewer.submissions) {
-          hasReviewerRole = data.reviewer.submissions.length > 0;
-          data.reviewer.submissions.forEach((submission: any) => {
-            chats.push({
-              bountyId: submission.bountyId,
-              reportId: submission._id,
-              bountyName: submission.programName,
-              reportTitle: submission.title,
-            });
-          });
-        }
-
-        // Check if user is a manager
-        if (data.manager && data.manager.bounties) {
-          hasManagerRole = data.manager.bounties.length > 0;
-        }
-
-        // Set user roles
         setUserRoles({
-          isSubmitter: true, // Everyone can submit
-          isReviewer: hasReviewerRole,
-          isManager: hasManagerRole,
+          isSubmitter: true,
+          isReviewer: roleData.isReviewer,
+          isManager: roleData.isManager,
         });
 
         // Set default active tab based on priority
-        if (hasManagerRole) {
+        if (roleData.isManager) {
           setActiveTab("Manage Bounties");
-        } else if (hasReviewerRole) {
+        } else if (roleData.isReviewer) {
           setActiveTab("Review Submission");
         } else {
           setActiveTab("Your Submission");
         }
+      } catch (error) {
+        console.error("Error fetching user roles:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-        setAvailableChats(chats);
-      })
-      .catch((error) => {
-        console.error("Error fetching available chats:", error);
-      });
+    UserRoleData();
   }, [user?.wallet?.address]);
 
   const handleTabClick = (tabId: string) => {
@@ -236,17 +203,6 @@ export default function DashboardPage() {
           {activeTab === "Manage Bounties" && (
             <Management walletAddress={user.wallet.address} isManager={true} />
           )}
-        </div>
-
-        <div className="mt-4 md:mt-6">
-          <Chat
-            bountyId={selectedChat?.bountyId}
-            reportId={selectedChat?.reportId}
-            onSelectChat={(bountyId, reportId) =>
-              setSelectedChat({ bountyId, reportId })
-            }
-            availableChats={availableChats}
-          />
         </div>
       </div>
     </div>

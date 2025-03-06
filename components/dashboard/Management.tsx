@@ -33,6 +33,7 @@ import { VoteModal } from "@/components/vote-modal/VoteModal";
 import { SubmissionDetails } from "@/components/submission-details/SubmissionDetails";
 import { FileViewer } from "@/components/view-file/FileViewer";
 import { usePin } from "@/hooks/usePin";
+import Chat from "@/components/dashboard/Chat";
 
 // Define ManagerData interface (similar to ReviewerData but for managers)
 interface ManagerData {
@@ -92,6 +93,18 @@ export function Management({
   >("");
   const [selectedVoteSeverity, setSelectedVoteSeverity] = useState("");
 
+  const [availableChats, setAvailableChats] = useState<
+    Array<{
+      reportId: string;
+      bountyName: string;
+      reportTitle: string;
+    }>
+  >([]);
+
+  const [selectedChat, setSelectedChat] = useState<{
+    reportId: string;
+  } | null>(null);
+
   // Fetch manager data
   useEffect(() => {
     const fetchManagerData = async () => {
@@ -112,6 +125,17 @@ export function Management({
             submissionsData.error || "Failed to fetch review submissions"
           );
         }
+
+        const chats: typeof availableChats = [];
+
+        submissionsData.manager.submissions.forEach((submission: any) => {
+          chats.push({
+            reportId: submission._id,
+            bountyName: submission.programName,
+            reportTitle: submission.title,
+          });
+        });
+        setAvailableChats(chats);
 
         // const response = await fetch(`/api/users/${walletAddress}/reports`);
         // if (!response.ok) throw new Error("Failed to fetch manager data");
@@ -763,6 +787,13 @@ export function Management({
               }}
             />
           )}
+          <div className="mt-4 md:mt-6">
+            <Chat
+              reportId={selectedChat?.reportId}
+              onSelectChat={(reportId) => setSelectedChat({ reportId })}
+              availableChats={availableChats}
+            />
+          </div>
         </div>
       </StateHandler>
     </>
