@@ -2,12 +2,9 @@
 
 import {
   ChevronDown,
-  ChevronRight,
   Filter,
   Search,
   EllipsisVertical,
-  X,
-  Eye,
   ClipboardList,
   Vote,
   Check,
@@ -33,6 +30,7 @@ import { VoteModal } from "@/components/vote-modal/VoteModal";
 import ReviewerProgramSummary from "@/components/reviewer-program-summary/ReviewerProgramSummary";
 import { SubmissionDetails } from "@/components/submission-details/SubmissionDetails";
 import { FileViewer } from "@/components/view-file/FileViewer";
+import { usePin } from "@/hooks/usePin";
 
 export function Review({
   walletAddress,
@@ -60,9 +58,10 @@ export function Review({
   const [sortField, setSortField] = useState<SortField>("createdAt");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [bookmarkedSubmissions, setBookmarkedSubmissions] = useState<string[]>(
-    []
-  );
+  const { pinnedSubmissions, togglePins, isPinned } = usePin({
+    walletAddress,
+    prefix: "review",
+  });
 
   const [isVoteModalOpen, setIsVoteModalOpen] = useState(false);
   const [votingSubmission, setVotingSubmission] =
@@ -72,10 +71,6 @@ export function Review({
     "accepted" | "rejected" | ""
   >("");
   const [selectedVoteSeverity, setSelectedVoteSeverity] = useState("");
-
-  const bookmarkKey = walletAddress
-    ? `reviewBookmarks_${walletAddress}`
-    : "reviewBookmarks";
 
   const [selectedSeverity, setSelectedSeverity] =
     useState<SeverityFilter>("ALL");
@@ -154,46 +149,6 @@ export function Review({
     setSelectedVoteSeverity("");
   };
 
-  // Load bookmarks from localStorage on component mount/when wallet changes
-  useEffect(() => {
-    const savedBookmarks = localStorage.getItem(bookmarkKey);
-
-    if (savedBookmarks) {
-      try {
-        const parsedBookmarks = JSON.parse(savedBookmarks);
-        if (Array.isArray(parsedBookmarks)) {
-          setBookmarkedSubmissions(parsedBookmarks);
-        } else {
-          console.error("Stored bookmarks are not an array:", parsedBookmarks);
-          setBookmarkedSubmissions([]);
-        }
-      } catch (e) {
-        console.error("Error parsing bookmarks from localStorage:", e);
-        setBookmarkedSubmissions([]);
-      }
-    } else {
-      setBookmarkedSubmissions([]);
-    }
-  }, [bookmarkKey]);
-
-  // Save bookmarks to localStorage when they change
-  useEffect(() => {
-    if (bookmarkedSubmissions.length > 0) {
-      localStorage.setItem(bookmarkKey, JSON.stringify(bookmarkedSubmissions));
-    }
-  }, [bookmarkedSubmissions, bookmarkKey]);
-
-  // Function to toggle bookmark status
-  const toggleBookmark = (submissionId: string) => {
-    setBookmarkedSubmissions((prev) => {
-      if (prev.includes(submissionId)) {
-        return prev.filter((id) => id !== submissionId);
-      } else {
-        return [...prev, submissionId];
-      }
-    });
-  };
-
   // Filter submissions data based on requirement
   const filteredSubmissions = useMemo(() => {
     if (!reviewData?.submissions) return [];
@@ -217,8 +172,8 @@ export function Review({
     // Sort submissions
     filtered = filtered.sort((a, b) => {
       // First by bookmark status
-      const aBookmarked = bookmarkedSubmissions.includes(a._id);
-      const bBookmarked = bookmarkedSubmissions.includes(b._id);
+      const aBookmarked = pinnedSubmissions.includes(a._id);
+      const bBookmarked = pinnedSubmissions.includes(b._id);
 
       if (aBookmarked && !bBookmarked) return -1;
       if (!aBookmarked && bBookmarked) return 1;
@@ -246,7 +201,7 @@ export function Review({
     sortField,
     sortDirection,
     selectedSeverity,
-    bookmarkedSubmissions,
+    pinnedSubmissions,
   ]);
 
   const handleUpdateStatus = async (
@@ -714,20 +669,25 @@ export function Review({
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                toggleBookmark(submission._id);
+                                togglePins(submission._id);
                               }}
-                              className="focus:outline-none"
+                              className="focus:outline-none hover:scale-110 transition-transform duration-200"
+                              title={
+                                isPinned(submission._id)
+                                  ? "Remove bookmark"
+                                  : "Add bookmark"
+                              }
                             >
-                              {bookmarkedSubmissions.includes(
-                                submission._id
-                              ) ? (
-                                <Pin
-                                  className="w-5 h-5 text-[#FAFCA3]"
-                                  fill="#FAFCA3"
-                                />
-                              ) : (
-                                <Pin className="w-5 h-5" />
-                              )}
+                              <Pin
+                                className={`w-5 h-5 ${
+                                  isPinned(submission._id)
+                                    ? "text-[#FAFCA3]"
+                                    : "text-gray-400 hover:text-[#FAFCA3]"
+                                }`}
+                                fill={
+                                  isPinned(submission._id) ? "#FAFCA3" : "none"
+                                }
+                              />
                             </button>
                           </td>
                           <td className="px-4 py-3">
