@@ -2,16 +2,15 @@
 
 import {
   ChevronDown,
-  ChevronRight,
   Filter,
   Search,
   EllipsisVertical,
-  X,
-  Eye,
   Pin,
   ClipboardList,
   Check,
   Vote,
+  ThumbsDown,
+  ThumbsUp,
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "react-hot-toast";
@@ -573,6 +572,7 @@ export function Management({
                           />
                         </div>
                       </th>
+                      <th className="px-4 py-3">Manager Vote</th>
                       <th className="px-2 py-3">Pin Submission</th>
                       <th className="px-4 py-3">Details | Vote</th>
                     </tr>
@@ -644,6 +644,49 @@ export function Management({
                             {new Date(
                               submission.createdAt
                             ).toLocaleDateString()}
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            {submission.reviewVotes &&
+                            submission.reviewVotes.length > 0 ? (
+                              <div className="flex justify-center space-x-1">
+                                {submission.reviewVotes.map((vote, index) => {
+                                  let voteIcon =
+                                    vote.vote === "accepted" ? (
+                                      <ThumbsUp className="w-6 h-6" />
+                                    ) : (
+                                      <ThumbsDown className="w-6 h-6" />
+                                    );
+                                  let voteColor =
+                                    vote.vote === "accepted"
+                                      ? vote.severity
+                                        ? {
+                                            critical: "text-red-500",
+                                            high: "text-orange-500",
+                                            medium: "text-yellow-500",
+                                            low: "text-blue-500",
+                                          }[vote.severity.toLowerCase()] ||
+                                          "text-green-500"
+                                        : "text-green-500"
+                                      : "text-red-500"; // Rejected votes are always red
+
+                                  return (
+                                    <span
+                                      key={index}
+                                      className={`${voteColor} text-lg`}
+                                      title={`${vote.vote}${
+                                        vote.severity
+                                          ? ` (${vote.severity})`
+                                          : ""
+                                      }`}
+                                    >
+                                      {voteIcon}
+                                    </span>
+                                  );
+                                })}
+                              </div>
+                            ) : (
+                              <span className="text-gray-400">-</span>
+                            )}
                           </td>
                           <td className="px-2 py-3 text-center">
                             <button
