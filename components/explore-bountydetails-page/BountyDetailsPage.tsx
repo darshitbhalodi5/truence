@@ -131,7 +131,6 @@ export default function BountyDetailsPage() {
     <div className="min-h-screen bg-[#000108]">
       <Navbar />
       <div className="container mx-auto px-4 py-8">
-
         {/* Bounty Header */}
         <div className="mb-4">
           {displayBounty && (
@@ -170,40 +169,44 @@ export default function BountyDetailsPage() {
                         className="relative py-4 px-2 text-lg capitalize transition-all duration-200 group"
                       >
                         <span
-                          className={`${activeTab === tab
-                            ? "text-[#FAFCA3]"
-                            : "text-[#DBDBDB] hover:text-gray-200"
-                            }`}
+                          className={`${
+                            activeTab === tab
+                              ? "text-[#FAFCA3]"
+                              : "text-[#DBDBDB] hover:text-gray-200"
+                          }`}
                         >
                           {tab}
                         </span>
                         {/* Bottom line indicator */}
                         <span
                           className={`absolute bottom-0 left-0 w-full h-1 transform transition-all duration-200
-                          ${activeTab === tab
+                          ${
+                            activeTab === tab
                               ? "bg-[#FAFCA3] scale-x-100 rounded-tr rounded-tl"
                               : "bg-[#FAFCA3] scale-x-0 group-hover:bg-[#FAFCA3] group-hover:scale-x-75 rounded-tr rounded-tl"
-                            }`}
+                          }`}
                         />
                       </button>
                     ))}
                   </div>
 
                   {/* Desktop Submit Button */}
-                  <button
-                    className="bg-gradient-to-r from-[#990F62] via-[#99168E] to-[#991DB5] hover:from-[#b02579] hover:via-[#a12796] hover:to-[#9e2eb8] 
+                  {displayBounty?.status === "IN_PROCESS" && (
+                    <button
+                      className="bg-gradient-to-r from-[#990F62] via-[#99168E] to-[#991DB5] hover:from-[#b02579] hover:via-[#a12796] hover:to-[#9e2eb8] 
                       text-white px-6 py-2.5 rounded-lg font-medium text-lg transition-all duration-200 
                       shadow-lg hover:shadow-pink-200/40"
-                    onClick={() =>
-                      router.push(
-                        `/submission?bountyName=${encodeURIComponent(
-                          displayBounty?.networkName || ""
-                        )}`
-                      )
-                    }
-                  >
-                    Submit Evidence
-                  </button>
+                      onClick={() =>
+                        router.push(
+                          `/submission?bountyName=${encodeURIComponent(
+                            displayBounty?.networkName || ""
+                          )}`
+                        )
+                      }
+                    >
+                      Submit Evidence
+                    </button>
+                  )}
                 </div>
 
                 {/* Mobile Navigation */}
@@ -227,19 +230,21 @@ export default function BountyDetailsPage() {
                   </div>
 
                   {/* Mobile Submit Button */}
-                  <button
-                    className="bg-gradient-to-r from-[#990F62] via-[#99168E] to-[#991DB5]
+                  {displayBounty?.status === "IN_PROCESS" && (
+                    <button
+                      className="bg-gradient-to-r from-[#990F62] via-[#99168E] to-[#991DB5]
                     text-white px-4 py-1.5 rounded-lg font-medium text-sm"
-                    onClick={() =>
-                      router.push(
-                        `/submission?bountyName=${encodeURIComponent(
-                          displayBounty?.networkName || ""
-                        )}`
-                      )
-                    }
-                  >
-                    Submit
-                  </button>
+                      onClick={() =>
+                        router.push(
+                          `/submission?bountyName=${encodeURIComponent(
+                            displayBounty?.networkName || ""
+                          )}`
+                        )
+                      }
+                    >
+                      Submit
+                    </button>
+                  )}
                 </div>
 
                 {/* Mobile Menu Dropdown */}
@@ -255,10 +260,11 @@ export default function BountyDetailsPage() {
                         className="block w-full text-left py-3 px-4 capitalize border-b border-[#2A2A2A] last:border-b-0"
                       >
                         <span
-                          className={`${activeTab === tab
-                            ? "text-[#FAFCA3]"
-                            : "text-[#DBDBDB]"
-                            }`}
+                          className={`${
+                            activeTab === tab
+                              ? "text-[#FAFCA3]"
+                              : "text-[#DBDBDB]"
+                          }`}
                         >
                           {tab}
                         </span>

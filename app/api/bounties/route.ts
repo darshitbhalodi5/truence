@@ -18,6 +18,7 @@ export async function POST(req: Request) {
       misUseRange: body.misUseRange,
       initialSeverities: body.initialSeverities,
       finalSeverity: body.finalSeverity,
+      status: body.status,
     };
 
     const bounty = await Bounty.create(bountyData);

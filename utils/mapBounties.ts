@@ -5,6 +5,7 @@ import ComingSoon from "@/components/coming-soon/ComingSoon";
 import { EthereumInfo } from "@/components/ethereum/Information";
 import { EthereumRules } from "@/components/ethereum/Rules";
 import { EthereumScope } from "@/components/ethereum/Scope";
+import ProgramClosed from "@/components/program-closed/ProgramClosed";
 import { FC } from "react";
 
 export const componentsMap: Record<string, [FC, FC, FC]> = {
@@ -15,4 +16,5 @@ export const componentsMap: Record<string, [FC, FC, FC]> = {
   ],
   ethereum: [EthereumInfo, EthereumRules, EthereumScope],
   uniswap: [ComingSoon, ComingSoon, ComingSoon],
+  gmx: [ProgramClosed, ProgramClosed, ProgramClosed],
 };
