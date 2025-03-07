@@ -61,6 +61,20 @@ const submissionSchema = new Schema(
       type: String,
       default: null,
     },
+    progressStatus: {
+      kycVerified: {
+        type: Boolean,
+        default: false,
+      },
+      paymentConfirmed: {
+        type: Boolean,
+        default: false,
+      },
+      additionalPaymentConfirmed: {
+        type: Boolean,
+        default: false,
+      },
+    },
     // New fields for tracking votes
     reviewVotes: [
       {

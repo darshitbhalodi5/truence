@@ -1,6 +1,7 @@
 import { X, ChevronRight, Eye } from "lucide-react";
 import { ReviewSubmission } from "@/types/reviewerData";
 import { getCurrency } from "@/utils/networkCurrency";
+import PaymentProgress from "@/components/payment-progressbar/PaymentProgress";
 
 interface SubmissionDetailsProps {
   submission: ReviewSubmission;
@@ -33,6 +34,13 @@ export function SubmissionDetails({
               <X className="w-6 h-6 text-[#FAFCA3]" />
             </button>
           </div>
+
+          {submission.managerVote &&
+            submission.managerVote.vote === "accepted" && (
+              <div className="flex flex-wrap gap-2 sm:gap-4 bg-[#00041B] p-2 sm:p-4 rounded-lg">
+                <PaymentProgress />
+              </div>
+            )}
 
           <div className="flex flex-wrap gap-2 sm:gap-4 bg-[#00041B] p-2 sm:p-4 rounded-lg">
             <h4 className="text-sm font-medium text-white/80 mb-1">

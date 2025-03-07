@@ -25,6 +25,11 @@ export interface ReviewSubmission {
     votedAt?: Date;
     comment?: string;
   }[];
+  progressStatus?: {
+    kycVerified?: boolean;
+    paymentConfirmed?: boolean;
+    additionalPaymentConfirmed?: boolean;
+  };
   managerVote?: {
     vote: "accepted" | "rejected";
     severity?: "Medium" | "High" | "Critical" | "Low";
