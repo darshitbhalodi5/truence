@@ -102,7 +102,7 @@ export async function GET(request: NextRequest) {
     })
       .select(
         "programName title description severityLevel files walletAddress status " +
-          "misUseRange reviewVotes managerVote reviewerSeverity createdAt"
+          "progressStatus misUseRange reviewVotes managerVote reviewerSeverity createdAt"
       )
       .sort({ createdAt: -1 })
       .lean();

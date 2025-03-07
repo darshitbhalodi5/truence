@@ -2,6 +2,7 @@ import { X, ChevronRight, Eye } from "lucide-react";
 import { ReviewSubmission } from "@/types/reviewerData";
 import { getCurrency } from "@/utils/networkCurrency";
 import PaymentProgress from "@/components/payment-progressbar/PaymentProgress";
+import { useEffect, useState } from "react";
 
 interface SubmissionDetailsProps {
   submission: ReviewSubmission;
@@ -19,6 +20,24 @@ export function SubmissionDetails({
   onClose,
   onViewFile,
 }: SubmissionDetailsProps) {
+  const [progressStep, setProgressStep] = useState(1);
+
+  const progressStatusData = submission.progressStatus;
+  
+  useEffect(() => {
+    if (progressStatusData?.kycVerified === true) {
+      setProgressStep(2);
+    } 
+    
+    if (progressStatusData?.paymentConfirmed === true) {
+      setProgressStep(3);
+    }
+
+    if (progressStatusData?.additionalPaymentConfirmed === true) {
+      setProgressStep(4);
+    }
+  }, [progressStatusData]);
+
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-2 sm:p-4 z-50 backdrop-blur-sm overflow-y-auto">
       <div className="bg-[#00041B] rounded-xl p-3 sm:p-6 max-w-2xl w-full max-h-[90vh] border border-[#99168E] shadow-xl my-4">
@@ -38,7 +57,7 @@ export function SubmissionDetails({
           {submission.managerVote &&
             submission.managerVote.vote === "accepted" && (
               <div className="flex flex-wrap gap-2 sm:gap-4 bg-[#00041B] p-2 sm:p-4 rounded-lg">
-                <PaymentProgress />
+                <PaymentProgress currentStep={progressStep} />
               </div>
             )}
 
