@@ -1,4 +1,4 @@
-import { formatRewardNumber, getCurrency } from "@/utils/networkCurrency";
+import { getCurrency } from "@/utils/networkCurrency";
 import {
   ArrowDownIcon,
   ArrowUpIcon,
@@ -7,6 +7,8 @@ import {
   ShieldAlertIcon,
 } from "lucide-react";
 import { BountyRewardsProps } from "@/types/bountyRewardProps";
+import ComingSoon from "@/components/coming-soon/ComingSoon";
+import ProgramClosed from "@/components/program-closed/ProgramClosed";
 
 export function BountyRewards({
   networkName,
@@ -14,8 +16,17 @@ export function BountyRewards({
   highReward,
   mediumReward,
   lowReward,
+  status,
   severityDescriptions,
 }: BountyRewardsProps) {
+  if (status === "UPCOMING") {
+    return <ComingSoon />;
+  }
+
+  if (status === "CLOSED") {
+    return <ProgramClosed />;
+  }
+
   // Create reward cards array to ensure consistent order
   const rewardCards = [
     {

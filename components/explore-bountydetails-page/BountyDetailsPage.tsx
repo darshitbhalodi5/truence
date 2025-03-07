@@ -29,6 +29,7 @@ interface BountyDetails {
     rules: string;
     rewards: string;
   };
+  status?: string;
   severityDescriptions: SeverityDescription[];
 }
 
@@ -287,6 +288,7 @@ export default function BountyDetailsPage() {
                     highReward={bountyDetails.highReward}
                     mediumReward={bountyDetails.mediumReward}
                     lowReward={bountyDetails.lowReward}
+                    status={displayBounty?.status || ""}
                     severityDescriptions={bountyDetails.severityDescriptions}
                   />
                 </div>

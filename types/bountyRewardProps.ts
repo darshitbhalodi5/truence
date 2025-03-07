@@ -10,4 +10,5 @@ export interface BountyRewardsProps {
   mediumReward: number;
   lowReward: number;
   severityDescriptions?: SeverityDescription[];
+  status: string;
 }
