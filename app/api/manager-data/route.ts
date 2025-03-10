@@ -66,7 +66,9 @@ export async function GET(request: NextRequest) {
     const displayBounties = await DisplayBounty.find({
       networkName: { $in: networkNames },
     })
-      .select("networkName logoUrl reviewerAddresses -_id")
+      .select(
+        "networkName logoUrl reviewerAddresses additionalPaymentRequired -_id"
+      )
       .lean();
 
     const bountyDetails = await Bounty.find({
@@ -78,12 +80,20 @@ export async function GET(request: NextRequest) {
     // Create maps for quick lookups
     const bountyLogoMap = displayBounties.reduce(
       (
-        map: Record<string, { logoUrl: string; reviewerAddresses: string[] }>,
+        map: Record<
+          string,
+          {
+            logoUrl: string;
+            reviewerAddresses: string[];
+            additionalPaymentRequired: boolean;
+          }
+        >,
         bounty: any
       ) => {
         map[bounty.networkName] = {
           logoUrl: bounty.logoUrl,
           reviewerAddresses: bounty.reviewerAddresses || [],
+          additionalPaymentRequired: bounty.additionalPaymentRequired || false,
         };
         return map;
       },
@@ -149,6 +159,8 @@ export async function GET(request: NextRequest) {
       return {
         ...submission,
         bountyInfo: {
+          additionalPaymentRequired:
+            bountyLogoMap[networkName]?.additionalPaymentRequired || false,
           logo: bountyLogoMap[networkName]?.logoUrl || null,
           reviewerAddresses:
             bountyLogoMap[networkName]?.reviewerAddresses || [],
@@ -165,6 +177,8 @@ export async function GET(request: NextRequest) {
           networkName: name,
           logoUrl: bountyLogoMap[name]?.logoUrl || null,
           reviewerAddresses: bountyLogoMap[name]?.reviewerAddresses || [],
+          additionalPaymentRequired:
+            bountyLogoMap[name]?.additionalPaymentRequired || false,
           ...(bountyDetailsMap[name] || {}),
         })),
       },

@@ -11,10 +11,14 @@ export interface SubmissionData {
   files?: string[];
   fileNames?: string[];
   bountyLogo?: string;
+  additionalPaymentRequired?: boolean;
   progressStatus?: {
     kycVerified?: boolean;
     paymentConfirmed?: boolean;
     additionalPaymentConfirmed?: boolean;
+  };
+  bountyInfo?: {
+    additionalPaymentRequired?: boolean;
   };
   managerVote?: {
     vote: "accepted" | "rejected";

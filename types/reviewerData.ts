@@ -38,6 +38,10 @@ export interface ReviewSubmission {
   files?: string[]; // This is an array of file IDs
   bountyLogo?: string;
   tempComment?: string;
+  bountyInfo?: {
+    additionalPaymentRequired?: boolean;
+  };
+  additionalPaymentRequired?: boolean;
 }
 
 export interface BountyDetails {

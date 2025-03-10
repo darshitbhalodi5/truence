@@ -145,6 +145,7 @@ export function SubmissionDetails({
                 <PaymentProgress
                   submission={localSubmission}
                   isSubmitter={false}
+                  isReviewer={managerAddress ? false : true}
                   userAddress={managerAddress || ""}
                   onConfirmPayment={handleConfirmPayment}
                   onAdditionalPaymentConfirm={handleAdditionalPayment}

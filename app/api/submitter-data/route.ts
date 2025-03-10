@@ -30,12 +30,21 @@ export async function GET(request: NextRequest) {
     const bountyDetails = await DisplayBounty.find({
       networkName: { $in: programNames },
     })
-      .select("networkName logoUrl")
+      .select("networkName logoUrl additionalPaymentRequired")
       .lean();
 
     const bountyLogoMap = bountyDetails.reduce(
-      (map: Record<string, string>, bounty: any) => {
-        map[bounty.networkName] = bounty.logoUrl;
+      (
+        map: Record<
+          string,
+          { logoUrl: string; additionalPaymentRequired: boolean }
+        >,
+        bounty: any
+      ) => {
+        map[bounty.networkName] = {
+          logoUrl: bounty.logoUrl,
+          additionalPaymentRequired: bounty.additionalPaymentRequired,
+        };
         return map;
       },
       {}
@@ -63,7 +72,10 @@ export async function GET(request: NextRequest) {
 
     const enrichedSubmissions = userSubmissions.map((submission) => ({
       ...submission,
-      bountyLogo: bountyLogoMap[submission.programName],
+      bountyLogo: bountyLogoMap[submission.programName]?.logoUrl || null,
+      additionalPaymentRequired:
+        bountyLogoMap[submission.programName]?.additionalPaymentRequired ||
+        false,
       progressStatus: submission.progressStatus,
       managerVote: submission.managerVote,
       fileNames: (submission.files || [])

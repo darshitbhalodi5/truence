@@ -4,6 +4,7 @@ import { SubmissionData } from "@/types/submissionData";
 interface PaymentProgressProps {
   submission: ReviewSubmission | SubmissionData;
   isSubmitter: boolean;
+  isReviewer?: boolean;
   userAddress: string;
   onVerifyKYC?: () => void;
   onConfirmPayment?: () => void;
@@ -13,11 +14,20 @@ interface PaymentProgressProps {
 export default function PaymentProgress({
   submission,
   isSubmitter,
+  isReviewer,
   userAddress,
   onVerifyKYC,
   onConfirmPayment,
   onAdditionalPaymentConfirm,
 }: PaymentProgressProps) {
+  const paymentField = () => {
+    if (isSubmitter) {
+      return submission.additionalPaymentRequired;
+    } else {
+      return submission?.bountyInfo?.additionalPaymentRequired;
+    }
+  };
+
   // Calculate current step based on progress status
   const calculateCurrentStep = () => {
     const { progressStatus } = submission;
@@ -26,10 +36,10 @@ export default function PaymentProgress({
       return 1;
     } else if (!progressStatus?.paymentConfirmed) {
       return 2;
-    } else if (!progressStatus?.additionalPaymentConfirmed) {
+    } else if (paymentField() && !progressStatus?.additionalPaymentConfirmed) {
       return 3;
     } else {
-      return 4; // All steps completed
+      return paymentField() ? 4 : 3;
     }
   };
 
@@ -42,7 +52,7 @@ export default function PaymentProgress({
       name: "KYC Verification",
       buttonText: "Verify KYC",
       onClick: onVerifyKYC,
-      visible: isSubmitter, // Only submitter can verify KYC
+      visible: isSubmitter && !isReviewer, // Only submitter can verify KYC
       disabled: submission.progressStatus?.kycVerified === true,
       completed: submission.progressStatus?.kycVerified === true,
     },
@@ -51,24 +61,28 @@ export default function PaymentProgress({
       name: "Payment Confirmation",
       buttonText: "Confirm Payment",
       onClick: onConfirmPayment,
-      visible: !isSubmitter, // Only manager can confirm payment
+      visible: !isSubmitter && !isReviewer, // Only manager can confirm payment
       disabled:
         submission.progressStatus?.kycVerified !== true ||
         submission.progressStatus?.paymentConfirmed === true,
       completed: submission.progressStatus?.paymentConfirmed === true,
     },
-    {
+  ];
+
+  // Only add the third step if additionalPaymentRequired is true
+  if (paymentField()) {
+    steps.push({
       id: 3,
       name: "Additional Payment Confirmation",
       buttonText: "Confirm Additional Payment",
       onClick: onAdditionalPaymentConfirm,
-      visible: !isSubmitter, // Only manager can confirm additional payment
+      visible: !isSubmitter && !isReviewer, // Only manager can confirm additional payment
       disabled:
         submission.progressStatus?.paymentConfirmed !== true ||
         submission.progressStatus?.additionalPaymentConfirmed === true,
       completed: submission.progressStatus?.additionalPaymentConfirmed === true,
-    },
-  ];
+    });
+  }
 
   return (
     <div className="relative py-6">
