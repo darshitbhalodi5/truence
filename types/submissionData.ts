@@ -5,12 +5,21 @@ export interface SubmissionData {
   description: string;
   severityLevel: string;
   reviewerSeverity?: string;
-  misUseRange?:string;
+  misUseRange?: string;
   status: string;
   createdAt: string;
   files?: string[];
   fileNames?: string[];
   bountyLogo?: string;
+  progressStatus?: {
+    kycVerified?: boolean;
+    paymentConfirmed?: boolean;
+    additionalPaymentConfirmed?: boolean;
+  };
+  managerVote?: {
+    vote: "accepted" | "rejected";
+    comment?: string;
+  };
 }
 
 export interface FileMetadata {

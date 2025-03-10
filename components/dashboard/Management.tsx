@@ -169,6 +169,24 @@ export function Management({
     fetchManagerData();
   }, [walletAddress]);
 
+  // Function to handle submission updates from the modal
+  const handleSubmissionUpdate = (updatedSubmission: ReviewSubmission) => {
+    // Update the selected submission
+    setSelectedSubmission(updatedSubmission);
+
+    // Also update in the main submissions list
+    setManagerData((prevManagerData) =>
+      prevManagerData
+        ? {
+            ...prevManagerData,
+            submissions: prevManagerData.submissions.map((sub) =>
+              sub._id === updatedSubmission._id ? updatedSubmission : sub
+            ),
+          }
+        : null
+    );
+  };
+
   // Filter and sort submissions
   const filteredSubmissions = useMemo(() => {
     if (!managerData?.submissions) return [];
@@ -771,6 +789,8 @@ export function Management({
               fileMetadata={fileMetadata}
               onClose={() => setSelectedSubmission(null)}
               onViewFile={handleViewFile}
+              managerAddress={walletAddress || ""}
+              onSubmissionUpdate={handleSubmissionUpdate}
             />
           )}
 

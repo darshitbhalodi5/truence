@@ -3,6 +3,7 @@ import { ReviewSubmission } from "@/types/reviewerData";
 import { getCurrency } from "@/utils/networkCurrency";
 import PaymentProgress from "@/components/payment-progressbar/PaymentProgress";
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 interface SubmissionDetailsProps {
   submission: ReviewSubmission;
@@ -12,6 +13,8 @@ interface SubmissionDetailsProps {
   >;
   onClose: () => void;
   onViewFile: (fileId: string, metadata: any) => void;
+  onSubmissionUpdate?: (updatedSubmission: ReviewSubmission) => void;
+  managerAddress?: string;
 }
 
 export function SubmissionDetails({
@@ -19,24 +22,106 @@ export function SubmissionDetails({
   fileMetadata,
   onClose,
   onViewFile,
+  onSubmissionUpdate,
+  managerAddress,
 }: SubmissionDetailsProps) {
-  const [progressStep, setProgressStep] = useState(1);
+  const [localSubmission, setLocalSubmission] =
+    useState<ReviewSubmission>(submission);
 
-  const progressStatusData = submission.progressStatus;
-  
+  // Update localSubmission when the prop changes
   useEffect(() => {
-    if (progressStatusData?.kycVerified === true) {
-      setProgressStep(2);
-    } 
-    
-    if (progressStatusData?.paymentConfirmed === true) {
-      setProgressStep(3);
+    setLocalSubmission(submission);
+  }, [submission]);
+
+  const handleConfirmPayment = async () => {
+    if (localSubmission.progressStatus?.kycVerified !== true) {
+      console.error("KYC verification pending");
+      toast.error("KYC Verification pending from submitter side.");
     }
 
-    if (progressStatusData?.additionalPaymentConfirmed === true) {
-      setProgressStep(4);
+    try {
+      const PaymentResponse = await fetch(
+        `/api/submissions/${localSubmission._id}/payment-confirmation`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ managerAddress, isPaymentDone: true }),
+        }
+      );
+
+      const PaymentData = await PaymentResponse.json();
+
+      if (!PaymentResponse.ok) {
+        throw new Error(PaymentData.error || "Failed to update payment data");
+      }
+
+      const updatedSubmission = {
+        ...localSubmission,
+        progressStatus: {
+          ...localSubmission.progressStatus,
+          paymentConfirmed: true,
+        },
+      };
+
+      setLocalSubmission(updatedSubmission);
+
+      // Notify parent component about the update if callback exists
+      if (onSubmissionUpdate) {
+        onSubmissionUpdate(updatedSubmission);
+      }
+
+      toast.success("Payment confirmed successfully");
+    } catch (error) {
+      console.error("Error in payment confirmation:", error);
     }
-  }, [progressStatusData]);
+  };
+
+  const handleAdditionalPayment = async () => {
+    if (localSubmission.progressStatus?.paymentConfirmed !== true) {
+      console.error("Base payment confirmation pending");
+      toast.error("Base payment pending for submission.");
+    }
+
+    try {
+      const PaymentResponse = await fetch(
+        `/api/submissions/${localSubmission._id}/payment-confirmation`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            managerAddress,
+            isAdditionalPaymentDone: true,
+          }),
+        }
+      );
+
+      const PaymentData = await PaymentResponse.json();
+
+      if (!PaymentResponse.ok) {
+        throw new Error(PaymentData.error || "Failed to update payment data");
+      }
+
+      // Update local state
+      const updatedSubmission = {
+        ...localSubmission,
+        progressStatus: {
+          ...localSubmission.progressStatus,
+          additionalPaymentConfirmed: true,
+        },
+      };
+
+      setLocalSubmission(updatedSubmission);
+
+      // Notify parent component about the update if callback exists
+      if (onSubmissionUpdate) {
+        onSubmissionUpdate(updatedSubmission);
+      }
+
+      toast.success("Additional payment confirmed successfully");
+    } catch (error) {
+      console.error("Error in payment confirmation:", error);
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-2 sm:p-4 z-50 backdrop-blur-sm overflow-y-auto">
@@ -54,10 +139,16 @@ export function SubmissionDetails({
             </button>
           </div>
 
-          {submission.managerVote &&
-            submission.managerVote.vote === "accepted" && (
+          {localSubmission.managerVote &&
+            localSubmission.managerVote.vote === "accepted" && (
               <div className="flex flex-wrap gap-2 sm:gap-4 bg-[#00041B] p-2 sm:p-4 rounded-lg">
-                <PaymentProgress currentStep={progressStep} />
+                <PaymentProgress
+                  submission={localSubmission}
+                  isSubmitter={false}
+                  userAddress={managerAddress || ""}
+                  onConfirmPayment={handleConfirmPayment}
+                  onAdditionalPaymentConfirm={handleAdditionalPayment}
+                />
               </div>
             )}
 

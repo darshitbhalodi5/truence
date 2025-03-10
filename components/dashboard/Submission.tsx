@@ -19,6 +19,7 @@ import { SortField, SortDirection, StatusFilter } from "@/utils/filterTypes";
 import SortIcon from "@/components/sort-icon/SortIcon";
 import SeverityInfo from "@/components/severity-change/SeverityInfo";
 import Chat from "@/components/dashboard/Chat";
+import PaymentProgress from "@/components/payment-progressbar/PaymentProgress";
 
 export function Submission({ walletAddress }: { walletAddress?: string }) {
   const [submissions, setSubmissions] = useState<SubmissionData[]>([]);
@@ -118,6 +119,47 @@ export function Submission({ walletAddress }: { walletAddress?: string }) {
 
     fetchSubmissions();
   }, [walletAddress]);
+
+  const handleVerifyKYC = async () => {
+    if (selectedSubmission?.progressStatus?.kycVerified === true) {
+      toast.error("KYC verification already done");
+      return;
+    }
+
+    try {
+      const VerificationResponse = await fetch(
+        `/api/submissions/${selectedSubmission?._id}/verify-kyc`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            submitterAddress: walletAddress,
+          }),
+        }
+      );
+
+      const VerificationData = await VerificationResponse.json();
+
+      if (!VerificationResponse.ok) {
+        throw new Error(VerificationData.error || "Failed to verify KYC");
+      }
+
+      setSelectedSubmission((prevSubmission) => {
+        if (!prevSubmission) return prevSubmission;
+        return {
+          ...prevSubmission,
+          progressStatus: {
+            ...prevSubmission.progressStatus,
+            kycVerified: true,
+          },
+        };
+      });
+
+      toast.success("KYC verification done");
+    } catch (error) {
+      console.error("Error in verifying KYC:", error);
+    }
+  };
 
   // Sort submissions based on current sort field and direction
   const sortedAndFilteredSubmissions = useMemo(() => {
@@ -481,6 +523,18 @@ export function Submission({ walletAddress }: { walletAddress?: string }) {
                   <X className="w-6 h-6 text-[#FAFCA3]" />
                 </button>
               </div>
+
+              {selectedSubmission.managerVote &&
+                selectedSubmission.managerVote.vote === "accepted" && (
+                  <div className="flex flex-wrap gap-2 sm:gap-4 bg-[#00041B] p-2 sm:p-4 rounded-lg">
+                    <PaymentProgress
+                      submission={selectedSubmission}
+                      isSubmitter={true}
+                      userAddress={walletAddress || ""}
+                      onVerifyKYC={() => handleVerifyKYC()}
+                    />
+                  </div>
+                )}
 
               <div className="flex flex-wrap gap-2 sm:gap-4 bg-[#00041B] p-2 sm:p-4 rounded-lg">
                 <h4 className="text-sm font-medium text-white/80 mb-1">
