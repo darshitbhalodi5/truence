@@ -77,8 +77,12 @@ export const showCustomToast = (type: ToastType, message?: string) => {
           <span className="flex-1 truncate">{message || text}</span>
           {/* Close Button */}
           <button
-            onClick={() => toast.dismiss(t.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              toast.dismiss(t.id);
+            }}
             className="p-1 rounded hover:bg-[#99168E] hover:text-white transition"
+            aria-label="Close toast"
           >
             <X className="w-4 h-4" />
           </button>
