@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
+const nextConfig = {
   images: {
     remotePatterns: [
       {
@@ -16,8 +16,16 @@ const nextConfig: NextConfig = {
         source: '/api/upload',
         headers: [
           {
-            key: 'Content-Type',
-            value: 'multipart/form-data',
+            key: 'Access-Control-Allow-Origin',
+            value: '*',
+          },
+          {
+            key: 'Access-Control-Allow-Methods',
+            value: 'POST, OPTIONS',
+          },
+          {
+            key: 'Access-Control-Allow-Headers',
+            value: 'Content-Type, Authorization',
           },
         ],
       },
@@ -33,6 +41,6 @@ const nextConfig: NextConfig = {
     });
     return config;
   },
-};
+} as NextConfig;
 
 export default nextConfig;

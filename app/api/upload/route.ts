@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GridFSBucket } from 'mongodb';
 import { connectMongo } from '@/lib/mongodb';
+// Import the API route configuration
+import { dynamic, maxDuration } from './route.config';
+
+// Export the config for Next.js to use
+export { dynamic, maxDuration };
 
 // Constants
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -39,8 +44,66 @@ function validateFile(file: File) {
 export async function POST(request: NextRequest) {
   let client;
   try {
-    const formData = await request.formData();
+    // Add content type check for debugging
+    const contentType = request.headers.get('content-type') || '';
+    if (!contentType.includes('multipart/form-data')) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'Invalid content type', 
+          details: `Expected multipart/form-data but got ${contentType}`
+        },
+        { status: 400 }
+      );
+    }
+
+    // Clone the request to avoid consuming it
+    const clonedRequest = request.clone();
+    
+    let formData;
+    try {
+      formData = await clonedRequest.formData();
+    } catch (formDataError) {
+      console.error('FormData parsing error:', formDataError);
+      
+      // Try to read the request body as a stream for debugging
+      try {
+        const bodyText = await request.text();
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: 'Error parsing FormData', 
+            details: formDataError instanceof Error ? formDataError.message : 'Unknown error',
+            bodyLength: bodyText.length,
+            contentType
+          },
+          { status: 400 }
+        );
+      } catch (bodyError) {
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: 'Error reading request body', 
+            details: bodyError instanceof Error ? bodyError.message : 'Unknown error',
+            contentType
+          },
+          { status: 400 }
+        );
+      }
+    }
+    
     const file = formData.get('file') as File;
+    
+    if (!file) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'No file found in request', 
+          formDataKeys: Array.from(formData.keys())
+        },
+        { status: 400 }
+      );
+    }
     
     // Validate file
     const validationErrors = validateFile(file);

@@ -174,7 +174,7 @@ export default function EvidenceSubmissionPage() {
     }
 
     // Upload valid files
-    validFiles.forEach(async (file) => {
+    for (const file of validFiles) {
       // Add file to progress tracking
       setUploadProgress((prev) => [
         ...prev,
@@ -187,15 +187,25 @@ export default function EvidenceSubmissionPage() {
 
       try {
         const formData = new FormData();
-        formData.append("file", file);
+        // Ensure the file is properly appended with the correct filename
+        formData.append("file", file, file.name);
+
+        // Log the form data for debugging
+        console.log(`Uploading file: ${file.name}, size: ${file.size}, type: ${file.type}`);
 
         const response = await fetch("/api/upload", {
           method: "POST",
+          // Don't set Content-Type header, let the browser set it with the boundary
           body: formData,
         });
 
+        // Log response status for debugging
+        console.log(`Upload response status: ${response.status}`);
+        
         if (!response.ok) {
-          throw new Error(`Failed to upload ${file.name}`);
+          const errorData = await response.json().catch(() => ({}));
+          console.error("Upload error response:", errorData);
+          throw new Error(errorData.details || `Failed to upload ${file.name}`);
         }
 
         const data = await response.json();
@@ -228,7 +238,7 @@ export default function EvidenceSubmissionPage() {
         );
         showCustomToast("error", `Failed to upload ${file.name}`);
       }
-    });
+    }
   };
 
   const verifyWalletOwnership = async () => {
