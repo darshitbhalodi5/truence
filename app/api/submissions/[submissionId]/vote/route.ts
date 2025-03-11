@@ -13,6 +13,8 @@ export async function POST(
 
     const submissionId = (await params).submissionId;
     const { reviewerAddress, vote, severity, comment } = await request.json();
+    
+    const normalizedReviewerAddress = reviewerAddress.toLowerCase();
 
     // Validate vote
     const validVotes = ["accepted", "rejected"];
@@ -50,8 +52,12 @@ export async function POST(
       );
     }
 
+    const normalizedReviewerAddresses = bounty.reviewerAddresses.map((addr: string) =>
+      addr.toLowerCase()
+    );
+    
     // Ensure the voter is a reviewer (not the manager)
-    if (!bounty.reviewerAddresses.includes(reviewerAddress)) {
+    if (!normalizedReviewerAddresses.includes(normalizedReviewerAddress)) {
       return NextResponse.json(
         { error: "Unauthorized: Only reviewers can use this endpoint" },
         { status: 403 }
