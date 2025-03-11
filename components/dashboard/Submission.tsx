@@ -15,7 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { getCurrency } from "@/utils/networkCurrency";
-import { SortField, SortDirection, StatusFilter } from "@/utils/filterTypes";
+import { SortField, SortDirection, StatusFilter } from "@/types/filterTypes";
 import SortIcon from "@/components/sort-icon/SortIcon";
 import SeverityInfo from "@/components/severity-change/SeverityInfo";
 import Chat from "@/components/dashboard/Chat";

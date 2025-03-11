@@ -21,7 +21,7 @@ import {
   SortDirection,
   SortField,
   SeverityFilter,
-} from "@/utils/filterTypes";
+} from "@/types/filterTypes";
 import SortIcon from "@/components/sort-icon/SortIcon";
 import SeverityInfo from "@/components/severity-change/SeverityInfo";
 import StateHandler from "@/components/state-handle/StateHandler";

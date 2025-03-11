@@ -9,7 +9,7 @@ export const NETWORK_CURRENCIES: { [key: string]: string } = {
   Aave: "AAVE",
   Pendle: "PENDLE",
   Uniswap: "UNI",
-  GMX: "GMX",
+  Gmx: "GMX",
   Default: "USDC",
 };
 
