@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { usePrivy } from '@privy-io/react-auth';
-import { useCallback } from 'react';
+import { usePrivy } from "@privy-io/react-auth";
+import { useCallback } from "react";
 
 export function useWallet() {
   const {
@@ -30,4 +30,4 @@ export function useWallet() {
     user,
     sendTransaction,
   };
-} 
+}

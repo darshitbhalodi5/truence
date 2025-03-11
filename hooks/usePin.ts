@@ -39,7 +39,7 @@ export const usePin = ({ walletAddress, prefix }: UsePinProps) => {
     [pinKey]
   );
 
-  // Load bookmarks from localStorage when component mounts or wallet changes
+  // Load pinned submissions from localStorage when component mounts or wallet changes
   useEffect(() => {
     const loadPinSubmissions = () => {
       try {
@@ -73,12 +73,12 @@ export const usePin = ({ walletAddress, prefix }: UsePinProps) => {
     return () => window.removeEventListener("storage", handleStorageChange);
   }, [pinKey]);
 
-  // Persist bookmarks whenever they change
+  // Persist pin submissions whenever they change
   useEffect(() => {
     persistPins(pinnedSubmissions);
   }, [pinnedSubmissions, persistPins]);
 
-  // Toggle bookmark status
+  // Toggle pinned submission status
   const togglePins = useCallback(
     (submissionId: string) => {
       setPinnedSubmissions((prev) => {
@@ -95,7 +95,7 @@ export const usePin = ({ walletAddress, prefix }: UsePinProps) => {
     [persistPins]
   );
 
-  // Check if a submission is bookmarked
+  // Check if a submission is pinned
   const isPinned = useCallback(
     (submissionId: string): boolean => {
       return pinnedSubmissions.includes(submissionId);

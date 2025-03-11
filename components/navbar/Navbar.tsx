@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { useWallet } from "@/hooks/use-wallet";
+import { useWallet } from "@/hooks/useWallet";
 import { LogOut, Menu, X } from "lucide-react";
 import {
   ClipboardDocumentIcon,
