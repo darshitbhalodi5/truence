@@ -126,7 +126,7 @@ export function Navbar() {
             onClick={navigateToHome}
           >
             <Image
-              src="/assets/symbol.png"
+              src="/assets/symbol.svg"
               alt="Truence Symbol"
               height={24}
               width={24}
