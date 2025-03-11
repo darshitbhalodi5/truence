@@ -1,6 +1,6 @@
 import React from "react";
 import { LoadingSpinner } from "@/components/multi-purpose-loader/LoadingSpinner";
-import { StateHandlerProps } from "@/types/StateHandlerProps";
+import { StateHandlerProps } from "@/types/stateHandlerProps";
 
 /**
  * A reusable component for handling common UI states

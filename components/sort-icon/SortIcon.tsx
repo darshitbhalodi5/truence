@@ -1,5 +1,5 @@
 import { ChevronUp, ChevronDown } from "lucide-react";
-import { SortIconProps } from "@/types/SortIconProps";
+import { SortIconProps } from "@/types/sortIconProps";
 
 const SortIcon = ({ field, sortField, sortDirection }: SortIconProps) => {
   if (sortField !== field) {
