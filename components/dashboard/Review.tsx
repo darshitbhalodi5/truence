@@ -11,7 +11,6 @@ import {
   Pin,
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
-import { toast } from "react-hot-toast";
 import { ReviewSubmission, ReviewerData, FileData } from "@/types/reviewerData";
 import { StatusCounts } from "@/types/statusCounter";
 import { parseMisUseRange } from "@/utils/parseMisuseRange";
@@ -32,6 +31,7 @@ import { SubmissionDetails } from "@/components/submission-details/SubmissionDet
 import { FileViewer } from "@/components/view-file/FileViewer";
 import { usePin } from "@/hooks/usePin";
 import Chat from "@/components/dashboard/Chat";
+import { showCustomToast } from "@/components/custom-toast/CustomToast";
 
 export function Review({
   walletAddress,
@@ -273,21 +273,16 @@ export function Review({
         setReviewData({ ...reviewData, submissions: updatedSubmissions });
       }
 
-      // Show appropriate message based on voting status
-      if (data.quorumReached) {
-        toast.success(
-          `Vote recorded. Quorum reached! Waiting for manager's final decision.`
-        );
-      } else {
-        toast.success(
-          `Vote recorded. ${data.voteSummary.totalVotes} votes so far.`
-        );
-      }
+      showCustomToast(
+        "information",
+        "Vote Recorded. Waiting for manager's final decision."
+      );
 
       return data;
     } catch (error) {
       console.error("Error submitting reviewer vote:", error);
-      toast.error(
+      showCustomToast(
+        "error",
         error instanceof Error ? error.message : "Failed to submit vote"
       );
       return null;
@@ -332,7 +327,7 @@ export function Review({
       }));
     } catch (error) {
       console.error("Error fetching file metadata:", error);
-      toast.error("Failed to fetch file information");
+      showCustomToast("error", "Failed to fetch file information.");
     }
   };
 
@@ -382,7 +377,7 @@ export function Review({
       });
     } catch (error) {
       console.error("Error viewing file:", error);
-      toast.error("Failed to load file for viewing");
+      showCustomToast("error", "Failed to load file for viewing.");
     }
   };
 

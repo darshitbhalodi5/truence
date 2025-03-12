@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "react-hot-toast";
 import { SubmissionData } from "@/types/submissionData";
 import { LoadingSpinner } from "@/components/multi-purpose-loader/LoadingSpinner";
 import {
@@ -20,6 +19,7 @@ import SortIcon from "@/components/sort-icon/SortIcon";
 import SeverityInfo from "@/components/severity-change/SeverityInfo";
 import Chat from "@/components/dashboard/Chat";
 import PaymentProgress from "@/components/payment-progressbar/PaymentProgress";
+import { showCustomToast } from "@/components/custom-toast/CustomToast";
 
 export function Submission({ walletAddress }: { walletAddress?: string }) {
   const [submissions, setSubmissions] = useState<SubmissionData[]>([]);
@@ -122,7 +122,7 @@ export function Submission({ walletAddress }: { walletAddress?: string }) {
 
   const handleVerifyKYC = async () => {
     if (selectedSubmission?.progressStatus?.kycVerified === true) {
-      toast.error("KYC verification already done");
+      showCustomToast("information", "KYC verification already done");
       return;
     }
 
@@ -155,7 +155,7 @@ export function Submission({ walletAddress }: { walletAddress?: string }) {
         };
       });
 
-      toast.success("KYC verification done");
+      showCustomToast("success", "KYC verification done");
     } catch (error) {
       console.error("Error in verifying KYC:", error);
     }
@@ -242,10 +242,10 @@ export function Submission({ walletAddress }: { walletAddress?: string }) {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
 
-      toast.success("File download started");
+      showCustomToast("success", "File download started");
     } catch (error) {
       console.error("Error downloading file:", error);
-      toast.error("Failed to download file");
+      showCustomToast("error", "Failed to download file");
     } finally {
       // Reset downloading state for this file
       setDownloadingFiles((prev) => ({ ...prev, [fileUrl]: false }));

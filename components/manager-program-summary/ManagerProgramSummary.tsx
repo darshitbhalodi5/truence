@@ -4,7 +4,6 @@ import {
   NetwrokItemProps,
   NetwrokListProps,
 } from "@/types/programSummary";
-import toast from "react-hot-toast";
 import { X } from "lucide-react";
 import {
   ClipboardDocumentIcon,
@@ -58,15 +57,9 @@ const ReviewerAddressModal: React.FC<ReviewerAddressModalProps> = ({
         });
         setIsAddingReviewer(false);
         onClose();
-        // Optionally show a success notification
-        toast.success("Reviewer submission successful");
-      } else {
-        // Handle error
-        toast.error("Failed to submit reviewer");
       }
     } catch (error) {
       console.error("Submission error:", error);
-      toast.error("An error occurred while submitting");
     }
   };
 

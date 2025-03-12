@@ -191,7 +191,9 @@ export default function EvidenceSubmissionPage() {
         formData.append("file", file, file.name);
 
         // Log the form data for debugging
-        console.log(`Uploading file: ${file.name}, size: ${file.size}, type: ${file.type}`);
+        console.log(
+          `Uploading file: ${file.name}, size: ${file.size}, type: ${file.type}`
+        );
 
         const response = await fetch("/api/upload", {
           method: "POST",
@@ -201,7 +203,7 @@ export default function EvidenceSubmissionPage() {
 
         // Log response status for debugging
         console.log(`Upload response status: ${response.status}`);
-        
+
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
           console.error("Upload error response:", errorData);
@@ -366,7 +368,7 @@ export default function EvidenceSubmissionPage() {
           Upload Files ({uploadedFiles.length}/{MAX_FILES})
         </label>
         <span className="text-sm text-white/80">
-          Max {MAX_FILES} files, 2MB each
+          Max {MAX_FILES} files, Total upload size 4 MB
         </span>
       </div>
 
@@ -397,10 +399,7 @@ export default function EvidenceSubmissionPage() {
               ) : (
                 <div className="text-center">
                   <span> Click here to upload</span>
-                  <div>
-                    Supported File Types: .jpg, .jpeg, .png, .pdf, .doc, .docx,
-                    .txt, .json, .zip
-                  </div>
+                  <div>Supported File Types: .jpeg, .png, .pdf, .txt</div>
                 </div>
               )}
             </span>

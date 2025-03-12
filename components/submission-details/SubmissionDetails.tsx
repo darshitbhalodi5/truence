@@ -3,7 +3,7 @@ import { ReviewSubmission } from "@/types/reviewerData";
 import { getCurrency } from "@/utils/networkCurrency";
 import PaymentProgress from "@/components/payment-progressbar/PaymentProgress";
 import { useEffect, useState } from "react";
-import toast from "react-hot-toast";
+import { showCustomToast } from "@/components/custom-toast/CustomToast";
 
 interface SubmissionDetailsProps {
   submission: ReviewSubmission;
@@ -36,7 +36,7 @@ export function SubmissionDetails({
   const handleConfirmPayment = async () => {
     if (localSubmission.progressStatus?.kycVerified !== true) {
       console.error("KYC verification pending");
-      toast.error("KYC Verification pending from submitter side.");
+      showCustomToast("information", "KYC verification pending");
     }
 
     try {
@@ -70,7 +70,7 @@ export function SubmissionDetails({
         onSubmissionUpdate(updatedSubmission);
       }
 
-      toast.success("Payment confirmed successfully");
+      showCustomToast("success", "Payment confirmed successfully");
     } catch (error) {
       console.error("Error in payment confirmation:", error);
     }
@@ -79,7 +79,7 @@ export function SubmissionDetails({
   const handleAdditionalPayment = async () => {
     if (localSubmission.progressStatus?.paymentConfirmed !== true) {
       console.error("Base payment confirmation pending");
-      toast.error("Base payment pending for submission.");
+      showCustomToast("information", "Base Payment pending.");
     }
 
     try {
@@ -117,7 +117,7 @@ export function SubmissionDetails({
         onSubmissionUpdate(updatedSubmission);
       }
 
-      toast.success("Additional payment confirmed successfully");
+      showCustomToast("success", "Additional payment confirmed successfully");
     } catch (error) {
       console.error("Error in payment confirmation:", error);
     }

@@ -13,7 +13,6 @@ import {
   ThumbsUp,
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
-import { toast } from "react-hot-toast";
 import { ReviewSubmission, FileData } from "@/types/reviewerData";
 import { StatusCounts } from "@/types/statusCounter";
 import { parseMisUseRange } from "@/utils/parseMisuseRange";
@@ -34,6 +33,7 @@ import { SubmissionDetails } from "@/components/submission-details/SubmissionDet
 import { FileViewer } from "@/components/view-file/FileViewer";
 import { usePin } from "@/hooks/usePin";
 import Chat from "@/components/dashboard/Chat";
+import { showCustomToast } from "@/components/custom-toast/CustomToast";
 
 // Define ManagerData interface (similar to ReviewerData but for managers)
 interface ManagerData {
@@ -292,11 +292,11 @@ export function Management({
         );
         setManagerData({ ...managerData, submissions: updatedSubmissions });
       }
-
-      toast.success(`Status updated to ${newStatus}`);
+      showCustomToast("success", `Status updated to ${newStatus}`);
     } catch (error) {
       console.error("Error updating status:", error);
-      toast.error(
+      showCustomToast(
+        "error",
         error instanceof Error ? error.message : "Failed to update status"
       );
     }
@@ -316,7 +316,7 @@ export function Management({
       setFileMetadata((prev) => ({ ...prev, [fileId]: metadata }));
     } catch (error) {
       console.error("Error fetching file metadata:", error);
-      toast.error("Failed to fetch file information");
+      showCustomToast("error", "Failed to fetch file information");
     }
   };
 
@@ -346,7 +346,7 @@ export function Management({
       });
     } catch (error) {
       console.error("Error viewing file:", error);
-      toast.error("Failed to load file for viewing");
+      showCustomToast("error", "Failed to load file for viewing");
     }
   };
 
@@ -676,9 +676,15 @@ export function Management({
                                     <span
                                       key={index}
                                       className={`${voteColor} text-lg`}
-                                      title={`${vote.vote}${
+                                      title={`${vote.reviewerAddress}\nVote: ${
+                                        vote.vote
+                                      }${
                                         vote.severity
-                                          ? ` (${vote.severity})`
+                                          ? ` (Severity: ${vote.severity})`
+                                          : ""
+                                      }${
+                                        vote.comment
+                                          ? `\nComment: ${vote.comment}`
                                           : ""
                                       }`}
                                     >
