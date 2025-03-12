@@ -219,17 +219,20 @@ export function BountyTable({ bounties }: BountyTableProps) {
       <div className="relative overflow-x-auto">
         <div className="scroll-container overflow-y-auto max-h-[600px] scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-700 scrollbar-thumb-rounded-lg">
           <table className="w-full">
-            <thead>
+            <thead className="text-sm text-gray-400 sticky top-0 bg-gray-900 z-10">
               <tr className="text-left text-gray-400 bg-gray-900 text-sm">
-                <th className="py-3 px-4">Description</th>
+                <th className="w-3/5 py-3 px-4">Description</th>
                 <th
                   className="py-3 px-4 cursor-pointer"
                   onClick={() => handleSort("rewards")}
                 >
                   <div className="flex items-center space-x-1">
                     <span>Max Rewards</span>
-                    <SortIcon field="rewards" sortField={sortField}
-                        sortDirection={sortDirection}/>
+                    <SortIcon
+                      field="rewards"
+                      sortField={sortField}
+                      sortDirection={sortDirection}
+                    />
                   </div>
                 </th>
                 <th
@@ -238,8 +241,11 @@ export function BountyTable({ bounties }: BountyTableProps) {
                 >
                   <div className="flex items-center space-x-1">
                     <span>Start Date</span>
-                    <SortIcon field="startDate" sortField={sortField}
-                        sortDirection={sortDirection}/>
+                    <SortIcon
+                      field="startDate"
+                      sortField={sortField}
+                      sortDirection={sortDirection}
+                    />
                   </div>
                 </th>
                 <th
@@ -248,8 +254,11 @@ export function BountyTable({ bounties }: BountyTableProps) {
                 >
                   <div className="flex items-center space-x-1">
                     <span>End Date</span>
-                    <SortIcon field="endDate" sortField={sortField}
-                        sortDirection={sortDirection}/>
+                    <SortIcon
+                      field="endDate"
+                      sortField={sortField}
+                      sortDirection={sortDirection}
+                    />
                   </div>
                 </th>
                 <th className="py-3 px-4 text-center md:text-left">Status</th>

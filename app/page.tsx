@@ -56,14 +56,14 @@ export default function Home() {
               href="/bounties/explore"
               className="group px-8 py-4 rounded-lg border-2 border-[#99168E] hover:bg-[#99168E]/20 transition-all duration-300 text-lg font-medium relative overflow-hidden"
             >
-              <span className="relative z-10">Explore Bounties</span>
+              <span className="relative z-10">Explore Programs</span>
               <div className="absolute inset-0 bg-gradient-to-r from-[#99168E]/0 via-[#99168E]/20 to-[#99168E]/0 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
             </Link>
             <Link
               href="/bounties/create"
               className="group px-8 py-4 rounded-lg bg-[#99168E] hover:bg-[#99168E]/90 transition-all duration-300 text-lg font-medium relative overflow-hidden"
             >
-              <span className="relative z-10">Create Bounty</span>
+              <span className="relative z-10">Create Program</span>
               <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
             </Link>
           </div>
