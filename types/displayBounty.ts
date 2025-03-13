@@ -26,6 +26,7 @@ export interface BountyCardProps {
 
 export interface BountyTableProps {
   bounties: Array<BountyCardProps["bounty"]>;
+  featuredBountyId?: string;
 }
 
 export type SortField = "rewards" | "startDate" | "endDate";

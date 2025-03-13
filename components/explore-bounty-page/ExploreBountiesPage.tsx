@@ -125,7 +125,7 @@ export default function ExploreBountiesPage() {
               <NoBounties />
             </div>
           ) : (
-            <BountyTable bounties={bounties} />
+            <BountyTable bounties={bounties} featuredBountyId="67ced5d3c89e2cded0b8db42"/>
           )}
         </div>
       </div>

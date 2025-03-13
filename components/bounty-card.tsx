@@ -12,7 +12,7 @@ import { getCurrency, formatRewardNumber } from "@/utils/networkCurrency";
 import { ChevronDown, Filter, Search } from "lucide-react";
 import SortIcon from "@/components/sort-icon/SortIcon";
 
-export function BountyTable({ bounties }: BountyTableProps) {
+export function BountyTable({ bounties, featuredBountyId }: BountyTableProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortField, setSortField] = useState<SortField>("startDate");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
@@ -96,6 +96,7 @@ export function BountyTable({ bounties }: BountyTableProps) {
     let filtered = bounties.map((bounty) => ({
       ...bounty,
       status: calculateStatus(bounty),
+      isFeatured: bounty._id === featuredBountyId
     }));
 
     if (statusFilter !== "ALL") {
@@ -108,7 +109,14 @@ export function BountyTable({ bounties }: BountyTableProps) {
       );
     }
 
+    // First sort by featured status to keep featured bounty at the top
     return filtered.sort((a, b) => {
+      // If a is featured, it should come first
+      if (a.isFeatured && !b.isFeatured) return -1;
+      // If b is featured, it should come first
+      if (!a.isFeatured && b.isFeatured) return 1;
+      
+      // If neither or both are featured, sort by the selected field
       const direction = sortDirection === "asc" ? 1 : -1;
 
       switch (sortField) {
@@ -130,7 +138,7 @@ export function BountyTable({ bounties }: BountyTableProps) {
           return 0;
       }
     });
-  }, [bounties, sortField, sortDirection, statusFilter, searchQuery]);
+  }, [bounties, sortField, sortDirection, statusFilter, searchQuery, featuredBountyId]);
 
   // Handle sorting part for asending or descending
   const handleSort = (field: SortField) => {
@@ -268,11 +276,14 @@ export function BountyTable({ bounties }: BountyTableProps) {
               {sortedAndFilteredBounties.map((bounty) => {
                 const status = bounty.status;
                 const isClosed = status === "CLOSED";
+                const isFeatured = bounty._id === featuredBountyId;
 
                 return (
                   <tr
                     key={bounty._id}
-                    className="hover:bg-gray-800/50 transition-colors"
+                    className={`hover:bg-gray-800/50 transition-colors ${
+                      isFeatured ? "bg-gray-800/30" : ""
+                    }`}
                   >
                     <td className="py-3 px-4">
                       <Link
@@ -292,8 +303,13 @@ export function BountyTable({ bounties }: BountyTableProps) {
                           />
                         </div>
                         <div>
-                          <h3 className="text-white font-medium">
+                          <h3 className="text-white font-medium flex items-center gap-2">
                             {bounty.networkName}
+                            {isFeatured && (
+                              <span className="bg-[#99168E] text-white text-xs px-2 py-0.5 rounded-full">
+                                Featured
+                              </span>
+                            )}
                           </h3>
                           <p className="text-gray-400 text-sm line-clamp-1">
                             {bounty.description}
