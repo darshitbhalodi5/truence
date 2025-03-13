@@ -217,7 +217,7 @@ export function BountyTable({ bounties }: BountyTableProps) {
       </div>
 
       <div className="relative overflow-x-auto">
-        <div className="scroll-container overflow-y-auto max-h-[600px] scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-700 scrollbar-thumb-rounded-lg">
+        <div className="scroll-container overflow-y-auto max-h-[80vh] scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-700 scrollbar-thumb-rounded-lg">
           <table className="w-full">
             <thead className="text-sm text-gray-400 sticky top-0 bg-gray-900 z-10">
               <tr className="text-left text-gray-400 bg-gray-900 text-sm">
