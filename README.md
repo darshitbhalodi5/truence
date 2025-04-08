@@ -1,36 +1,90 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Truence
+
+Truence is a decentralized platform for identifying and recovering misused funds in the blockchain ecosystem through community oversight. The platform enables transparent reporting, public accountability, and empowers community members to uphold the integrity of the ecosystem.
+
+## Overview
+
+Truence allows users to:
+- Create bounty programs for specific blockchain networks
+- Submit reports of fund misuse
+- Review and vote on submissions
+- Verify and process payments for valid reports
+- Track the status of submissions through a dashboard
+
+The platform supports multiple user roles including submitters, reviewers, and managers, each with specific permissions and responsibilities.
+
+## Features
+
+- **Bounty Programs**: Create and manage bounty programs for different blockchain networks
+- **Severity Classification**: Define severity levels (Critical, High, Medium, Low) with corresponding rewards
+- **Misuse Range Categorization**: Classify reports by types of fund misuse
+- **Multi-tier Review System**: Reports are evaluated by multiple reviewers to ensure fairness
+- **KYC Verification**: Verify submitter identity before processing payments
+- **Wallet Integration**: Connect with blockchain wallets for secure authentication
+- **Dashboard**: Track submissions, reviews, and program status
+
+## Tech Stack
+
+- **Frontend**: Next.js, React, TailwindCSS, Framer Motion
+- **Backend**: Next.js API Routes
+- **Database**: MongoDB with Mongoose ODM
+- **Authentication**: Privy for wallet-based authentication
+- **File Storage**: MongoDB GridFS for file uploads and storage
+- **Blockchain Integration**: Ethers.js, Wagmi
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- Node.js (v18 or later)
+- Yarn package manager
+- MongoDB instance
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Installation
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/your-username/truence.git
+   cd truence
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2. Install dependencies:
+   ```bash
+   yarn install
+   ```
 
-## Learn More
+3. Set up environment variables:
+   Create a `.env.local` file with the following variables:
+   ```
+   MONGODB_URI=your_mongodb_connection_string
+   PRIVY_APP_ID=your_privy_app_id
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+4. Run the development server:
+   ```bash
+   yarn dev
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+5. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Project Structure
 
-## Deploy on Vercel
+- `/app`: Next.js app directory with pages and API routes
+- `/components`: Reusable UI components
+- `/hooks`: Custom React hooks
+- `/lib`: Utility functions and database connections
+- `/models`: Mongoose schemas and models
+- `/providers`: Application providers
+- `/public`: Static assets
+- `/types`: TypeScript type definitions
+- `/utils`: Helper functions
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## API Endpoints
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The application includes various API endpoints for:
+- Managing bounties
+- Submitting and reviewing reports
+- Handling user data and permissions
+- File uploads and management
+
+For more detailed structure, please read CODE_STRUCTURE.md file.
